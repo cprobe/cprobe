@@ -45,12 +45,12 @@ func init() {
 
 	pair := strings.Split(flags.HTTPListen, ":")
 	if len(pair) == 1 {
-		log.Fatalf("Invalid http.listen address: %s", flags.HTTPListen)
+		log.Fatalf("invalid http.listen address: %s", flags.HTTPListen)
 	}
 
 	port := pair[len(pair)-1]
 	if p, e := strconv.ParseInt(port, 10, 64); e != nil || p < 1 || p > 65535 {
-		log.Fatalf("Invalid http.listen port: %s", port)
+		log.Fatalf("invalid http.listen port: %s", port)
 	} else {
 		flags.HTTPPort = int(p)
 	}

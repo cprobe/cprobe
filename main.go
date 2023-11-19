@@ -40,7 +40,7 @@ func main() {
 	sig := procutil.WaitForSigterm()
 	logger.Infof("service received signal %s", sig)
 	if err := closeHTTP(); err != nil {
-		logger.Fatalf("cannot stop the webservice: %s", err)
+		logger.Fatalf("failed to stop the webservice: %s", err)
 	}
 
 	cancel()
