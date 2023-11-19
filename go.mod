@@ -6,6 +6,7 @@ require (
 	github.com/VictoriaMetrics/metrics v1.24.0
 	github.com/VictoriaMetrics/metricsql v0.69.0
 	github.com/valyala/fasttemplate v1.2.2
+	go.uber.org/automaxprocs v1.5.3
 )
 
 require (

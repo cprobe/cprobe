@@ -8,6 +8,7 @@ import (
 	"github.com/cprobe/cprobe/lib/envflag"
 	"github.com/cprobe/cprobe/lib/flagutil"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/lib/runner"
 )
 
 func main() {
@@ -15,8 +16,10 @@ func main() {
 	flag.CommandLine.SetOutput(os.Stdout)
 	flag.Usage = usage
 	envflag.Parse()
+
 	buildinfo.Init()
 	logger.Init()
+	runner.PrintRuntime()
 
 	logger.Infof("starting cprobe %s...", buildinfo.Version)
 }
