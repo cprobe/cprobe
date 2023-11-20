@@ -12,8 +12,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/VictoriaMetrics/metrics"
-	"github.com/cprobe/cprobe/lib/buildinfo"
 	"github.com/cprobe/cprobe/lib/stringsutil"
 )
 
@@ -289,8 +287,8 @@ func logMessage(level, msg string, skipframes int) {
 	mu.Unlock()
 
 	// Increment vm_log_messages_total
-	counterName := fmt.Sprintf(`vm_log_messages_total{app_version=%q, level=%q, location=%q}`, buildinfo.Version, levelLowercase, location)
-	metrics.GetOrCreateCounter(counterName).Inc()
+	// counterName := fmt.Sprintf(`vm_log_messages_total{app_version=%q, level=%q, location=%q}`, buildinfo.Version, levelLowercase, location)
+	// metrics.GetOrCreateCounter(counterName).Inc()
 
 	switch level {
 	case "PANIC":
