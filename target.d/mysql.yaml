@@ -1,26 +1,18 @@
-- target: 10.1.2.3:3306
+- targets: ["10.1.2.3:3306"]
   labels:
     project: foo
     region: beijing
   paths:
   - dba.cloud
-- target: 10.1.2.4:3306
+- targets: ["10.1.2.4:3306"]
   labels:
     project: foo
     region: shanghai
   paths:
   - dba.cloud
-- target: 10.1.2.5:3306
+- targets: ["10.1.2.5:3306"]
   labels:
     project: bar
     region: shanghai
   paths:
   - dba.shop
-- target: 10.2.2.2:3306
-- target: 10.3.3.3:3306
-- target: 10.4.4.4:3306
-  paths:
-  - dba.book
-- target: 10.5.5.5:3306
-  paths:
-  - dba.book
