@@ -13,7 +13,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cprobe/cprobe/flags"
 	"github.com/cprobe/cprobe/lib/buildinfo"
 	"github.com/cprobe/cprobe/lib/fasttime"
 	"github.com/cprobe/cprobe/lib/ginx"
@@ -27,36 +26,36 @@ import (
 var connDeadlineTimeKey = interface{}("connDeadlineSecs")
 
 func init() {
-	flag.StringVar(&flags.HTTPListen, "http.listen", "0.0.0.0:5858", "Address to listen for http connections.")
-	flag.StringVar(&flags.HTTPUsername, "http.username", "", "Username for basic http authentication. No authentication is performed if username is empty.")
-	flag.StringVar(&flags.HTTPPassword, "http.password", "", "Password for basic http authentication. No authentication is performed if password is empty.")
-	flag.StringVar(&flags.HTTPMode, "http.mode", "release", "Gin mode. One of: {debug|release|test}")
-	flag.BoolVar(&flags.HTTPPProf, "http.pprof", false, "Enable pprof http handlers. This is insecure and should be disabled in production.")
-	flag.DurationVar(&flags.HTTPReadHeaderTimeout, "http.readTimeout", time.Second*5, "Maximum duration for reading request header.")
-	flag.DurationVar(&flags.HTTPIdleTimeout, "http.idleTimeout", time.Minute, "Maximum amount of time to wait for the next request when keep-alives are enabled.")
-	flag.DurationVar(&flags.HTTPConnTimeout, "http.connTimeout", 2*time.Minute, `Incoming http connections are closed after the configured timeout. This may help to spread the incoming load among a cluster of services behind a load balancer. Please note that the real timeout may be bigger by up to 10% as a protection against the thundering herd problem`)
-	flag.BoolVar(&flags.HTTPTLSEnable, "http.tls", false, "Whether to enable TLS for incoming HTTP requests at -http.listen (aka https). -http.tlsCertFile and -http.tlsKeyFile must be set if -http.tls is set")
-	flag.StringVar(&flags.HTTPTLSCertFile, "http.tlsCertFile", "", "Path to file with TLS certificate if -http.tls is set. Prefer ECDSA certs instead of RSA certs as RSA certs are slower. The provided certificate file is automatically re-read every second, so it can be dynamically updated")
-	flag.StringVar(&flags.HTTPTLSKeyFile, "http.tlsKeyFile", "", "Path to file with TLS key if -http.tls is set. The provided key file is automatically re-read every second, so it can be dynamically updated")
-	flag.StringVar(&flags.HTTPTLSCipherSuitesString, "http.tlsCipherSuites", "", "Optional list of TLS cipher suites for incoming requests over HTTPS if -http.tls is set. split by comma. See the list of supported cipher suites at https://pkg.go.dev/crypto/tls#pkg-constants")
-	flag.StringVar(&flags.HTTPTLSMinVersion, "http.tlsMinVersion", "", "Optional minimum TLS version to use for incoming requests over HTTPS if -http.tls is set. "+
+	flag.StringVar(&HTTPListen, "http.listen", "0.0.0.0:5858", "Address to listen for http connections.")
+	flag.StringVar(&HTTPUsername, "http.username", "", "Username for basic http authentication. No authentication is performed if username is empty.")
+	flag.StringVar(&HTTPPassword, "http.password", "", "Password for basic http authentication. No authentication is performed if password is empty.")
+	flag.StringVar(&HTTPMode, "http.mode", "release", "Gin mode. One of: {debug|release|test}")
+	flag.BoolVar(&HTTPPProf, "http.pprof", false, "Enable pprof http handlers. This is insecure and should be disabled in production.")
+	flag.DurationVar(&HTTPReadHeaderTimeout, "http.readTimeout", time.Second*5, "Maximum duration for reading request header.")
+	flag.DurationVar(&HTTPIdleTimeout, "http.idleTimeout", time.Minute, "Maximum amount of time to wait for the next request when keep-alives are enabled.")
+	flag.DurationVar(&HTTPConnTimeout, "http.connTimeout", 2*time.Minute, `Incoming http connections are closed after the configured timeout. This may help to spread the incoming load among a cluster of services behind a load balancer. Please note that the real timeout may be bigger by up to 10% as a protection against the thundering herd problem`)
+	flag.BoolVar(&HTTPTLSEnable, "http.tls", false, "Whether to enable TLS for incoming HTTP requests at -http.listen (aka https). -http.tlsCertFile and -http.tlsKeyFile must be set if -http.tls is set")
+	flag.StringVar(&HTTPTLSCertFile, "http.tlsCertFile", "", "Path to file with TLS certificate if -http.tls is set. Prefer ECDSA certs instead of RSA certs as RSA certs are slower. The provided certificate file is automatically re-read every second, so it can be dynamically updated")
+	flag.StringVar(&HTTPTLSKeyFile, "http.tlsKeyFile", "", "Path to file with TLS key if -http.tls is set. The provided key file is automatically re-read every second, so it can be dynamically updated")
+	flag.StringVar(&HTTPTLSCipherSuitesString, "http.tlsCipherSuites", "", "Optional list of TLS cipher suites for incoming requests over HTTPS if -http.tls is set. split by comma. See the list of supported cipher suites at https://pkg.go.dev/crypto/tls#pkg-constants")
+	flag.StringVar(&HTTPTLSMinVersion, "http.tlsMinVersion", "", "Optional minimum TLS version to use for incoming requests over HTTPS if -http.tls is set. "+
 		"Supported values: TLS10, TLS11, TLS12, TLS13")
-	flag.DurationVar(&flags.HTTPMaxGracefulShutdownDuration, "http.maxGracefulShutdownDuration", 7*time.Second, `The maximum duration for a graceful shutdown of the HTTP server. A highly loaded server may require increased value for a graceful shutdown`)
+	flag.DurationVar(&HTTPMaxGracefulShutdownDuration, "http.maxGracefulShutdownDuration", 7*time.Second, `The maximum duration for a graceful shutdown of the HTTP server. A highly loaded server may require increased value for a graceful shutdown`)
 
-	pair := strings.Split(flags.HTTPListen, ":")
+	pair := strings.Split(HTTPListen, ":")
 	if len(pair) == 1 {
-		log.Fatalf("invalid http.listen address: %s", flags.HTTPListen)
+		log.Fatalf("invalid http.listen address: %s", HTTPListen)
 	}
 
 	port := pair[len(pair)-1]
 	if p, e := strconv.ParseInt(port, 10, 64); e != nil || p < 1 || p > 65535 {
 		log.Fatalf("invalid http.listen port: %s", port)
 	} else {
-		flags.HTTPPort = int(p)
+		HTTPPort = int(p)
 	}
 
-	if flags.HTTPTLSCipherSuitesString != "" {
-		flags.HTTPTLSCipherSuitesArray = strings.Fields(strings.ReplaceAll(flags.HTTPTLSCipherSuitesString, ",", " "))
+	if HTTPTLSCipherSuitesString != "" {
+		HTTPTLSCipherSuitesArray = strings.Fields(strings.ReplaceAll(HTTPTLSCipherSuitesString, ",", " "))
 	}
 }
 
@@ -65,19 +64,19 @@ type HTTPRouter struct {
 }
 
 func Router() *HTTPRouter {
-	gin.SetMode(flags.HTTPMode)
+	gin.SetMode(HTTPMode)
 
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(ginx.BombRecovery())
 
-	if flags.HTTPUsername != "" && flags.HTTPPassword != "" {
+	if HTTPUsername != "" && HTTPPassword != "" {
 		r.Use(gin.BasicAuth(gin.Accounts{
-			flags.HTTPUsername: flags.HTTPPassword,
+			HTTPUsername: HTTPPassword,
 		}))
 	}
 
-	if flags.HTTPPProf {
+	if HTTPPProf {
 		pprof.Register(r, "/debug/pprof")
 	}
 
@@ -108,12 +107,12 @@ func Router() *HTTPRouter {
 func (r *HTTPRouter) Start() func() error {
 	server := &http.Server{
 		Handler:           r.engine,
-		IdleTimeout:       flags.HTTPIdleTimeout,
-		ReadHeaderTimeout: flags.HTTPReadHeaderTimeout,
+		IdleTimeout:       HTTPIdleTimeout,
+		ReadHeaderTimeout: HTTPReadHeaderTimeout,
 		ErrorLog:          logger.StdErrorLogger(),
 
 		ConnContext: func(ctx context.Context, c net.Conn) context.Context {
-			timeoutSec := flags.HTTPConnTimeout.Seconds()
+			timeoutSec := HTTPConnTimeout.Seconds()
 			// Add a jitter for connection timeout in order to prevent Thundering herd problem
 			// when all the connections are established at the same time.
 			// See https://en.wikipedia.org/wiki/Thundering_herd_problem
@@ -125,35 +124,35 @@ func (r *HTTPRouter) Start() func() error {
 
 	go func() {
 		var tlsConfig *tls.Config
-		if flags.HTTPTLSEnable {
-			tc, err := httptls.GetServerTLSConfig(flags.HTTPTLSCertFile, flags.HTTPTLSKeyFile, flags.HTTPTLSMinVersion, flags.HTTPTLSCipherSuitesArray)
+		if HTTPTLSEnable {
+			tc, err := httptls.GetServerTLSConfig(HTTPTLSCertFile, HTTPTLSKeyFile, HTTPTLSMinVersion, HTTPTLSCipherSuitesArray)
 			if err != nil {
 				logger.Fatalf("cannot get TLS config for http server: %s", err)
 			}
 			tlsConfig = tc
 		}
 
-		listner, err := net.Listen("tcp", flags.HTTPListen)
+		listner, err := net.Listen("tcp", HTTPListen)
 		if err != nil {
-			logger.Fatalf("cannot listen %q: %s", flags.HTTPListen, err)
+			logger.Fatalf("cannot listen %q: %s", HTTPListen, err)
 		}
 
 		if tlsConfig != nil {
 			listner = tls.NewListener(listner, tlsConfig)
 		}
 
-		logger.Infof("listening http on %s", flags.HTTPListen)
+		logger.Infof("listening http on %s", HTTPListen)
 		if err := server.Serve(listner); err != nil {
 			if err == http.ErrServerClosed {
 				// The server gracefully closed.
 				return
 			}
-			logger.Fatalf("cannot serve http at %s: %s", flags.HTTPListen, err)
+			logger.Fatalf("cannot serve http at %s: %s", HTTPListen, err)
 		}
 	}()
 
 	return func() error {
-		ctx, cancel := context.WithTimeout(context.Background(), flags.HTTPMaxGracefulShutdownDuration)
+		ctx, cancel := context.WithTimeout(context.Background(), HTTPMaxGracefulShutdownDuration)
 		defer cancel()
 		return server.Shutdown(ctx)
 	}
