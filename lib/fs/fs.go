@@ -10,11 +10,9 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/cprobe/cprobe/lib/fasttime"
-	"github.com/cprobe/cprobe/lib/filestream"
 	"github.com/cprobe/cprobe/lib/logger"
 )
 
@@ -33,17 +31,17 @@ func MustSyncPath(path string) {
 // in the middle of the write.
 // Use MustWriteAtomic if the file at the path must be either written in full
 // or not written at all on app crash in the middle of the write.
-func MustWriteSync(path string, data []byte) {
-	f := filestream.MustCreate(path, false)
-	if _, err := f.Write(data); err != nil {
-		f.MustClose()
-		// Do not call MustRemoveAll(path), so the user could inspect
-		// the file contents during investigation of the issue.
-		logger.Panicf("FATAL: cannot write %d bytes to %q: %s", len(data), path, err)
-	}
-	// Sync and close the file.
-	f.MustClose()
-}
+// func MustWriteSync(path string, data []byte) {
+// 	f := filestream.MustCreate(path, false)
+// 	if _, err := f.Write(data); err != nil {
+// 		f.MustClose()
+// 		// Do not call MustRemoveAll(path), so the user could inspect
+// 		// the file contents during investigation of the issue.
+// 		logger.Panicf("FATAL: cannot write %d bytes to %q: %s", len(data), path, err)
+// 	}
+// 	// Sync and close the file.
+// 	f.MustClose()
+// }
 
 // MustWriteAtomic atomically writes data to the given file path.
 //
@@ -55,35 +53,35 @@ func MustWriteSync(path string, data []byte) {
 //
 // If the file at path already exists, then the file is overwritten atomically if canOverwrite is true.
 // Otherwise error is returned.
-func MustWriteAtomic(path string, data []byte, canOverwrite bool) {
-	// Check for the existing file. It is expected that
-	// the MustWriteAtomic function cannot be called concurrently
-	// with the same `path`.
-	if IsPathExist(path) && !canOverwrite {
-		logger.Panicf("FATAL: cannot create file %q, since it already exists", path)
-	}
+// func MustWriteAtomic(path string, data []byte, canOverwrite bool) {
+// 	// Check for the existing file. It is expected that
+// 	// the MustWriteAtomic function cannot be called concurrently
+// 	// with the same `path`.
+// 	if IsPathExist(path) && !canOverwrite {
+// 		logger.Panicf("FATAL: cannot create file %q, since it already exists", path)
+// 	}
 
-	// Write data to a temporary file.
-	n := atomic.AddUint64(&tmpFileNum, 1)
-	tmpPath := fmt.Sprintf("%s.tmp.%d", path, n)
-	MustWriteSync(tmpPath, data)
+// 	// Write data to a temporary file.
+// 	n := atomic.AddUint64(&tmpFileNum, 1)
+// 	tmpPath := fmt.Sprintf("%s.tmp.%d", path, n)
+// 	MustWriteSync(tmpPath, data)
 
-	// Atomically move the temporary file from tmpPath to path.
-	if err := os.Rename(tmpPath, path); err != nil {
-		// do not call MustRemoveAll(tmpPath) here, so the user could inspect
-		// the file contents during investigation of the issue.
-		logger.Panicf("FATAL: cannot move temporary file %q to %q: %s", tmpPath, path, err)
-	}
+// 	// Atomically move the temporary file from tmpPath to path.
+// 	if err := os.Rename(tmpPath, path); err != nil {
+// 		// do not call MustRemoveAll(tmpPath) here, so the user could inspect
+// 		// the file contents during investigation of the issue.
+// 		logger.Panicf("FATAL: cannot move temporary file %q to %q: %s", tmpPath, path, err)
+// 	}
 
-	// Sync the containing directory, so the file is guaranteed to appear in the directory.
-	// See https://www.quora.com/When-should-you-fsync-the-containing-directory-in-addition-to-the-file-itself
-	absPath, err := filepath.Abs(path)
-	if err != nil {
-		logger.Panicf("FATAL: cannot obtain absolute path to %q: %s", path, err)
-	}
-	parentDirPath := filepath.Dir(absPath)
-	MustSyncPath(parentDirPath)
-}
+// 	// Sync the containing directory, so the file is guaranteed to appear in the directory.
+// 	// See https://www.quora.com/When-should-you-fsync-the-containing-directory-in-addition-to-the-file-itself
+// 	absPath, err := filepath.Abs(path)
+// 	if err != nil {
+// 		logger.Panicf("FATAL: cannot obtain absolute path to %q: %s", path, err)
+// 	}
+// 	parentDirPath := filepath.Dir(absPath)
+// 	MustSyncPath(parentDirPath)
+// }
 
 // IsTemporaryFileName returns true if fn matches temporary file name pattern
 // from MustWriteAtomic.
@@ -329,33 +327,33 @@ func MustCopyFile(srcPath, dstPath string) {
 	MustSyncPath(dstPath)
 }
 
-// MustReadData reads len(data) bytes from r.
-func MustReadData(r filestream.ReadCloser, data []byte) {
-	n, err := io.ReadFull(r, data)
-	if err != nil {
-		if err == io.EOF {
-			return
-		}
-		logger.Panicf("FATAL: cannot read %d bytes from %s; read only %d bytes; error: %s", len(data), r.Path(), n, err)
-	}
-	if n != len(data) {
-		logger.Panicf("BUG: io.ReadFull read only %d bytes from %s; must read %d bytes", n, r.Path(), len(data))
-	}
-}
+// // MustReadData reads len(data) bytes from r.
+// func MustReadData(r filestream.ReadCloser, data []byte) {
+// 	n, err := io.ReadFull(r, data)
+// 	if err != nil {
+// 		if err == io.EOF {
+// 			return
+// 		}
+// 		logger.Panicf("FATAL: cannot read %d bytes from %s; read only %d bytes; error: %s", len(data), r.Path(), n, err)
+// 	}
+// 	if n != len(data) {
+// 		logger.Panicf("BUG: io.ReadFull read only %d bytes from %s; must read %d bytes", n, r.Path(), len(data))
+// 	}
+// }
 
-// MustWriteData writes data to w.
-func MustWriteData(w filestream.WriteCloser, data []byte) {
-	if len(data) == 0 {
-		return
-	}
-	n, err := w.Write(data)
-	if err != nil {
-		logger.Panicf("FATAL: cannot write %d bytes to %s: %s", len(data), w.Path(), err)
-	}
-	if n != len(data) {
-		logger.Panicf("BUG: writer wrote %d bytes instead of %d bytes to %s", n, len(data), w.Path())
-	}
-}
+// // MustWriteData writes data to w.
+// func MustWriteData(w filestream.WriteCloser, data []byte) {
+// 	if len(data) == 0 {
+// 		return
+// 	}
+// 	n, err := w.Write(data)
+// 	if err != nil {
+// 		logger.Panicf("FATAL: cannot write %d bytes to %s: %s", len(data), w.Path(), err)
+// 	}
+// 	if n != len(data) {
+// 		logger.Panicf("BUG: writer wrote %d bytes instead of %d bytes to %s", n, len(data), w.Path())
+// 	}
+// }
 
 // MustCreateFlockFile creates FlockFilename file in the directory dir
 // and returns the handler to the file.

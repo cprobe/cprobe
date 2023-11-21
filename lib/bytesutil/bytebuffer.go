@@ -5,7 +5,6 @@ import (
 	"io"
 	"sync"
 
-	"github.com/cprobe/cprobe/lib/filestream"
 	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/lib/logger"
 )
@@ -17,7 +16,7 @@ var (
 	_ io.ReaderFrom       = &ByteBuffer{}
 
 	// Verify reader implement filestream.ReadCloser interface.
-	_ filestream.ReadCloser = &reader{}
+	// _ filestream.ReadCloser = &reader{}
 )
 
 // ByteBuffer implements a simple byte buffer.
@@ -85,40 +84,40 @@ func (bb *ByteBuffer) MustClose() {
 }
 
 // NewReader returns new reader for the given bb.
-func (bb *ByteBuffer) NewReader() filestream.ReadCloser {
-	return &reader{
-		bb: bb,
-	}
-}
+// func (bb *ByteBuffer) NewReader() filestream.ReadCloser {
+// 	return &reader{
+// 		bb: bb,
+// 	}
+// }
 
-type reader struct {
-	bb *ByteBuffer
+// type reader struct {
+// 	bb *ByteBuffer
 
-	// readOffset is the offset in bb.B for read.
-	readOffset int
-}
+// 	// readOffset is the offset in bb.B for read.
+// 	readOffset int
+// }
 
-// Path returns an unique id for the underlying ByteBuffer.
-func (r *reader) Path() string {
-	return r.bb.Path()
-}
+// // Path returns an unique id for the underlying ByteBuffer.
+// func (r *reader) Path() string {
+// 	return r.bb.Path()
+// }
 
-// Read reads up to len(p) bytes from bb.
-func (r *reader) Read(p []byte) (int, error) {
-	var err error
-	n := copy(p, r.bb.B[r.readOffset:])
-	if n < len(p) {
-		err = io.EOF
-	}
-	r.readOffset += n
-	return n, err
-}
+// // Read reads up to len(p) bytes from bb.
+// func (r *reader) Read(p []byte) (int, error) {
+// 	var err error
+// 	n := copy(p, r.bb.B[r.readOffset:])
+// 	if n < len(p) {
+// 		err = io.EOF
+// 	}
+// 	r.readOffset += n
+// 	return n, err
+// }
 
-// MustClose closes bb for subsequent re-use.
-func (r *reader) MustClose() {
-	r.bb = nil
-	r.readOffset = 0
-}
+// // MustClose closes bb for subsequent re-use.
+// func (r *reader) MustClose() {
+// 	r.bb = nil
+// 	r.readOffset = 0
+// }
 
 // ByteBufferPool is a pool of ByteBuffers.
 type ByteBufferPool struct {
