@@ -15,7 +15,6 @@ require (
 	github.com/valyala/fastrand v1.1.0
 	github.com/valyala/fasttemplate v1.2.2
 	github.com/valyala/gozstd v1.20.1
-	github.com/valyala/quicktemplate v1.7.0
 	go.uber.org/automaxprocs v1.5.3
 	golang.org/x/oauth2 v0.14.0
 	golang.org/x/sys v0.14.0

@@ -32,18 +32,23 @@ func WriteVectors(vs []*Vector) {
 	}
 
 	for i := range WriterConfig.Writers {
-		newVectors := make([]*Vector, len(vs))
-		for j := range vs {
-			newVectors[j] = &Vector{
-				Labels: make(map[string]string, len(vs[j].Labels)),
-				Clock:  vs[j].Clock,
-				Value:  vs[j].Value,
+		if i == len(WriterConfig.Writers)-1 {
+			// last one
+			WriterConfig.Writers[i].writeVectors(vs)
+		} else {
+			newVectors := make([]*Vector, len(vs))
+			for j := range vs {
+				newVectors[j] = &Vector{
+					Labels: make(map[string]string, len(vs[j].Labels)),
+					Clock:  vs[j].Clock,
+					Value:  vs[j].Value,
+				}
+				for key, value := range vs[j].Labels {
+					newVectors[j].Labels[key] = value
+				}
 			}
-			for key, value := range vs[j].Labels {
-				newVectors[j].Labels[key] = value
-			}
+			WriterConfig.Writers[i].writeVectors(newVectors)
 		}
-		WriterConfig.Writers[i].writeVectors(newVectors)
 	}
 }
 
