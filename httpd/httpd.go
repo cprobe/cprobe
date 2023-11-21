@@ -142,6 +142,7 @@ func (r *HTTPRouter) Start() func() error {
 			listner = tls.NewListener(listner, tlsConfig)
 		}
 
+		logger.Infof("listening http on %s", flags.HTTPListen)
 		if err := server.Serve(listner); err != nil {
 			if err == http.ErrServerClosed {
 				// The server gracefully closed.

@@ -5,7 +5,6 @@ import (
 	"flag"
 	"os"
 
-	"github.com/cprobe/cprobe/flags"
 	"github.com/cprobe/cprobe/httpd"
 	"github.com/cprobe/cprobe/lib/buildinfo"
 	"github.com/cprobe/cprobe/lib/envflag"
@@ -36,7 +35,6 @@ func main() {
 	}
 
 	// http server
-	logger.Infof("http server listening on: %s", flags.HTTPListen)
 	closeHTTP := httpd.Router().Config().Start()
 
 	// stop process
