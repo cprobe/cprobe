@@ -5,15 +5,14 @@ import (
 	"io"
 	"sync"
 
-	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/lib/logger"
 )
 
 var (
 	// Verify ByteBuffer implements the given interfaces.
-	_ io.Writer           = &ByteBuffer{}
-	_ fs.MustReadAtCloser = &ByteBuffer{}
-	_ io.ReaderFrom       = &ByteBuffer{}
+	_ io.Writer = &ByteBuffer{}
+	// _ fs.MustReadAtCloser = &ByteBuffer{}
+	_ io.ReaderFrom = &ByteBuffer{}
 
 	// Verify reader implement filestream.ReadCloser interface.
 	// _ filestream.ReadCloser = &reader{}
