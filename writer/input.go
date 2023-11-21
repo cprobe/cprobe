@@ -73,13 +73,13 @@ func (w *Writer) writeVectors(vs []*Vector) {
 
 	bs, err := req.Marshal()
 	if err != nil {
-		logger.Warnf("failed to marshal WriteRequest: %s", err)
+		logger.Warnf("cannot marshal WriteRequest: %s", err)
 		return
 	}
 
 	httpReq, err := w.NewRequest(snappy.Encode(nil, bs))
 	if err != nil {
-		logger.Warnf("failed to create http request: %s", err)
+		logger.Warnf("cannot create http request: %s", err)
 		return
 	}
 

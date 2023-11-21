@@ -185,11 +185,11 @@ func Init() error {
 
 	err := fileutil.ReadYaml(*writerFile, WriterConfig)
 	if err != nil {
-		return errors.Wrap(err, "failed to read writer config")
+		return errors.Wrap(err, "cannot read writer config")
 	}
 
 	if err = WriterConfig.Parse(); err != nil {
-		return errors.Wrap(err, "failed to set writer fields")
+		return errors.Wrap(err, "cannot set writer fields")
 	}
 
 	return nil

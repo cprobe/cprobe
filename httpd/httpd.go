@@ -128,14 +128,14 @@ func (r *HTTPRouter) Start() func() error {
 		if flags.HTTPTLSEnable {
 			tc, err := httptls.GetServerTLSConfig(flags.HTTPTLSCertFile, flags.HTTPTLSKeyFile, flags.HTTPTLSMinVersion, flags.HTTPTLSCipherSuitesArray)
 			if err != nil {
-				logger.Fatalf("failed to get TLS config for http server: %s", err)
+				logger.Fatalf("cannot get TLS config for http server: %s", err)
 			}
 			tlsConfig = tc
 		}
 
 		listner, err := net.Listen("tcp", flags.HTTPListen)
 		if err != nil {
-			logger.Fatalf("failed to listen %q: %s", flags.HTTPListen, err)
+			logger.Fatalf("cannot listen %q: %s", flags.HTTPListen, err)
 		}
 
 		if tlsConfig != nil {
@@ -147,7 +147,7 @@ func (r *HTTPRouter) Start() func() error {
 				// The server gracefully closed.
 				return
 			}
-			logger.Fatalf("failed to serve http at %s: %s", flags.HTTPListen, err)
+			logger.Fatalf("cannot serve http at %s: %s", flags.HTTPListen, err)
 		}
 	}()
 

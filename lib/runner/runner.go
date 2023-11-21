@@ -19,7 +19,7 @@ func PrintRuntime() {
 
 	hostname, err := os.Hostname()
 	if err != nil {
-		hostname = fmt.Sprintf("failed to get hostname: %s", err)
+		hostname = fmt.Sprintf("cannot get hostname: %s", err)
 	}
 
 	logger.Infof("hostname: %s", hostname)
