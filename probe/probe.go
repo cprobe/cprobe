@@ -1,8 +1,9 @@
 package probe
 
-import "context"
+import (
+	"context"
+)
 
-// TODO: add remote write
 func Start(ctx context.Context) error {
 	return nil
 }

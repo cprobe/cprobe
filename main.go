@@ -9,11 +9,13 @@ import (
 	"github.com/cprobe/cprobe/httpd"
 	"github.com/cprobe/cprobe/lib/buildinfo"
 	"github.com/cprobe/cprobe/lib/envflag"
+	"github.com/cprobe/cprobe/lib/fasttime"
 	"github.com/cprobe/cprobe/lib/flagutil"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/procutil"
 	"github.com/cprobe/cprobe/lib/runner"
 	"github.com/cprobe/cprobe/probe"
+	"github.com/cprobe/cprobe/writer"
 )
 
 func main() {
@@ -27,6 +29,29 @@ func main() {
 	runner.PrintRuntime()
 
 	ctx, cancel := context.WithCancel(context.Background())
+
+	writer.Init()
+
+	var vs []*writer.Vector
+	vs = append(vs, &writer.Vector{
+		Labels: map[string]string{
+			"__name__": "cprobe_test02",
+			"job":      "cprobe01",
+		},
+		Clock: int64(fasttime.UnixTimestamp()) * 1000,
+		Value: 1.1,
+	})
+
+	vs = append(vs, &writer.Vector{
+		Labels: map[string]string{
+			"__name__": "cprobe_test02",
+			"job":      "cprobe02",
+		},
+		Clock: int64(fasttime.UnixTimestamp()) * 1000,
+		Value: 1.1,
+	})
+
+	writer.WriteVectors(vs)
 
 	if err := probe.Start(ctx); err != nil {
 		logger.Fatalf("failed to start probe: %v", err)
