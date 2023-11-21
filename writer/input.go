@@ -1,8 +1,6 @@
 package writer
 
 import (
-	"fmt"
-
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/prompbmarshal"
 	"github.com/golang/snappy"
@@ -60,12 +58,6 @@ func (w *Writer) writeVectors(vs []*Vector) {
 	// convert vectors to time series
 	tss := w.makeTimeSeries(vs)
 
-	fmt.Println("url:", w.URL)
-	fmt.Println("vs:")
-	for _, v := range vs {
-		fmt.Printf("  %+v \n", v)
-	}
-
 	// relabel
 	if WriterConfig.Global.ParsedRelabelConfigs.Len() > 0 {
 		tss = new(relabelCtx).applyRelabeling(tss, WriterConfig.Global.ParsedRelabelConfigs)
@@ -73,11 +65,6 @@ func (w *Writer) writeVectors(vs []*Vector) {
 
 	if w.ParsedRelabelConfigs.Len() > 0 {
 		tss = new(relabelCtx).applyRelabeling(tss, w.ParsedRelabelConfigs)
-	}
-
-	fmt.Println("after:")
-	for _, ts := range tss {
-		fmt.Printf("  %+v \n", ts)
 	}
 
 	req := prompbmarshal.WriteRequest{
