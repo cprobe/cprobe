@@ -55,10 +55,10 @@ func Start(ctx context.Context) error {
 }
 
 func startPlugin(ctx context.Context, pluginDir string) error {
-	pluginPath := filepath.Join(*probeDir, pluginDir)
-	entryYamlFilePaths, err := filepath.Glob(filepath.Join(pluginPath, "main*.yaml"))
+	pluginDirPath := filepath.Join(*probeDir, pluginDir)
+	entryYamlFilePaths, err := filepath.Glob(filepath.Join(pluginDirPath, "main*.yaml"))
 	if err != nil {
-		return errors.Wrapf(err, "cannot glob main*.yaml under %s", pluginPath)
+		return errors.Wrapf(err, "cannot glob main*.yaml under %s", pluginDirPath)
 	}
 
 	if len(entryYamlFilePaths) == 0 {
@@ -66,7 +66,7 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 	}
 
 	for i := 0; i < len(entryYamlFilePaths); i++ {
-		if err = startEntry(ctx, pluginPath, entryYamlFilePaths[i]); err != nil {
+		if err = startEntry(ctx, pluginDirPath, entryYamlFilePaths[i]); err != nil {
 			return errors.Wrapf(err, "cannot start entry %s", entryYamlFilePaths[i])
 		}
 	}
@@ -74,8 +74,8 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 	return nil
 }
 
-func startEntry(ctx context.Context, pluginDir, entryYamlFilePath string) error {
-	fmt.Println(">>>>>> dir:", pluginDir)
+func startEntry(ctx context.Context, pluginDirPath, entryYamlFilePath string) error {
+	fmt.Println(">>>>>> dir:", pluginDirPath)
 	fmt.Println(">>>>>> path:", entryYamlFilePath)
 	return nil
 }
