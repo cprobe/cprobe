@@ -74,6 +74,7 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 	return nil
 }
 
+// main*.yaml 文件可能会发生变化，引用的其他文件也可能会变化，HTTP SD 的话远端的目标也可能会变化。
 func startEntry(ctx context.Context, pluginDirPath, entryYamlFilePath string) error {
 	fmt.Println(">>>>>> dir:", pluginDirPath)
 	fmt.Println(">>>>>> path:", entryYamlFilePath)
