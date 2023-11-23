@@ -44,8 +44,8 @@ func (cfg *Config) parseData(data []byte, path string) error {
 	}
 	cfg.BaseDir = filepath.Dir(absPath)
 
-	if cfg.Global.TargetConcurrency <= 0 {
-		cfg.Global.TargetConcurrency = defaultTargetConcurrency
+	if cfg.Global.ScrapeConcurrency <= 0 {
+		cfg.Global.ScrapeConcurrency = defaultScrapeConcurrency
 	}
 
 	// handle GlobalConfig

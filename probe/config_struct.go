@@ -28,7 +28,7 @@ import (
 const (
 	defaultScrapeInterval    = time.Minute
 	defaultScrapeTimeout     = 10 * time.Second
-	defaultTargetConcurrency = 50
+	defaultScrapeConcurrency = 50
 )
 
 type Config struct {
@@ -44,7 +44,7 @@ type Config struct {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 type GlobalConfig struct {
-	TargetConcurrency int                 `yaml:"target_concurrency,omitempty"` // 不同一次性启动太多 target 的抓取，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
+	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"` // 不同一次性启动太多 target 的抓取，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
 	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
 	ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
 	ExternalLabels    *promutils.Labels   `yaml:"external_labels,omitempty"`
