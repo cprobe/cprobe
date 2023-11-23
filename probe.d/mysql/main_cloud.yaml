@@ -1,0 +1,18 @@
+global:
+  scrape_interval: 10s
+  external_labels:
+    monitor: 'mysql'
+
+scrape_configs:
+- job_name: 'mysql_prod'
+  scrape_interval: 5s
+  scrape_rule_files:
+  - 'rules.d/common.toml'
+  - 'rules.d/schema.toml'
+  static_configs:
+  - targets: ['10.1.2.3:9104']
+- job_name: 'mysql_test'
+  static_configs:
+  - targets: ['10.1.2.4:9104']
+  scrape_rule_files:
+  - 'rules.d/common.toml'

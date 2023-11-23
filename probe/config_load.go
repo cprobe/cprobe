@@ -29,6 +29,7 @@ func loadConfig(path string) (*Config, error) {
 	if err := c.parseData(data, path); err != nil {
 		return nil, fmt.Errorf("cannot parse Prometheus config from %q: %w", path, err)
 	}
+
 	return &c, nil
 }
 
@@ -43,10 +44,6 @@ func (cfg *Config) parseData(data []byte, path string) error {
 		return fmt.Errorf("cannot obtain abs path for %q: %w", path, err)
 	}
 	cfg.BaseDir = filepath.Dir(absPath)
-
-	if cfg.Global.ScrapeConcurrency <= 0 {
-		cfg.Global.ScrapeConcurrency = defaultScrapeConcurrency
-	}
 
 	// handle GlobalConfig
 	cfg.Global.ParsedMetricRelabelConfigs, err = promrelabel.ParseRelabelConfigs(cfg.Global.MetricRelabelConfigs)
@@ -72,26 +69,39 @@ func (cfg *Config) parseData(data []byte, path string) error {
 
 	for i := range cfg.ScrapeConfigs {
 		sc := cfg.ScrapeConfigs[i]
+
 		if sc.JobName == "" {
 			logger.Errorf("skipping `scrape_config` without `job_name` at %q", path)
+			cfg.ScrapeConfigs[i] = nil
 			continue
 		}
 
 		if len(sc.ScrapeRuleFiles) == 0 {
 			logger.Errorf("skipping `scrape_config` without `scrape_rule_files` at %q", path)
+			cfg.ScrapeConfigs[i] = nil
 			continue
 		}
 
 		sc.ParsedRelabelConfigs, err = promrelabel.ParseRelabelConfigs(sc.RelabelConfigs)
 		if err != nil {
 			logger.Errorf("skipping `scrape_config` for job_name=%s because of parse relabel_configs error: %s", sc.JobName, err)
+			cfg.ScrapeConfigs[i] = nil
 			continue
 		}
 
 		sc.ParsedMetricRelabelConfigs, err = promrelabel.ParseRelabelConfigs(sc.MetricRelabelConfigs)
 		if err != nil {
 			logger.Errorf("skipping `scrape_config` for job_name=%s because of parse metric_relabel_configs error: %s", sc.JobName, err)
+			cfg.ScrapeConfigs[i] = nil
 			continue
+		}
+
+		scrapeConcurrency := sc.ScrapeConcurrency
+		if scrapeConcurrency <= 0 {
+			scrapeConcurrency = cfg.Global.ScrapeConcurrency
+			if scrapeConcurrency <= 0 {
+				scrapeConcurrency = defaultScrapeConcurrency
+			}
 		}
 
 		scrapeInterval := sc.ScrapeInterval.Duration()
@@ -115,8 +125,10 @@ func (cfg *Config) parseData(data []byte, path string) error {
 			scrapeTimeout = scrapeInterval
 		}
 
+		sc.ScrapeConcurrency = scrapeConcurrency
 		sc.ScrapeInterval = promutils.NewDuration(scrapeInterval)
 		sc.ScrapeTimeout = promutils.NewDuration(scrapeTimeout)
+
 		sc.ConfigRef = cfg
 	}
 

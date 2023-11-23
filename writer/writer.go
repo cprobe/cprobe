@@ -146,7 +146,7 @@ func (w *Writer) Parse() error {
 
 type Global struct {
 	ExtraLabels          map[string]string           `yaml:"extra_labels"`
-	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"relabel_configs"`
+	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs"`
 	ParsedRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
 }
 

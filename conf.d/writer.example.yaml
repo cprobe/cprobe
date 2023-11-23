@@ -12,7 +12,7 @@ writers:
 - url: http://127.0.0.1:9090/api/v1/write
   extra_labels:
     from: 9090
-  relabel_configs:
+  metric_relabel_configs:
   - source_labels: [__name__]
     regex: '(.*)'
     target_label: foo

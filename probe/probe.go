@@ -5,8 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
+	"time"
 
 	"github.com/cprobe/cprobe/lib/fileutil"
+	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/pkg/errors"
 )
 
@@ -66,7 +68,7 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 	}
 
 	for i := 0; i < len(entryYamlFilePaths); i++ {
-		if err = startEntry(ctx, entryYamlFilePaths[i]); err != nil {
+		if err = startEntry(ctx, pluginDir, entryYamlFilePaths[i]); err != nil {
 			return errors.Wrapf(err, "cannot start entry %s", entryYamlFilePaths[i])
 		}
 	}
@@ -74,14 +76,118 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 	return nil
 }
 
-// main*.yaml 文件可能会发生变化，引用的其他文件也可能会变化，HTTP SD 的话远端的目标也可能会变化。
-func startEntry(ctx context.Context, entryYamlFilePath string) error {
+func startEntry(ctx context.Context, pluginName, entryYamlFilePath string) error {
 	cfg, err := loadConfig(entryYamlFilePath)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(">>>", cfg.BaseDir)
+	pluginJobs, has := Jobs[pluginName]
+	if !has {
+		return fmt.Errorf("unsupported plugin %s", pluginName)
+	}
+
+	for i := range cfg.ScrapeConfigs {
+		if cfg.ScrapeConfigs[i] == nil {
+			continue
+		}
+
+		jobID := JobID{YamlFile: entryYamlFilePath, JobName: cfg.ScrapeConfigs[i].JobName}
+		jobGoroutine := NewJobGoroutine(cfg.ScrapeConfigs[i])
+		pluginJobs[jobID] = jobGoroutine
+
+		// 启动 goroutine，稍微 sleep 一下，避免所有 goroutine 同时启动
+		time.Sleep(time.Millisecond * 10)
+		go jobGoroutine.Start(ctx)
+	}
 
 	return nil
+}
+
+// Reload 读取磁盘配置文件，与内存中的配置文件进行比较，增删 JobGoroutine
+func Reload(ctx context.Context) {
+	newJobs, err := readFiles()
+	if err != nil {
+		logger.Errorf("cannot read files: %s", err)
+		return
+	}
+
+	// 遍历内存中的老 Jobs，如果新 Job 中没有，就删除
+	for pluginName, jobs := range Jobs {
+		newPluginJobs := newJobs[pluginName]
+
+		for jobID, jobGoroutine := range jobs {
+			_, has := newPluginJobs[jobID]
+			if !has {
+				jobGoroutine.Stop()
+				delete(jobs, jobID)
+			}
+		}
+	}
+
+	// 遍历磁盘中的新 Jobs，如果内存中老 Jobs 没有，就新增，有就更新
+	for pluginName, jobs := range newJobs {
+		oldPluginJobs := Jobs[pluginName]
+
+		for jobID, jobGoroutine := range jobs {
+			oldJobGoroutine, has := oldPluginJobs[jobID]
+			if !has {
+				oldPluginJobs[jobID] = jobGoroutine
+
+				time.Sleep(time.Millisecond * 20)
+				go oldPluginJobs[jobID].Start(ctx)
+
+				continue
+			}
+
+			// 更新 jobGoroutine
+			oldJobGoroutine.UpdateConfig(jobGoroutine.scrapeConfig)
+		}
+	}
+}
+
+func readFiles() (map[string]map[JobID]*JobGoroutine, error) {
+
+	pluginDirs, err := fileutil.DirsUnder(*probeDir)
+	if err != nil {
+		return nil, fmt.Errorf("cannot list plugin dirs: %s", err)
+	}
+
+	newJobs := makeJobs()
+
+	for i := 0; i < len(pluginDirs); i++ {
+		pluginDir := pluginDirs[i]
+		pluginDirPath := filepath.Join(*probeDir, pluginDir)
+
+		entryYamlFilePaths, err := filepath.Glob(filepath.Join(pluginDirPath, "main*.yaml"))
+		if err != nil {
+			return nil, fmt.Errorf("cannot glob main*.yaml under %s: %s", pluginDirPath, err)
+		}
+
+		for i := 0; i < len(entryYamlFilePaths); i++ {
+			entryYamlFilePath := entryYamlFilePaths[i]
+
+			cfg, err := loadConfig(entryYamlFilePath)
+			if err != nil {
+				return nil, fmt.Errorf("cannot load config %s: %s", entryYamlFilePath, err)
+			}
+
+			pluginJobs, has := newJobs[pluginDir]
+			if !has {
+				return nil, fmt.Errorf("unsupported plugin %s", pluginDir)
+			}
+
+			for i := range cfg.ScrapeConfigs {
+				if cfg.ScrapeConfigs[i] == nil {
+					continue
+				}
+
+				jobID := JobID{YamlFile: entryYamlFilePath, JobName: cfg.ScrapeConfigs[i].JobName}
+				jobGoroutine := NewJobGoroutine(cfg.ScrapeConfigs[i])
+				pluginJobs[jobID] = jobGoroutine
+			}
+		}
+	}
+
+	return newJobs, nil
 }

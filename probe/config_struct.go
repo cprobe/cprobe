@@ -44,7 +44,7 @@ type Config struct {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 type GlobalConfig struct {
-	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"` // 不同一次性启动太多 target 的抓取，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
+	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"` // 不能一次性启动太多 target 的抓取，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
 	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
 	ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
 	ExternalLabels    *promutils.Labels   `yaml:"external_labels,omitempty"`
@@ -59,9 +59,10 @@ type GlobalConfig struct {
 type ScrapeConfig struct {
 	ConfigRef *Config `yaml:"-"`
 
-	JobName        string              `yaml:"job_name"`
-	ScrapeInterval *promutils.Duration `yaml:"scrape_interval,omitempty"`
-	ScrapeTimeout  *promutils.Duration `yaml:"scrape_timeout,omitempty"`
+	JobName           string              `yaml:"job_name"`
+	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"`
+	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
+	ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
 
 	// 抓取数据的逻辑大变，已经不止是 HTTP /metrics 数据的抓取，可能是抓取的 SNMP、也可能抓的 MySQL
 	ScrapeRuleFiles []string `yaml:"scrape_rule_files,omitempty"`
@@ -154,40 +155,3 @@ func (cfg *Config) unmarshal(data []byte, isStrict bool) error {
 	}
 	return err
 }
-
-// func (cfg *Config) marshal() []byte {
-// 	data, err := yaml.Marshal(cfg)
-// 	if err != nil {
-// 		logger.Panicf("BUG: cannot marshal Config: %s", err)
-// 	}
-// 	return data
-// }
-
-// func (sc *ScrapeConfig) unmarshalJSON(data []byte) error {
-// 	return json.Unmarshal(data, sc)
-// }
-
-// func (sc *ScrapeConfig) marshalJSON() []byte {
-// 	data, err := json.Marshal(sc)
-// 	if err != nil {
-// 		logger.Panicf("BUG: cannot marshal ScrapeConfig: %s", err)
-// 	}
-// 	return data
-// }
-
-// func (gc *GlobalConfig) marshalJSON() []byte {
-// 	data, err := json.Marshal(gc)
-// 	if err != nil {
-// 		logger.Panicf("BUG: cannot marshal GlobalConfig: %s", err)
-// 	}
-// 	return data
-// }
-
-// func (sc *ScrapeConfig) clone() *ScrapeConfig {
-// 	data := sc.marshalJSON()
-// 	var scCopy ScrapeConfig
-// 	if err := scCopy.unmarshalJSON(data); err != nil {
-// 		logger.Panicf("BUG: cannot unmarshal scrape config: %s", err)
-// 	}
-// 	return &scCopy
-// }
