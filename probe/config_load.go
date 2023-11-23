@@ -44,6 +44,10 @@ func (cfg *Config) parseData(data []byte, path string) error {
 	}
 	cfg.BaseDir = filepath.Dir(absPath)
 
+	if cfg.Global.TargetConcurrency <= 0 {
+		cfg.Global.TargetConcurrency = defaultTargetConcurrency
+	}
+
 	// handle GlobalConfig
 	cfg.Global.ParsedMetricRelabelConfigs, err = promrelabel.ParseRelabelConfigs(cfg.Global.MetricRelabelConfigs)
 	if err != nil {

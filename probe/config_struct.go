@@ -26,8 +26,9 @@ import (
 )
 
 const (
-	defaultScrapeInterval = time.Minute
-	defaultScrapeTimeout  = 10 * time.Second
+	defaultScrapeInterval    = time.Minute
+	defaultScrapeTimeout     = 10 * time.Second
+	defaultTargetConcurrency = 50
 )
 
 type Config struct {
