@@ -15,7 +15,7 @@ import (
 	"github.com/cprobe/cprobe/lib/promauth"
 )
 
-var waitTime = flag.Duration("promscrape.consul.waitTime", 0, "Wait time used by Consul service discovery. Default value is used if not set")
+var waitTime = flag.Duration("scrape.consul.waitTime", 0, "Wait time used by Consul service discovery. Default value is used if not set")
 
 // apiConfig contains config for API server.
 type apiConfig struct {

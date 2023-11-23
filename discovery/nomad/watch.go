@@ -16,7 +16,7 @@ import (
 )
 
 // SDCheckInterval is check interval for Nomad service discovery.
-var SDCheckInterval = flag.Duration("promscrape.nomadSDCheckInterval", 30*time.Second, "Interval for checking for changes in Nomad. "+
+var SDCheckInterval = flag.Duration("scrape.nomadSDCheckInterval", 30*time.Second, "Interval for checking for changes in Nomad. "+
 	"This works only if nomad_sd_configs is configured in '-promscrape.config' file. "+
 	"See https://docs.victoriametrics.com/sd_configs.html#nomad_sd_configs for details")
 

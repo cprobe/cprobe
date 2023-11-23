@@ -26,7 +26,7 @@ import (
 	"github.com/cprobe/cprobe/lib/timerpool"
 )
 
-var apiServerTimeout = flag.Duration("promscrape.kubernetes.apiServerTimeout", 30*time.Minute, "How frequently to reload the full state from Kubernetes API server")
+var apiServerTimeout = flag.Duration("scrape.kubernetes.apiServerTimeout", 30*time.Minute, "How frequently to reload the full state from Kubernetes API server")
 
 // WatchEvent is a watch event returned from API server endpoints if `watch=1` query arg is set.
 //

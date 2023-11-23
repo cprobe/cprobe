@@ -66,7 +66,7 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 	}
 
 	for i := 0; i < len(entryYamlFilePaths); i++ {
-		if err = startEntry(ctx, pluginDirPath, entryYamlFilePaths[i]); err != nil {
+		if err = startEntry(ctx, entryYamlFilePaths[i]); err != nil {
 			return errors.Wrapf(err, "cannot start entry %s", entryYamlFilePaths[i])
 		}
 	}
@@ -75,8 +75,13 @@ func startPlugin(ctx context.Context, pluginDir string) error {
 }
 
 // main*.yaml 文件可能会发生变化，引用的其他文件也可能会变化，HTTP SD 的话远端的目标也可能会变化。
-func startEntry(ctx context.Context, pluginDirPath, entryYamlFilePath string) error {
-	fmt.Println(">>>>>> dir:", pluginDirPath)
-	fmt.Println(">>>>>> path:", entryYamlFilePath)
+func startEntry(ctx context.Context, entryYamlFilePath string) error {
+	cfg, err := loadConfig(entryYamlFilePath)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(">>>", cfg.BaseDir)
+
 	return nil
 }

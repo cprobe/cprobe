@@ -9,7 +9,7 @@ import (
 )
 
 // SDCheckInterval defines interval for targets refresh.
-var SDCheckInterval = flag.Duration("promscrape.gceSDCheckInterval", time.Minute, "Interval for checking for changes in gce. "+
+var SDCheckInterval = flag.Duration("scrape.gceSDCheckInterval", time.Minute, "Interval for checking for changes in gce. "+
 	"This works only if gce_sd_configs is configured in '-promscrape.config' file. "+
 	"See https://docs.victoriametrics.com/sd_configs.html#gce_sd_configs for details")
 

@@ -17,7 +17,7 @@ import (
 )
 
 // SDCheckInterval is check interval for Consul service discovery.
-var SDCheckInterval = flag.Duration("promscrape.consulSDCheckInterval", 30*time.Second, "Interval for checking for changes in Consul. "+
+var SDCheckInterval = flag.Duration("scrape.consulSDCheckInterval", 30*time.Second, "Interval for checking for changes in Consul. "+
 	"This works only if consul_sd_configs is configured in '-promscrape.config' file. "+
 	"See https://docs.victoriametrics.com/sd_configs.html#consul_sd_configs for details")
 

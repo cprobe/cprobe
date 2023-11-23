@@ -15,7 +15,7 @@ import (
 )
 
 // SDCheckInterval defines interval for targets refresh.
-var SDCheckInterval = flag.Duration("promscrape.digitaloceanSDCheckInterval", time.Minute, "Interval for checking for changes in digital ocean. "+
+var SDCheckInterval = flag.Duration("scrape.digitaloceanSDCheckInterval", time.Minute, "Interval for checking for changes in digital ocean. "+
 	"This works only if digitalocean_sd_configs is configured in '-promscrape.config' file. "+
 	"See https://docs.victoriametrics.com/sd_configs.html#digitalocean_sd_configs for details")
 

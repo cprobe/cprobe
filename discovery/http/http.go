@@ -11,7 +11,7 @@ import (
 )
 
 // SDCheckInterval defines interval for targets refresh.
-var SDCheckInterval = flag.Duration("promscrape.httpSDCheckInterval", time.Minute, "Interval for checking for changes in http endpoint service discovery. "+
+var SDCheckInterval = flag.Duration("scrape.httpSDCheckInterval", time.Minute, "Interval for checking for changes in http endpoint service discovery. "+
 	"This works only if http_sd_configs is configured in '-promscrape.config' file. "+
 	"See https://docs.victoriametrics.com/sd_configs.html#http_sd_configs for details")
 

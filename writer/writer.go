@@ -39,7 +39,7 @@ type Writer struct {
 	Interface            string                      `yaml:"interface"`
 	FollowRedirects      bool                        `yaml:"follow_redirects"`
 	ExtraLabels          map[string]string           `yaml:"extra_labels"`
-	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"relabel_configs"`
+	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs"`
 	ParsedRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
 
 	clienttls.ClientConfig `yaml:",inline"`
