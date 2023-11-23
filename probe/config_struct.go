@@ -1,7 +1,6 @@
 package probe
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -21,7 +20,6 @@ import (
 	"github.com/cprobe/cprobe/discovery/openstack"
 	"github.com/cprobe/cprobe/discovery/yandexcloud"
 	"github.com/cprobe/cprobe/lib/envtemplate"
-	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/promrelabel"
 	"github.com/cprobe/cprobe/lib/promutils"
 	"gopkg.in/yaml.v2"
@@ -57,6 +55,7 @@ type GlobalConfig struct {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config
 type ScrapeConfig struct {
+	BaseDir                          string                     `yaml:"-"`
 	GlobalExternalLabels             *promutils.Labels          `yaml:"-"`
 	GlobalParsedMetricRelabelConfigs *promrelabel.ParsedConfigs `yaml:"-"`
 
@@ -66,7 +65,6 @@ type ScrapeConfig struct {
 
 	// 抓取数据的逻辑大变，已经不止是 HTTP /metrics 数据的抓取，可能是抓取的 SNMP、也可能抓的 MySQL
 	ScrapeRuleFiles []string `yaml:"scrape_rule_files,omitempty"`
-	BaseDir         string   `yaml:"-"`
 
 	// move to rules.d
 	// MetricsPath    string              `yaml:"metrics_path,omitempty"`
@@ -157,39 +155,39 @@ func (cfg *Config) unmarshal(data []byte, isStrict bool) error {
 	return err
 }
 
-func (cfg *Config) marshal() []byte {
-	data, err := yaml.Marshal(cfg)
-	if err != nil {
-		logger.Panicf("BUG: cannot marshal Config: %s", err)
-	}
-	return data
-}
+// func (cfg *Config) marshal() []byte {
+// 	data, err := yaml.Marshal(cfg)
+// 	if err != nil {
+// 		logger.Panicf("BUG: cannot marshal Config: %s", err)
+// 	}
+// 	return data
+// }
 
-func (sc *ScrapeConfig) unmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, sc)
-}
+// func (sc *ScrapeConfig) unmarshalJSON(data []byte) error {
+// 	return json.Unmarshal(data, sc)
+// }
 
-func (sc *ScrapeConfig) marshalJSON() []byte {
-	data, err := json.Marshal(sc)
-	if err != nil {
-		logger.Panicf("BUG: cannot marshal ScrapeConfig: %s", err)
-	}
-	return data
-}
+// func (sc *ScrapeConfig) marshalJSON() []byte {
+// 	data, err := json.Marshal(sc)
+// 	if err != nil {
+// 		logger.Panicf("BUG: cannot marshal ScrapeConfig: %s", err)
+// 	}
+// 	return data
+// }
 
-func (gc *GlobalConfig) marshalJSON() []byte {
-	data, err := json.Marshal(gc)
-	if err != nil {
-		logger.Panicf("BUG: cannot marshal GlobalConfig: %s", err)
-	}
-	return data
-}
+// func (gc *GlobalConfig) marshalJSON() []byte {
+// 	data, err := json.Marshal(gc)
+// 	if err != nil {
+// 		logger.Panicf("BUG: cannot marshal GlobalConfig: %s", err)
+// 	}
+// 	return data
+// }
 
-func (sc *ScrapeConfig) clone() *ScrapeConfig {
-	data := sc.marshalJSON()
-	var scCopy ScrapeConfig
-	if err := scCopy.unmarshalJSON(data); err != nil {
-		logger.Panicf("BUG: cannot unmarshal scrape config: %s", err)
-	}
-	return &scCopy
-}
+// func (sc *ScrapeConfig) clone() *ScrapeConfig {
+// 	data := sc.marshalJSON()
+// 	var scCopy ScrapeConfig
+// 	if err := scCopy.unmarshalJSON(data); err != nil {
+// 		logger.Panicf("BUG: cannot unmarshal scrape config: %s", err)
+// 	}
+// 	return &scCopy
+// }
