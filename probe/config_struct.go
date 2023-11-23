@@ -43,9 +43,10 @@ type Config struct {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 type GlobalConfig struct {
-	ScrapeInterval *promutils.Duration `yaml:"scrape_interval,omitempty"`
-	ScrapeTimeout  *promutils.Duration `yaml:"scrape_timeout,omitempty"`
-	ExternalLabels *promutils.Labels   `yaml:"external_labels,omitempty"`
+	TargetConcurrency int                 `yaml:"target_concurrency,omitempty"` // 不同一次性启动太多 target 的抓取，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
+	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
+	ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
+	ExternalLabels    *promutils.Labels   `yaml:"external_labels,omitempty"`
 
 	MetricRelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs,omitempty"`
 	ParsedMetricRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
@@ -55,9 +56,7 @@ type GlobalConfig struct {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#scrape_config
 type ScrapeConfig struct {
-	BaseDir                          string                     `yaml:"-"`
-	GlobalExternalLabels             *promutils.Labels          `yaml:"-"`
-	GlobalParsedMetricRelabelConfigs *promrelabel.ParsedConfigs `yaml:"-"`
+	ConfigRef *Config `yaml:"-"`
 
 	JobName        string              `yaml:"job_name"`
 	ScrapeInterval *promutils.Duration `yaml:"scrape_interval,omitempty"`

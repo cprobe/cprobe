@@ -113,9 +113,7 @@ func (cfg *Config) parseData(data []byte, path string) error {
 
 		sc.ScrapeInterval = promutils.NewDuration(scrapeInterval)
 		sc.ScrapeTimeout = promutils.NewDuration(scrapeTimeout)
-		sc.GlobalExternalLabels = cfg.Global.ExternalLabels
-		sc.GlobalParsedMetricRelabelConfigs = cfg.Global.ParsedMetricRelabelConfigs
-		sc.BaseDir = cfg.BaseDir
+		sc.ConfigRef = cfg
 	}
 
 	return nil
