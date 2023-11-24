@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	maxConcurrency = flag.Int("scrape.discovery.concurrency", 100, "The maximum number of concurrent requests to Prometheus autodiscovery API (Consul, Kubernetes, etc.)")
+	maxConcurrency = flag.Int("scrape.discovery.concurrency", 100, "The maximum number of concurrent requests to Prometheus autodiscovery API (Eureka, HTTP, etc.)")
 	maxWaitTime    = flag.Duration("scrape.discovery.concurrentWaitTime", time.Minute, "The maximum duration for waiting to perform API requests "+
 		"if more than -promscrape.discovery.concurrency requests are simultaneously performed")
 )
