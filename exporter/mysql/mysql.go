@@ -37,18 +37,18 @@ func ParseConfig(bs []byte) (*Config, error) {
 
 func Scrape(ctx context.Context, labels *promutils.Labels, cfg *Config) error {
 	fmt.Println(">> labels", labels)
-	fmt.Println(">> username", cfg.Global.Username)
-	fmt.Println(">> password", cfg.Global.Password)
-	fmt.Println(">> extra_status_metrics", cfg.Global.ExtraStatusMetrics)
-	fmt.Println(">> extra_innodb_metrics", cfg.Global.ExtraInnodbMetrics)
+	// fmt.Println(">> username", cfg.Global.Username)
+	// fmt.Println(">> password", cfg.Global.Password)
+	// fmt.Println(">> extra_status_metrics", cfg.Global.ExtraStatusMetrics)
+	// fmt.Println(">> extra_innodb_metrics", cfg.Global.ExtraInnodbMetrics)
 
-	for i := range cfg.Queries {
-		fmt.Println(">>>> mesurement", cfg.Queries[i].Mesurement)
-		fmt.Println(">>>> metric_fields", cfg.Queries[i].MetricFields)
-		fmt.Println(">>>> label_fields", cfg.Queries[i].LabelFields)
-		fmt.Println(">>>> timeout", cfg.Queries[i].Timeout)
-		fmt.Println(">>>> request", cfg.Queries[i].Request)
-	}
+	// for i := range cfg.Queries {
+	// 	fmt.Println(">>>> mesurement", cfg.Queries[i].Mesurement)
+	// 	fmt.Println(">>>> metric_fields", cfg.Queries[i].MetricFields)
+	// 	fmt.Println(">>>> label_fields", cfg.Queries[i].LabelFields)
+	// 	fmt.Println(">>>> timeout", cfg.Queries[i].Timeout)
+	// 	fmt.Println(">>>> request", cfg.Queries[i].Request)
+	// }
 
 	return nil
 }

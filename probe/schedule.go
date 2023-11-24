@@ -156,6 +156,9 @@ func (j *JobGoroutine) run(ctx context.Context) {
 		return
 	}
 
+	var wg sync.WaitGroup
+	var se = make(chan struct{}, j.scrapeConfig.ScrapeConcurrency)
+
 	targets := j.getTargets()
 	for _, target := range targets {
 		parsedTarget := j.parseTarget(ctx, jobName, target)
@@ -163,15 +166,24 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			continue
 		}
 
-		switch j.plugin {
-		case "mysql":
-			mysql.Scrape(ctx, parsedTarget, mysqlConfig)
-		case "redis":
-			redis.Scrape(ctx, parsedTarget, redisConfig)
-		default:
-			logger.Errorf("unknown plugin: %s of job: %s", j.plugin, jobName)
-		}
+		se <- struct{}{}
+		wg.Add(1)
+		go func(pt *promutils.Labels) {
+			defer func() {
+				<-se
+				wg.Done()
+			}()
+
+			switch j.plugin {
+			case "mysql":
+				mysql.Scrape(ctx, pt, mysqlConfig)
+			case "redis":
+				redis.Scrape(ctx, pt, redisConfig)
+			}
+		}(parsedTarget)
 	}
+
+	wg.Wait()
 }
 
 func (j *JobGoroutine) parseTarget(ctx context.Context, job string, target *promutils.Labels) *promutils.Labels {
