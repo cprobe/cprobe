@@ -15,17 +15,18 @@ import (
 	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/promutils"
+	"github.com/cprobe/cprobe/types"
 	"gopkg.in/yaml.v2"
 )
 
 func makeJobs() map[string]map[JobID]*JobGoroutine {
 	return map[string]map[JobID]*JobGoroutine{
-		"mysql":         make(map[JobID]*JobGoroutine),
-		"redis":         make(map[JobID]*JobGoroutine),
-		"elasticsearch": make(map[JobID]*JobGoroutine),
-		"postgresql":    make(map[JobID]*JobGoroutine),
-		"kafka":         make(map[JobID]*JobGoroutine),
-		"mongodb":       make(map[JobID]*JobGoroutine),
+		types.PluginMySQL:         make(map[JobID]*JobGoroutine),
+		types.PluginRedis:         make(map[JobID]*JobGoroutine),
+		types.PluginMongoDB:       make(map[JobID]*JobGoroutine),
+		types.PluginPostgreSQL:    make(map[JobID]*JobGoroutine),
+		types.PluginElasticSearch: make(map[JobID]*JobGoroutine),
+		types.PluginKafka:         make(map[JobID]*JobGoroutine),
 	}
 }
 
@@ -146,13 +147,13 @@ func (j *JobGoroutine) run(ctx context.Context) {
 	var redisConfig *redis.Config
 
 	switch j.plugin {
-	case "mysql":
+	case types.PluginMySQL:
 		mysqlConfig, err = mysql.ParseConfig(tomlBytes)
 		if err != nil {
 			logger.Errorf("job(%s) parse mysql config error: %s", jobName, err)
 			return
 		}
-	case "redis":
+	case types.PluginRedis:
 		redisConfig, err = redis.ParseConfig(tomlBytes)
 		if err != nil {
 			logger.Errorf("job(%s) parse redis config error: %s", jobName, err)
@@ -182,10 +183,10 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			}()
 
 			switch j.plugin {
-			case "mysql":
+			case types.PluginMySQL:
 				confCopy := *mysqlConfig
 				mysql.Scrape(ctx, pt, &confCopy)
-			case "redis":
+			case types.PluginRedis:
 				confCopy := *redisConfig
 				redis.Scrape(ctx, pt, &confCopy)
 			}
