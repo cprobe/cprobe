@@ -114,19 +114,27 @@ func (j *JobGoroutine) run(ctx context.Context) {
 	}
 
 	var bytesBuffer bytes.Buffer
+	var err error
 	for _, ruleFile := range ruleFiles {
 		ruleFilePath := fs.GetFilepath(j.scrapeConfig.ConfigRef.BaseDir, ruleFile)
 
-		data, err := fs.ReadFileOrHTTP(ruleFilePath)
-		if err != nil {
-			logger.Errorf("job(%s) read rule file(%s) error: %s", jobName, ruleFile, err)
-			return
+		data := CacheGetBytes(ruleFilePath)
+		if data == nil {
+			data, err = fs.ReadFileOrHTTP(ruleFilePath)
+			if err != nil {
+				logger.Errorf("job(%s) read rule file(%s) error: %s", jobName, ruleFile, err)
+				return
+			}
+
+			data, err = envtemplate.ReplaceBytes(data)
+			if err != nil {
+				logger.Errorf("job(%s) replace env in rule file(%s) error: %s", jobName, ruleFile, err)
+				return
+			}
+
+			CacheSetBytes(ruleFilePath, data, time.Second*5)
 		}
-		data, err = envtemplate.ReplaceBytes(data)
-		if err != nil {
-			logger.Errorf("job(%s) replace env in rule file(%s) error: %s", jobName, ruleFile, err)
-			return
-		}
+
 		bytesBuffer.Write(data)
 		bytesBuffer.Write([]byte("\n"))
 		bytesBuffer.Write([]byte("\n"))
@@ -134,7 +142,6 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 	tomlBytes := bytesBuffer.Bytes()
 
-	var err error
 	var mysqlConfig *mysql.Config
 	var redisConfig *redis.Config
 
@@ -176,9 +183,11 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 			switch j.plugin {
 			case "mysql":
-				mysql.Scrape(ctx, pt, mysqlConfig)
+				confCopy := *mysqlConfig
+				mysql.Scrape(ctx, pt, &confCopy)
 			case "redis":
-				redis.Scrape(ctx, pt, redisConfig)
+				confCopy := *redisConfig
+				redis.Scrape(ctx, pt, &confCopy)
 			}
 		}(parsedTarget)
 	}
