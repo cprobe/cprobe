@@ -15,6 +15,7 @@ import (
 	"github.com/cprobe/cprobe/lib/listx"
 	"github.com/cprobe/cprobe/lib/netutil"
 	"github.com/cprobe/cprobe/lib/promrelabel"
+	"github.com/cprobe/cprobe/lib/promutils"
 	"github.com/pkg/errors"
 )
 
@@ -38,7 +39,7 @@ type Writer struct {
 	Proxy                string                      `yaml:"proxy"`
 	Interface            string                      `yaml:"interface"`
 	FollowRedirects      bool                        `yaml:"follow_redirects"`
-	ExtraLabels          map[string]string           `yaml:"extra_labels"`
+	ExtraLabels          *promutils.Labels           `yaml:"extra_labels"`
 	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs"`
 	ParsedRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
 
@@ -145,7 +146,7 @@ func (w *Writer) Parse() error {
 }
 
 type Global struct {
-	ExtraLabels          map[string]string           `yaml:"extra_labels"`
+	ExtraLabels          *promutils.Labels           `yaml:"extra_labels"`
 	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs"`
 	ParsedRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
 }

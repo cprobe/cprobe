@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/BurntSushi/toml"
-	"github.com/cprobe/cprobe/lib/promutils"
+	"github.com/cprobe/cprobe/types"
 )
 
 type Config struct {
@@ -16,6 +16,6 @@ func ParseConfig(bs []byte) (*Config, error) {
 	return &c, err
 }
 
-func Scrape(ctx context.Context, labels *promutils.Labels, cfg *Config) error {
+func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples) error {
 	return nil
 }

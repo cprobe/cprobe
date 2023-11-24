@@ -12,56 +12,44 @@ type Vector struct {
 	Value  float64
 }
 
-func WriteVectors(vs []*Vector) {
-	if len(vs) == 0 || len(WriterConfig.Writers) == 0 {
+func WriteTimeSeries(tss []prompbmarshal.TimeSeries) {
+	if len(tss) == 0 || len(WriterConfig.Writers) == 0 {
 		return
 	}
 
 	// append global extra leabels
-	if WriterConfig.Global != nil {
-		for key, value := range WriterConfig.Global.ExtraLabels {
-			for _, v := range vs {
-				v.Labels[key] = value
-			}
-		}
+	if WriterConfig.Global != nil && WriterConfig.Global.ExtraLabels != nil && len(WriterConfig.Global.ExtraLabels.Labels) > 0 {
+		new(relabelCtx).appendExtraLabels(tss, WriterConfig.Global.ExtraLabels.Labels)
 	}
 
 	if len(WriterConfig.Writers) == 1 {
-		WriterConfig.Writers[0].writeVectors(vs)
+		WriterConfig.Writers[0].writeTimeSeries(tss)
 		return
 	}
 
 	for i := range WriterConfig.Writers {
 		if i == len(WriterConfig.Writers)-1 {
 			// last one
-			WriterConfig.Writers[i].writeVectors(vs)
+			WriterConfig.Writers[i].writeTimeSeries(tss)
 		} else {
-			newVectors := make([]*Vector, len(vs))
-			for j := range vs {
-				newVectors[j] = &Vector{
-					Labels: make(map[string]string, len(vs[j].Labels)),
-					Clock:  vs[j].Clock,
-					Value:  vs[j].Value,
+			newVectors := make([]prompbmarshal.TimeSeries, len(tss))
+			for j := range tss {
+				newVectors[j] = prompbmarshal.TimeSeries{
+					Labels:  make([]prompbmarshal.Label, 0, len(tss[j].Labels)),
+					Samples: tss[j].Samples,
 				}
-				for key, value := range vs[j].Labels {
-					newVectors[j].Labels[key] = value
-				}
+				newVectors[j].Labels = append(newVectors[j].Labels, tss[j].Labels...)
 			}
-			WriterConfig.Writers[i].writeVectors(newVectors)
+			WriterConfig.Writers[i].writeTimeSeries(newVectors)
 		}
 	}
 }
 
-func (w *Writer) writeVectors(vs []*Vector) {
+func (w *Writer) writeTimeSeries(tss []prompbmarshal.TimeSeries) {
 	// append writer extra labels
-	for key, value := range w.ExtraLabels {
-		for _, v := range vs {
-			v.Labels[key] = value
-		}
+	if w.ExtraLabels != nil && len(w.ExtraLabels.Labels) > 0 {
+		new(relabelCtx).appendExtraLabels(tss, w.ExtraLabels.Labels)
 	}
-
-	// convert vectors to time series
-	tss := w.makeTimeSeries(vs)
 
 	// relabel
 	if WriterConfig.Global.ParsedRelabelConfigs.Len() > 0 {

@@ -11,11 +11,15 @@ import (
 
 	"github.com/cprobe/cprobe/exporter/mysql"
 	"github.com/cprobe/cprobe/exporter/redis"
+	"github.com/cprobe/cprobe/lib/conv"
 	"github.com/cprobe/cprobe/lib/envtemplate"
+	"github.com/cprobe/cprobe/lib/fasttime"
 	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/lib/prompbmarshal"
 	"github.com/cprobe/cprobe/lib/promutils"
 	"github.com/cprobe/cprobe/types"
+	"github.com/cprobe/cprobe/writer"
 	"gopkg.in/yaml.v2"
 )
 
@@ -108,6 +112,8 @@ func (j *JobGoroutine) Start(ctx context.Context) {
 func (j *JobGoroutine) run(ctx context.Context) {
 	jobName := j.GetJobName()
 
+	// rule 文件都是 toml 格式，可以直接拼在一起，用户要自己保证正确性
+	// json 和 yaml 格式的文件，很难直接拼在一起，所以 rule 选择 toml 格式
 	ruleFiles := j.GetRuleFiles()
 	if len(ruleFiles) == 0 {
 		logger.Errorf("job(%s) has no rule files", jobName)
@@ -143,6 +149,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 	tomlBytes := bytesBuffer.Bytes()
 
+	// 不同的插件配置是不同的，需要分别解析
 	var mysqlConfig *mysql.Config
 	var redisConfig *redis.Config
 
@@ -164,10 +171,16 @@ func (j *JobGoroutine) run(ctx context.Context) {
 		return
 	}
 
+	// 等待所有 target 抓取完毕的 wait group
 	var wg sync.WaitGroup
+
+	// 控制并发度的 channel，大量的 target 并发抓取的话可能会有问题，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
 	var se = make(chan struct{}, j.scrapeConfig.ScrapeConcurrency)
 
+	// 拿到这个 job 相关的 targets
 	targets := j.getTargets()
+
+	// 每个 target 分别去抓取数据，注意要控制并发度
 	for _, target := range targets {
 		parsedTarget := j.parseTarget(jobName, target)
 		if parsedTarget == nil {
@@ -182,14 +195,82 @@ func (j *JobGoroutine) run(ctx context.Context) {
 				wg.Done()
 			}()
 
+			targetAddress := pt.Get("__address__")
+
+			// 准备一个并发安全的容器，传给 Scrape 方法，Scrape 方法会把抓取到的数据放进去，外层还要做 relabel 然后最终发给 writer
+			ss := types.NewSamples()
+
+			// 不同的插件，调用不同的 Scrape 方法，未来这里会很长，毕竟每个插件都要写一个 switch case
 			switch j.plugin {
 			case types.PluginMySQL:
 				confCopy := *mysqlConfig
-				mysql.Scrape(ctx, pt, &confCopy)
+				mysql.Scrape(ctx, targetAddress, &confCopy, ss)
 			case types.PluginRedis:
 				confCopy := *redisConfig
-				redis.Scrape(ctx, pt, &confCopy)
+				redis.Scrape(ctx, targetAddress, &confCopy, ss)
 			}
+
+			// 把抓取到的数据做格式转换，转换成 []prompbmarshal.TimeSeries
+			metrics := ss.PopBackAll()
+			if len(metrics) == 0 {
+				return
+			}
+
+			// 最终转换之后的数据结果集
+			var ret []prompbmarshal.TimeSeries
+
+			now := int64(fasttime.UnixTimestamp() * 1000) // s -> ms
+			for i := range metrics {
+				// 统一在这里设置时间
+				metrics[i].SetTime(now)
+
+				// 一个 telegraf metric 有多个 fields，每个 field 都是一个 prometheus metric
+				tags := metrics[i].Tags()
+				fields := metrics[i].Fields()
+
+				for k, v := range fields {
+					float64v, err := conv.ToFloat64(v)
+					if err != nil {
+						continue
+					}
+
+					item := promutils.NewLabels(len(tags) + pt.Len() + 1)
+
+					for _, lb := range pt.GetLabels() {
+						if lb.Name == "__address__" {
+							continue
+						}
+						item.Add(lb.Name, lb.Value)
+					}
+
+					for k, v := range tags {
+						item.Add(k, v)
+					}
+
+					item.Add("__name__", metrics[i].Name()+"_"+k)
+					item.Add("cplugin", j.plugin)
+					item.RemoveDuplicates()
+
+					// metric relabel
+					item.Labels = j.scrapeConfig.ParsedMetricRelabelConfigs.Apply(item.Labels, 0)
+					item.RemoveMetaLabels()
+
+					point := prompbmarshal.Sample{
+						Value:     float64v,
+						Timestamp: now,
+					}
+
+					ts := prompbmarshal.TimeSeries{
+						Labels:  item.Labels,
+						Samples: []prompbmarshal.Sample{point},
+					}
+
+					ret = append(ret, ts)
+				}
+			}
+
+			writer.WriteTimeSeries(ret)
+
 		}(parsedTarget)
 	}
 

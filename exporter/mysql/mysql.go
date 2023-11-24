@@ -2,11 +2,10 @@ package mysql
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/cprobe/cprobe/lib/promutils"
+	"github.com/cprobe/cprobe/types"
 )
 
 type Global struct {
@@ -35,20 +34,7 @@ func ParseConfig(bs []byte) (*Config, error) {
 	return &c, err
 }
 
-func Scrape(ctx context.Context, labels *promutils.Labels, cfg *Config) error {
-	fmt.Println(">> labels", labels)
-	// fmt.Println(">> username", cfg.Global.Username)
-	// fmt.Println(">> password", cfg.Global.Password)
-	// fmt.Println(">> extra_status_metrics", cfg.Global.ExtraStatusMetrics)
-	// fmt.Println(">> extra_innodb_metrics", cfg.Global.ExtraInnodbMetrics)
-
-	// for i := range cfg.Queries {
-	// 	fmt.Println(">>>> mesurement", cfg.Queries[i].Mesurement)
-	// 	fmt.Println(">>>> metric_fields", cfg.Queries[i].MetricFields)
-	// 	fmt.Println(">>>> label_fields", cfg.Queries[i].LabelFields)
-	// 	fmt.Println(">>>> timeout", cfg.Queries[i].Timeout)
-	// 	fmt.Println(">>>> request", cfg.Queries[i].Request)
-	// }
-
+func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples) error {
+	ss.AddMetric("mysql_connections", map[string]interface{}{"connected": 16})
 	return nil
 }
