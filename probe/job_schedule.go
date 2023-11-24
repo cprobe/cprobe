@@ -25,13 +25,15 @@ type JobID struct {
 }
 
 type JobGoroutine struct {
+	plugin       string
 	scrapeConfig *ScrapeConfig
 	quitChan     chan struct{}
 	sync.RWMutex
 }
 
-func NewJobGoroutine(scrapeConfig *ScrapeConfig) *JobGoroutine {
+func NewJobGoroutine(plugin string, scrapeConfig *ScrapeConfig) *JobGoroutine {
 	return &JobGoroutine{
+		plugin:       plugin,
 		quitChan:     make(chan struct{}),
 		scrapeConfig: scrapeConfig,
 	}
@@ -83,17 +85,58 @@ func (j *JobGoroutine) Start(ctx context.Context) {
 // targets 可能很多，要做一下并发度控制，并发度可以在 job 粒度自定义，每个 yaml 的 global 部分也可以有一个全局的并发度配置
 // 通过 wait group 等待所有的 goroutine 抓取完毕，统一做 metric_relabel_configs，然后发送给 writer
 func (j *JobGoroutine) run() {
-	logger.Errorf("run job %s", j.GetJobName())
-	for _, rule := range j.scrapeConfig.ScrapeRuleFiles {
-		logger.Errorf("    - %v", rule)
-	}
-
+	jobName := j.GetJobName()
 	targets := j.getTargets()
 	for _, target := range targets {
-		fmt.Println("target:", target)
+		j.runTarget(jobName, target)
+	}
+}
+
+func (j *JobGoroutine) runTarget(job string, target *promutils.Labels) {
+	if target.Get("__address__") == "" {
+		return
 	}
 
-	// j.scrapeConfig.ParsedRelabelConfigs.Apply(targets, 0)
+	labels := promutils.GetLabels()
+	defer promutils.PutLabels(labels)
+
+	mergeLabels(labels, job, target, j.scrapeConfig.ConfigRef.Global.ExternalLabels)
+	labels.Labels = j.scrapeConfig.ParsedRelabelConfigs.Apply(labels.Labels, 0)
+	labels.RemoveMetaLabels()
+
+	if labels.Len() == 0 {
+		return
+	}
+
+	labelsCopy := labels.Clone()
+	labelsCopy.Sort()
+
+	// 获取 scrape_rules，就是几个 toml 文件，拼接在一起，根据 plugin 类型获取认证信息
+	// 如果是 HTTP 的 plugin，应该有个统一的认证配置方式，比如 basic auth、token 等
+	// 目标实例的地址是 labelsCopy.Get("__address__")，这个地址信息无需发到最终的 writer，因为有 instance 字段了
+
+	fmt.Println(">>>>>>>>>>>>>>>", labelsCopy, j.plugin)
+}
+
+func mergeLabels(dst *promutils.Labels, job string, targetLabels, extraLabels *promutils.Labels) {
+	dst.Add("job", job)
+
+	if extraLabels != nil {
+		dst.AddFrom(extraLabels)
+	}
+
+	instanceBlank := dst.Get("instance") == ""
+
+	for _, label := range targetLabels.GetLabels() {
+		dst.Add(label.Name, label.Value)
+		if label.Name == "__address__" {
+			if label.Value != "" && instanceBlank {
+				dst.Add("instance", label.Value)
+			}
+		}
+	}
+
+	dst.RemoveDuplicates()
 }
 
 func (j *JobGoroutine) Stop() {

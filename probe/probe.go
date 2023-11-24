@@ -93,7 +93,7 @@ func startEntry(ctx context.Context, pluginName, entryYamlFilePath string) error
 		}
 
 		jobID := JobID{YamlFile: entryYamlFilePath, JobName: cfg.ScrapeConfigs[i].JobName}
-		jobGoroutine := NewJobGoroutine(cfg.ScrapeConfigs[i])
+		jobGoroutine := NewJobGoroutine(pluginName, cfg.ScrapeConfigs[i])
 		pluginJobs[jobID] = jobGoroutine
 
 		// 启动 goroutine，稍微 sleep 一下，避免所有 goroutine 同时启动
@@ -181,7 +181,7 @@ func readFiles() (map[string]map[JobID]*JobGoroutine, error) {
 				}
 
 				jobID := JobID{YamlFile: entryYamlFilePath, JobName: cfg.ScrapeConfigs[i].JobName}
-				jobGoroutine := NewJobGoroutine(cfg.ScrapeConfigs[i])
+				jobGoroutine := NewJobGoroutine(pluginDir, cfg.ScrapeConfigs[i])
 				pluginJobs[jobID] = jobGoroutine
 			}
 		}
