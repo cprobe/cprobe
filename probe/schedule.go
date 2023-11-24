@@ -204,10 +204,14 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			switch j.plugin {
 			case types.PluginMySQL:
 				confCopy := *mysqlConfig
-				mysql.Scrape(ctx, targetAddress, &confCopy, ss)
+				if serr := mysql.Scrape(ctx, targetAddress, &confCopy, ss); serr != nil {
+					logger.Errorf("job(%s) scrape mysql(%s) error: %s", jobName, targetAddress, serr)
+				}
 			case types.PluginRedis:
 				confCopy := *redisConfig
-				redis.Scrape(ctx, targetAddress, &confCopy, ss)
+				if serr := redis.Scrape(ctx, targetAddress, &confCopy, ss); serr != nil {
+					logger.Errorf("job(%s) scrape redis(%s) error: %s", jobName, targetAddress, serr)
+				}
 			}
 
 			// 把抓取到的数据做格式转换，转换成 []prompbmarshal.TimeSeries
