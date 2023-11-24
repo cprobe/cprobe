@@ -2,7 +2,7 @@ global:
   extra_labels:
     region: bj
     zone: x
-  relabel_configs:
+  metric_relabel_configs:
   - source_labels: [__name__]
     regex: '(.*)'
     target_label: env
