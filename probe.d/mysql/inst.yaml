@@ -2,17 +2,12 @@
   labels:
     project: foo
     region: beijing
-  paths:
-  - dba.cloud
 - targets: ["10.1.2.4:3306"]
   labels:
     project: foo
     region: shanghai
-  paths:
-  - dba.cloud
 - targets: ["10.1.2.5:3306"]
   labels:
     project: bar
     region: shanghai
-  paths:
-  - dba.shop
+

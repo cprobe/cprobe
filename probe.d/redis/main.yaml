@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 10s
+  external_labels:
+    monitor: 'redis'
+
+scrape_configs:
+- job_name: 'redis_prod'
+  scrape_interval: 5s
+  scrape_rule_files:
+  - 'rule_common.toml'
+  static_configs:
+  - targets:
+    - 'c.com:6379'
+    - 'd.com:6379'
+    labels:
+      city: 'shanghai'
+      lang: '%{LANG}'
