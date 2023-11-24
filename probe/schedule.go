@@ -161,7 +161,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 	targets := j.getTargets()
 	for _, target := range targets {
-		parsedTarget := j.parseTarget(ctx, jobName, target)
+		parsedTarget := j.parseTarget(jobName, target)
 		if parsedTarget == nil {
 			continue
 		}
@@ -186,7 +186,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 	wg.Wait()
 }
 
-func (j *JobGoroutine) parseTarget(ctx context.Context, job string, target *promutils.Labels) *promutils.Labels {
+func (j *JobGoroutine) parseTarget(job string, target *promutils.Labels) *promutils.Labels {
 	labels := promutils.GetLabels()
 	defer promutils.PutLabels(labels)
 
