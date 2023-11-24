@@ -16,6 +16,7 @@ import (
 	"github.com/cprobe/cprobe/discovery/openstack"
 	"github.com/cprobe/cprobe/discovery/yandexcloud"
 	"github.com/cprobe/cprobe/lib/envtemplate"
+	"github.com/cprobe/cprobe/lib/promauth"
 	"github.com/cprobe/cprobe/lib/promrelabel"
 	"github.com/cprobe/cprobe/lib/promutils"
 	"gopkg.in/yaml.v2"
@@ -47,6 +48,23 @@ type GlobalConfig struct {
 
 	MetricRelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs,omitempty"`
 	ParsedMetricRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
+	ScrapeAuth                 *ScrapeAuth                 `yaml:"scrape_auth,omitempty"`
+}
+
+type MySQLAuth struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+type RedisAuth struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+type ScrapeAuth struct {
+	MySQLAuth *MySQLAuth                 `yaml:"mysql_auth,omitempty"`
+	RedisAuth *RedisAuth                 `yaml:"redis_auth,omitempty"`
+	HTTPAuth  *promauth.HTTPClientConfig `yaml:"http_auth,omitempty"`
 }
 
 // ScrapeConfig represents essential parts for `scrape_config` section of Prometheus config.
@@ -73,11 +91,13 @@ type ScrapeConfig struct {
 	// move to rules.d
 	// HonorTimestamps bool `yaml:"honor_timestamps,omitempty"`
 
+	ScrapeAuth *ScrapeAuth `yaml:"scrape_auth,omitempty"`
+
 	// move to rules.d
 	// Scheme               string                      `yaml:"scheme,omitempty"`
 	// Params               map[string][]string         `yaml:"params,omitempty"`
-	// HTTPClientConfig     promauth.HTTPClientConfig   `yaml:",inline"`
-	// ProxyURL             *proxy.URL                  `yaml:"proxy_url,omitempty"`
+	// ProxyURL         *proxy.URL                `yaml:"proxy_url,omitempty"`
+
 	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"relabel_configs,omitempty"`
 	MetricRelabelConfigs []promrelabel.RelabelConfig `yaml:"metric_relabel_configs,omitempty"`
 

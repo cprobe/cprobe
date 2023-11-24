@@ -15,6 +15,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+func makeJobs() map[string]map[JobID]*JobGoroutine {
+	return map[string]map[JobID]*JobGoroutine{
+		"mysql":         make(map[JobID]*JobGoroutine),
+		"redis":         make(map[JobID]*JobGoroutine),
+		"elasticsearch": make(map[JobID]*JobGoroutine),
+		"postgresql":    make(map[JobID]*JobGoroutine),
+		"kafka":         make(map[JobID]*JobGoroutine),
+		"mongodb":       make(map[JobID]*JobGoroutine),
+	}
+}
+
 var (
 	Jobs = makeJobs()
 )
@@ -66,7 +77,7 @@ func (j *JobGoroutine) Start(ctx context.Context) {
 		select {
 		case <-timer.C:
 			start = time.Now()
-			j.run()
+			j.run(ctx)
 			next := j.GetInterval() - time.Since(start)
 			if next < 0 {
 				next = 0
@@ -84,19 +95,15 @@ func (j *JobGoroutine) Start(ctx context.Context) {
 // 不同的 job 其 targets 获取方式和列表可能是类似的，scrape_rules 也可能是一样的，所以这里可以缓存，缓存时间可以短一点，比如 5s
 // targets 可能很多，要做一下并发度控制，并发度可以在 job 粒度自定义，每个 yaml 的 global 部分也可以有一个全局的并发度配置
 // 通过 wait group 等待所有的 goroutine 抓取完毕，统一做 metric_relabel_configs，然后发送给 writer
-func (j *JobGoroutine) run() {
+func (j *JobGoroutine) run(ctx context.Context) {
 	jobName := j.GetJobName()
 	targets := j.getTargets()
 	for _, target := range targets {
-		j.runTarget(jobName, target)
+		j.runTarget(ctx, jobName, target)
 	}
 }
 
-func (j *JobGoroutine) runTarget(job string, target *promutils.Labels) {
-	if target.Get("__address__") == "" {
-		return
-	}
-
+func (j *JobGoroutine) runTarget(ctx context.Context, job string, target *promutils.Labels) {
 	labels := promutils.GetLabels()
 	defer promutils.PutLabels(labels)
 
@@ -108,14 +115,33 @@ func (j *JobGoroutine) runTarget(job string, target *promutils.Labels) {
 		return
 	}
 
+	if labels.Get("__address__") == "" {
+		return
+	}
+
 	labelsCopy := labels.Clone()
 	labelsCopy.Sort()
 
 	// 获取 scrape_rules，就是几个 toml 文件，拼接在一起，根据 plugin 类型获取认证信息
 	// 如果是 HTTP 的 plugin，应该有个统一的认证配置方式，比如 basic auth、token 等
-	// 目标实例的地址是 labelsCopy.Get("__address__")，这个地址信息无需发到最终的 writer，因为有 instance 字段了
+	// 目标实例的地址是 address，这个地址信息无需发到最终的 writer，因为有 instance 字段了
 
-	fmt.Println(">>>>>>>>>>>>>>>", labelsCopy, j.plugin)
+	auth := j.scrapeConfig.ScrapeAuth
+	if auth == nil {
+		auth = j.scrapeConfig.ConfigRef.Global.ScrapeAuth
+	}
+
+	// TODO 直接把 toml decode 成 rule 配置，传给抓取函数
+	var tomlBytes []byte
+
+	switch j.plugin {
+	case "mysql":
+		ScrapeMySQL(ctx, labelsCopy, auth, tomlBytes)
+	case "redis":
+		ScrapeRedis(ctx, labelsCopy, auth, tomlBytes)
+	default:
+		logger.Errorf("unknown plugin: %s", j.plugin)
+	}
 }
 
 func mergeLabels(dst *promutils.Labels, job string, targetLabels, extraLabels *promutils.Labels) {
