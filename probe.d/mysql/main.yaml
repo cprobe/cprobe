@@ -4,15 +4,35 @@ global:
     monitor: 'mysql'
 
 scrape_configs:
-- job_name: 'mysql_prod'
-  scrape_interval: 5s
+# - job_name: 'mysql_prod'
+#   scrape_interval: 5s
+#   scrape_rule_files:
+#   - 'rules.d/common.toml'
+#   - 'rules.d/schema.toml'
+#   static_configs:
+#   - targets:
+#     - 'a.%{LANG}.com:3306'
+#     - 'b.%{LANG}.com:3306'
+#     labels:
+#       name: 'ulricqin'
+#       city: 'beijing'
+#   - targets:
+#     - 'c.com:3306'
+#     - 'd.com:3306'
+#     labels:
+#       name: 'ulricqin2'
+#       city: 'beijing2'
+#       lang: '%{LANG}'
+
+# - job_name: 'mysql_test'
+#   http_sd_configs:
+#   - url: http://localhost:8080/get-targets
+#   scrape_rule_files:
+#   - 'rules.d/common.toml'
+
+- job_name: 'mysql_abcd'
+  file_sd_configs:
+  - files:
+    - 'inst.yaml'
   scrape_rule_files:
-  - 'rules.d/common.toml'
-  - 'rules.d/schema.toml'
-  static_configs:
-  - targets: ['10.1.2.3:9104']
-- job_name: 'mysql_test'
-  http_sd_configs:
-  - url: http://localhost:8080/get-targets
-  scrape_rule_files:
-  - 'rules.d/common.toml'
+  - 'rules.d/hello.toml'

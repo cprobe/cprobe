@@ -130,6 +130,7 @@ type FileSDConfig struct {
 type StaticConfig struct {
 	Targets []string          `yaml:"targets"`
 	Labels  *promutils.Labels `yaml:"labels,omitempty"`
+	Paths   []string          `yaml:"paths,omitempty"` // TODO: 是否要通过这个字段和 CMDB 打通，纠结
 }
 
 func (cfg *Config) unmarshal(data []byte, isStrict bool) error {
