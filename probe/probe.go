@@ -13,20 +13,20 @@ import (
 )
 
 var (
-	probeDir = flag.String("probe.dir", "probe.d", "Filepath to probe.d .")
+	probeDir = flag.String("conf.dir", "conf.d", "Filepath to conf.d")
 )
 
 func checkFlag() error {
 	if *probeDir == "" {
-		return fmt.Errorf("-probe.dir is empty")
+		return fmt.Errorf("-conf.dir is empty")
 	}
 
 	if !fileutil.IsExist(*probeDir) {
-		return fmt.Errorf("-probe.dir %s does not exist", *probeDir)
+		return fmt.Errorf("-conf.dir %s does not exist", *probeDir)
 	}
 
 	if !fileutil.IsDir(*probeDir) {
-		return fmt.Errorf("-probe.dir %s is not a directory", *probeDir)
+		return fmt.Errorf("-conf.dir %s is not a directory", *probeDir)
 	}
 
 	return nil

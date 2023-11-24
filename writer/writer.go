@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	writerFile = flag.String("writer.file", "conf.d/writer.yaml", "Filepath to writer.yaml .")
+	writerFile = flag.String("writer.file", "conf.d/writer.yaml", "Filepath to writer.yaml")
 
 	WriterConfig = &WriterYaml{}
 )
