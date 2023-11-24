@@ -3,6 +3,7 @@ module github.com/cprobe/cprobe
 go 1.20
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/VictoriaMetrics/fasthttp v1.2.0
 	github.com/VictoriaMetrics/metrics v1.24.0
 	github.com/VictoriaMetrics/metricsql v0.69.0

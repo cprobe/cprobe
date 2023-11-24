@@ -1,0 +1,7 @@
+[[queries]]
+mesurement = "lock_wait"
+metric_fields = [ "total" ]
+timeout = "3s"
+request = '''
+SELECT count(*) as total FROM information_schema.innodb_trx WHERE trx_state='LOCK WAIT'
+'''

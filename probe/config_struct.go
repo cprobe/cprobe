@@ -15,10 +15,7 @@ import (
 	"github.com/cprobe/cprobe/discovery/http"
 	"github.com/cprobe/cprobe/discovery/openstack"
 	"github.com/cprobe/cprobe/discovery/yandexcloud"
-	"github.com/cprobe/cprobe/exporter/mysql"
-	"github.com/cprobe/cprobe/exporter/redis"
 	"github.com/cprobe/cprobe/lib/envtemplate"
-	"github.com/cprobe/cprobe/lib/promauth"
 	"github.com/cprobe/cprobe/lib/promrelabel"
 	"github.com/cprobe/cprobe/lib/promutils"
 	"gopkg.in/yaml.v2"
@@ -50,13 +47,6 @@ type GlobalConfig struct {
 
 	MetricRelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs,omitempty"`
 	ParsedMetricRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
-	ScrapeAuth                 *ScrapeAuth                 `yaml:"scrape_auth,omitempty"`
-}
-
-type ScrapeAuth struct {
-	MySQLAuth *mysql.Auth                `yaml:"mysql_auth,omitempty"`
-	RedisAuth *redis.Auth                `yaml:"redis_auth,omitempty"`
-	HTTPAuth  *promauth.HTTPClientConfig `yaml:"http_auth,omitempty"`
 }
 
 // ScrapeConfig represents essential parts for `scrape_config` section of Prometheus config.
@@ -82,8 +72,6 @@ type ScrapeConfig struct {
 	// See https://github.com/VictoriaMetrics/VictoriaMetrics/issues/4697#issuecomment-1654614799 for details.
 	// move to rules.d
 	// HonorTimestamps bool `yaml:"honor_timestamps,omitempty"`
-
-	ScrapeAuth *ScrapeAuth `yaml:"scrape_auth,omitempty"`
 
 	// move to rules.d
 	// Scheme               string                      `yaml:"scheme,omitempty"`

@@ -3,14 +3,19 @@ package redis
 import (
 	"context"
 
+	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/promutils"
 )
 
-type Auth struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
+type Config struct {
 }
 
-func Scrape(ctx context.Context, labels *promutils.Labels, auth *Auth, tomlBytes []byte) error {
+func ParseConfig(bs []byte) (*Config, error) {
+	var c Config
+	err := toml.Unmarshal(bs, &c)
+	return &c, err
+}
+
+func Scrape(ctx context.Context, labels *promutils.Labels, cfg *Config) error {
 	return nil
 }

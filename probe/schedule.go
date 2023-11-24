@@ -1,6 +1,7 @@
 package probe
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"path/filepath"
@@ -70,6 +71,12 @@ func (j *JobGoroutine) GetJobName() string {
 	return j.scrapeConfig.JobName
 }
 
+func (j *JobGoroutine) GetRuleFiles() []string {
+	j.RLock()
+	defer j.RUnlock()
+	return j.scrapeConfig.ScrapeRuleFiles
+}
+
 func (j *JobGoroutine) Start(ctx context.Context) {
 	timer := time.NewTimer(0)
 	defer timer.Stop()
@@ -100,13 +107,54 @@ func (j *JobGoroutine) Start(ctx context.Context) {
 func (j *JobGoroutine) run(ctx context.Context) {
 	jobName := j.GetJobName()
 
-	auth := j.scrapeConfig.ScrapeAuth
-	if auth == nil {
-		auth = j.scrapeConfig.ConfigRef.Global.ScrapeAuth
+	ruleFiles := j.GetRuleFiles()
+	if len(ruleFiles) == 0 {
+		logger.Errorf("job(%s) has no rule files", jobName)
+		return
 	}
 
-	// TODO 直接把 toml decode 成 rule 配置，传给抓取函数
-	var tomlBytes []byte
+	var bytesBuffer bytes.Buffer
+	for _, ruleFile := range ruleFiles {
+		ruleFilePath := fs.GetFilepath(j.scrapeConfig.ConfigRef.BaseDir, ruleFile)
+
+		data, err := fs.ReadFileOrHTTP(ruleFilePath)
+		if err != nil {
+			logger.Errorf("job(%s) read rule file(%s) error: %s", jobName, ruleFile, err)
+			return
+		}
+		data, err = envtemplate.ReplaceBytes(data)
+		if err != nil {
+			logger.Errorf("job(%s) replace env in rule file(%s) error: %s", jobName, ruleFile, err)
+			return
+		}
+		bytesBuffer.Write(data)
+		bytesBuffer.Write([]byte("\n"))
+		bytesBuffer.Write([]byte("\n"))
+	}
+
+	tomlBytes := bytesBuffer.Bytes()
+
+	var err error
+	var mysqlConfig *mysql.Config
+	var redisConfig *redis.Config
+
+	switch j.plugin {
+	case "mysql":
+		mysqlConfig, err = mysql.ParseConfig(tomlBytes)
+		if err != nil {
+			logger.Errorf("job(%s) parse mysql config error: %s", jobName, err)
+			return
+		}
+	case "redis":
+		redisConfig, err = redis.ParseConfig(tomlBytes)
+		if err != nil {
+			logger.Errorf("job(%s) parse redis config error: %s", jobName, err)
+			return
+		}
+	default:
+		logger.Errorf("unknown plugin: %s of job: %s", j.plugin, jobName)
+		return
+	}
 
 	targets := j.getTargets()
 	for _, target := range targets {
@@ -117,17 +165,9 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 		switch j.plugin {
 		case "mysql":
-			var x *mysql.Auth
-			if auth != nil {
-				x = auth.MySQLAuth
-			}
-			mysql.Scrape(ctx, parsedTarget, x, tomlBytes)
+			mysql.Scrape(ctx, parsedTarget, mysqlConfig)
 		case "redis":
-			var x *redis.Auth
-			if auth != nil {
-				x = auth.RedisAuth
-			}
-			redis.Scrape(ctx, parsedTarget, x, tomlBytes)
+			redis.Scrape(ctx, parsedTarget, redisConfig)
 		default:
 			logger.Errorf("unknown plugin: %s of job: %s", j.plugin, jobName)
 		}

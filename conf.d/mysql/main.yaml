@@ -44,4 +44,6 @@ scrape_configs:
   - files:
     - 'inst.yaml'
   scrape_rule_files:
-  - 'rules.d/hello.toml'
+  - 'rule_head.toml'
+  - 'rule_lock.toml'
+  - 'rule_cust.toml'
