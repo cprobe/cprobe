@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cprobe/cprobe/exporter/mysql"
+	"github.com/cprobe/cprobe/exporter/redis"
 	"github.com/cprobe/cprobe/lib/envtemplate"
 	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/lib/logger"
@@ -97,34 +99,6 @@ func (j *JobGoroutine) Start(ctx context.Context) {
 // 通过 wait group 等待所有的 goroutine 抓取完毕，统一做 metric_relabel_configs，然后发送给 writer
 func (j *JobGoroutine) run(ctx context.Context) {
 	jobName := j.GetJobName()
-	targets := j.getTargets()
-	for _, target := range targets {
-		j.runTarget(ctx, jobName, target)
-	}
-}
-
-func (j *JobGoroutine) runTarget(ctx context.Context, job string, target *promutils.Labels) {
-	labels := promutils.GetLabels()
-	defer promutils.PutLabels(labels)
-
-	mergeLabels(labels, job, target, j.scrapeConfig.ConfigRef.Global.ExternalLabels)
-	labels.Labels = j.scrapeConfig.ParsedRelabelConfigs.Apply(labels.Labels, 0)
-	labels.RemoveMetaLabels()
-
-	if labels.Len() == 0 {
-		return
-	}
-
-	if labels.Get("__address__") == "" {
-		return
-	}
-
-	labelsCopy := labels.Clone()
-	labelsCopy.Sort()
-
-	// 获取 scrape_rules，就是几个 toml 文件，拼接在一起，根据 plugin 类型获取认证信息
-	// 如果是 HTTP 的 plugin，应该有个统一的认证配置方式，比如 basic auth、token 等
-	// 目标实例的地址是 address，这个地址信息无需发到最终的 writer，因为有 instance 字段了
 
 	auth := j.scrapeConfig.ScrapeAuth
 	if auth == nil {
@@ -134,35 +108,67 @@ func (j *JobGoroutine) runTarget(ctx context.Context, job string, target *promut
 	// TODO 直接把 toml decode 成 rule 配置，传给抓取函数
 	var tomlBytes []byte
 
-	switch j.plugin {
-	case "mysql":
-		ScrapeMySQL(ctx, labelsCopy, auth, tomlBytes)
-	case "redis":
-		ScrapeRedis(ctx, labelsCopy, auth, tomlBytes)
-	default:
-		logger.Errorf("unknown plugin: %s", j.plugin)
+	targets := j.getTargets()
+	for _, target := range targets {
+		parsedTarget := j.parseTarget(ctx, jobName, target)
+		if parsedTarget == nil {
+			continue
+		}
+
+		switch j.plugin {
+		case "mysql":
+			var x *mysql.Auth
+			if auth != nil {
+				x = auth.MySQLAuth
+			}
+			mysql.Scrape(ctx, parsedTarget, x, tomlBytes)
+		case "redis":
+			var x *redis.Auth
+			if auth != nil {
+				x = auth.RedisAuth
+			}
+			redis.Scrape(ctx, parsedTarget, x, tomlBytes)
+		default:
+			logger.Errorf("unknown plugin: %s of job: %s", j.plugin, jobName)
+		}
 	}
 }
 
-func mergeLabels(dst *promutils.Labels, job string, targetLabels, extraLabels *promutils.Labels) {
-	dst.Add("job", job)
+func (j *JobGoroutine) parseTarget(ctx context.Context, job string, target *promutils.Labels) *promutils.Labels {
+	labels := promutils.GetLabels()
+	defer promutils.PutLabels(labels)
 
-	if extraLabels != nil {
-		dst.AddFrom(extraLabels)
+	labels.Add("job", job)
+	if j.scrapeConfig.ConfigRef.Global.ExternalLabels != nil {
+		labels.AddFrom(j.scrapeConfig.ConfigRef.Global.ExternalLabels)
 	}
 
-	instanceBlank := dst.Get("instance") == ""
-
-	for _, label := range targetLabels.GetLabels() {
-		dst.Add(label.Name, label.Value)
+	instanceBlank := labels.Get("instance") == ""
+	for _, label := range target.GetLabels() {
+		labels.Add(label.Name, label.Value)
 		if label.Name == "__address__" {
 			if label.Value != "" && instanceBlank {
-				dst.Add("instance", label.Value)
+				labels.Add("instance", label.Value)
 			}
 		}
 	}
 
-	dst.RemoveDuplicates()
+	labels.RemoveDuplicates()
+	labels.Labels = j.scrapeConfig.ParsedRelabelConfigs.Apply(labels.Labels, 0)
+	labels.RemoveMetaLabels()
+
+	if labels.Len() == 0 {
+		return nil
+	}
+
+	if labels.Get("__address__") == "" {
+		return nil
+	}
+
+	labelsCopy := labels.Clone()
+	labelsCopy.Sort()
+
+	return labelsCopy
 }
 
 func (j *JobGoroutine) Stop() {

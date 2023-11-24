@@ -15,6 +15,8 @@ import (
 	"github.com/cprobe/cprobe/discovery/http"
 	"github.com/cprobe/cprobe/discovery/openstack"
 	"github.com/cprobe/cprobe/discovery/yandexcloud"
+	"github.com/cprobe/cprobe/exporter/mysql"
+	"github.com/cprobe/cprobe/exporter/redis"
 	"github.com/cprobe/cprobe/lib/envtemplate"
 	"github.com/cprobe/cprobe/lib/promauth"
 	"github.com/cprobe/cprobe/lib/promrelabel"
@@ -51,19 +53,9 @@ type GlobalConfig struct {
 	ScrapeAuth                 *ScrapeAuth                 `yaml:"scrape_auth,omitempty"`
 }
 
-type MySQLAuth struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-}
-
-type RedisAuth struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-}
-
 type ScrapeAuth struct {
-	MySQLAuth *MySQLAuth                 `yaml:"mysql_auth,omitempty"`
-	RedisAuth *RedisAuth                 `yaml:"redis_auth,omitempty"`
+	MySQLAuth *mysql.Auth                `yaml:"mysql_auth,omitempty"`
+	RedisAuth *redis.Auth                `yaml:"redis_auth,omitempty"`
 	HTTPAuth  *promauth.HTTPClientConfig `yaml:"http_auth,omitempty"`
 }
 
