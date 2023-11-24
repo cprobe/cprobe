@@ -112,7 +112,7 @@ func Reload(ctx context.Context) {
 		return
 	}
 
-	// 遍历内存中的老 Jobs，如果新 Job 中没有，就删除
+	// 遍历内存中的老 Jobs，如果磁盘上的新 Jobs 中没有，就删除
 	for pluginName, jobs := range Jobs {
 		newPluginJobs := newJobs[pluginName]
 
@@ -140,14 +140,12 @@ func Reload(ctx context.Context) {
 				continue
 			}
 
-			// 更新 jobGoroutine
 			oldJobGoroutine.UpdateConfig(jobGoroutine.scrapeConfig)
 		}
 	}
 }
 
 func readFiles() (map[string]map[JobID]*JobGoroutine, error) {
-
 	pluginDirs, err := fileutil.DirsUnder(*probeDir)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list plugin dirs: %s", err)

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/cprobe/cprobe/discovery/azure"
-	"github.com/cprobe/cprobe/discovery/consul"
 	"github.com/cprobe/cprobe/discovery/digitalocean"
 	"github.com/cprobe/cprobe/discovery/dns"
 	"github.com/cprobe/cprobe/discovery/docker"
@@ -14,9 +13,6 @@ import (
 	"github.com/cprobe/cprobe/discovery/eureka"
 	"github.com/cprobe/cprobe/discovery/gce"
 	"github.com/cprobe/cprobe/discovery/http"
-	"github.com/cprobe/cprobe/discovery/kubernetes"
-	"github.com/cprobe/cprobe/discovery/kuma"
-	"github.com/cprobe/cprobe/discovery/nomad"
 	"github.com/cprobe/cprobe/discovery/openstack"
 	"github.com/cprobe/cprobe/discovery/yandexcloud"
 	"github.com/cprobe/cprobe/lib/envtemplate"
@@ -91,7 +87,6 @@ type ScrapeConfig struct {
 	// SampleLimit          int                         `yaml:"sample_limit,omitempty"`
 
 	AzureSDConfigs        []azure.SDConfig        `yaml:"azure_sd_configs,omitempty"`
-	ConsulSDConfigs       []consul.SDConfig       `yaml:"consul_sd_configs,omitempty"`
 	DigitaloceanSDConfigs []digitalocean.SDConfig `yaml:"digitalocean_sd_configs,omitempty"`
 	DNSSDConfigs          []dns.SDConfig          `yaml:"dns_sd_configs,omitempty"`
 	DockerSDConfigs       []docker.SDConfig       `yaml:"docker_sd_configs,omitempty"`
@@ -101,9 +96,6 @@ type ScrapeConfig struct {
 	FileSDConfigs         []FileSDConfig          `yaml:"file_sd_configs,omitempty"`
 	GCESDConfigs          []gce.SDConfig          `yaml:"gce_sd_configs,omitempty"`
 	HTTPSDConfigs         []http.SDConfig         `yaml:"http_sd_configs,omitempty"`
-	KubernetesSDConfigs   []kubernetes.SDConfig   `yaml:"kubernetes_sd_configs,omitempty"`
-	KumaSDConfigs         []kuma.SDConfig         `yaml:"kuma_sd_configs,omitempty"`
-	NomadSDConfigs        []nomad.SDConfig        `yaml:"nomad_sd_configs,omitempty"`
 	OpenStackSDConfigs    []openstack.SDConfig    `yaml:"openstack_sd_configs,omitempty"`
 	StaticConfigs         []StaticConfig          `yaml:"static_configs,omitempty"`
 	YandexCloudSDConfigs  []yandexcloud.SDConfig  `yaml:"yandexcloud_sd_configs,omitempty"`

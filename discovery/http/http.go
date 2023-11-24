@@ -1,9 +1,7 @@
 package http
 
 import (
-	"flag"
 	"fmt"
-	"time"
 
 	"github.com/cprobe/cprobe/lib/promauth"
 	"github.com/cprobe/cprobe/lib/promutils"
@@ -11,9 +9,9 @@ import (
 )
 
 // SDCheckInterval defines interval for targets refresh.
-var SDCheckInterval = flag.Duration("scrape.httpSDCheckInterval", time.Minute, "Interval for checking for changes in http endpoint service discovery. "+
-	"This works only if http_sd_configs is configured in '-promscrape.config' file. "+
-	"See https://docs.victoriametrics.com/sd_configs.html#http_sd_configs for details")
+// var SDCheckInterval = flag.Duration("scrape.httpSDCheckInterval", time.Minute, "Interval for checking for changes in http endpoint service discovery. "+
+// 	"This works only if http_sd_configs is configured in '-promscrape.config' file. "+
+// 	"See https://docs.victoriametrics.com/sd_configs.html#http_sd_configs for details")
 
 // SDConfig represents service discovery config for http.
 //

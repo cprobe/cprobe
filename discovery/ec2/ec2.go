@@ -1,9 +1,7 @@
 package ec2
 
 import (
-	"flag"
 	"fmt"
-	"time"
 
 	"github.com/cprobe/cprobe/lib/awsapi"
 	"github.com/cprobe/cprobe/lib/promauth"
@@ -11,9 +9,9 @@ import (
 )
 
 // SDCheckInterval defines interval for targets refresh.
-var SDCheckInterval = flag.Duration("scrape.ec2SDCheckInterval", time.Minute, "Interval for checking for changes in ec2. "+
-	"This works only if ec2_sd_configs is configured in '-promscrape.config' file. "+
-	"See https://docs.victoriametrics.com/sd_configs.html#ec2_sd_configs for details")
+// var SDCheckInterval = flag.Duration("scrape.ec2SDCheckInterval", time.Minute, "Interval for checking for changes in ec2. "+
+// 	"This works only if ec2_sd_configs is configured in '-promscrape.config' file. "+
+// 	"See https://docs.victoriametrics.com/sd_configs.html#ec2_sd_configs for details")
 
 // SDConfig represents service discovery config for ec2.
 //

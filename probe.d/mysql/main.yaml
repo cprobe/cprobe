@@ -12,7 +12,7 @@ scrape_configs:
   static_configs:
   - targets: ['10.1.2.3:9104']
 - job_name: 'mysql_test'
-  static_configs:
-  - targets: ['10.1.2.4:9104']
+  http_sd_configs:
+  - url: http://localhost:8080/get-targets
   scrape_rule_files:
   - 'rules.d/common.toml'

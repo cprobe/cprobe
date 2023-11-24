@@ -2,10 +2,12 @@ package probe
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/lib/promutils"
 )
 
 var (
@@ -80,8 +82,118 @@ func (j *JobGoroutine) run() {
 	for _, rule := range j.scrapeConfig.ScrapeRuleFiles {
 		logger.Errorf("    - %v", rule)
 	}
+
+	targets := j.getTargets()
+	for _, target := range targets {
+		fmt.Println("target:", target)
+	}
 }
 
 func (j *JobGoroutine) Stop() {
 	close(j.quitChan)
+}
+
+func (j *JobGoroutine) getTargets() (targets []*promutils.Labels) {
+	for _, c := range j.scrapeConfig.HTTPSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) http_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.URL, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	// TODO: 下面的代码是 copilot 自动生成的，尚未验证过，对于 cprobe 而言，核心就是 static、file_sd、http_sd 基本就够用了
+
+	for _, c := range j.scrapeConfig.DNSSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) dns_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.Names, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.AzureSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) azure_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.SubscriptionID, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.DockerSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) docker_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.Host, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.DockerSwarmSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) dockerswarm_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.Host, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.EC2SDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) ec2_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.Region, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.EurekaSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) eureka_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.Server, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.GCESDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) gce_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.Project, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.DigitaloceanSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) digitalocean_sd_configs(%s:%d) get targets error: %s", j.scrapeConfig.JobName, c.Server, c.Port, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.OpenStackSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) openstack_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.IdentityEndpoint, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	for _, c := range j.scrapeConfig.YandexCloudSDConfigs {
+		arr, err := c.GetLabels(j.scrapeConfig.ConfigRef.BaseDir)
+		if err != nil {
+			logger.Errorf("job(%s) yandexcloud_sd_configs(%s) get targets error: %s", j.scrapeConfig.JobName, c.APIEndpoint, err)
+			continue
+		}
+		targets = append(targets, arr...)
+	}
+
+	return
 }

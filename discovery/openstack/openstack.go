@@ -1,18 +1,16 @@
 package openstack
 
 import (
-	"flag"
 	"fmt"
-	"time"
 
 	"github.com/cprobe/cprobe/lib/promauth"
 	"github.com/cprobe/cprobe/lib/promutils"
 )
 
 // SDCheckInterval defines interval for targets refresh.
-var SDCheckInterval = flag.Duration("scrape.openstackSDCheckInterval", 30*time.Second, "Interval for checking for changes in openstack API server. "+
-	"This works only if openstack_sd_configs is configured in '-promscrape.config' file. "+
-	"See https://docs.victoriametrics.com/sd_configs.html#openstack_sd_configs for details")
+// var SDCheckInterval = flag.Duration("scrape.openstackSDCheckInterval", 30*time.Second, "Interval for checking for changes in openstack API server. "+
+// 	"This works only if openstack_sd_configs is configured in '-promscrape.config' file. "+
+// 	"See https://docs.victoriametrics.com/sd_configs.html#openstack_sd_configs for details")
 
 // SDConfig is the configuration for OpenStack based service discovery.
 //

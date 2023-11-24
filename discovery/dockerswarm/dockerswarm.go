@@ -1,9 +1,7 @@
 package dockerswarm
 
 import (
-	"flag"
 	"fmt"
-	"time"
 
 	"github.com/cprobe/cprobe/lib/promauth"
 	"github.com/cprobe/cprobe/lib/promutils"
@@ -11,9 +9,9 @@ import (
 )
 
 // SDCheckInterval defines interval for dockerswarm targets refresh.
-var SDCheckInterval = flag.Duration("scrape.dockerswarmSDCheckInterval", 30*time.Second, "Interval for checking for changes in dockerswarm. "+
-	"This works only if dockerswarm_sd_configs is configured in '-promscrape.config' file. "+
-	"See https://docs.victoriametrics.com/sd_configs.html#dockerswarm_sd_configs for details")
+// var SDCheckInterval = flag.Duration("scrape.dockerswarmSDCheckInterval", 30*time.Second, "Interval for checking for changes in dockerswarm. "+
+// 	"This works only if dockerswarm_sd_configs is configured in '-promscrape.config' file. "+
+// 	"See https://docs.victoriametrics.com/sd_configs.html#dockerswarm_sd_configs for details")
 
 // SDConfig represents docker swarm service discovery configuration
 //

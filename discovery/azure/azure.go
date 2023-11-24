@@ -1,10 +1,8 @@
 package azure
 
 import (
-	"flag"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/cprobe/cprobe/lib/discoveryutils"
 	"github.com/cprobe/cprobe/lib/promauth"
@@ -13,9 +11,9 @@ import (
 )
 
 // SDCheckInterval is check interval for Azure service discovery.
-var SDCheckInterval = flag.Duration("scrape.azureSDCheckInterval", 60*time.Second, "Interval for checking for changes in Azure. "+
-	"This works only if azure_sd_configs is configured in '-promscrape.config' file. "+
-	"See https://docs.victoriametrics.com/sd_configs.html#azure_sd_configs for details")
+// var SDCheckInterval = flag.Duration("scrape.azureSDCheckInterval", 60*time.Second, "Interval for checking for changes in Azure. "+
+// 	"This works only if azure_sd_configs is configured in '-promscrape.config' file. "+
+// 	"See https://docs.victoriametrics.com/sd_configs.html#azure_sd_configs for details")
 
 // SDConfig represents service discovery config for Azure.
 //
