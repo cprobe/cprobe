@@ -17,7 +17,7 @@ enabled = true
 enabled = true
 
 [collect_info_schema_processlist]
-enabled = false
+enabled = true
 # Minimum time a thread must be in each state to be counted
 min_time = 0
 # Enable collecting the number of processes by user
