@@ -25,6 +25,7 @@ import (
 
 	"github.com/alecthomas/kingpin/v2"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/types"
 	"github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -90,10 +91,12 @@ type Exporter struct {
 	ctx      context.Context
 	dsn      string
 	scrapers []Scraper
+	ss       *types.Samples
+	queries  []CustomQuery
 }
 
 // New returns a new MySQL exporter for the provided DSN.
-func New(ctx context.Context, dsn string, scrapers []Scraper) *Exporter {
+func New(ctx context.Context, dsn string, scrapers []Scraper, ss *types.Samples, queries []CustomQuery) *Exporter {
 	// Setup extra params for the DSN, default to having a lock timeout.
 	dsnParams := []string{fmt.Sprintf(timeoutParam, *exporterLockTimeout)}
 
@@ -112,6 +115,8 @@ func New(ctx context.Context, dsn string, scrapers []Scraper) *Exporter {
 		ctx:      ctx,
 		dsn:      dsn,
 		scrapers: scrapers,
+		ss:       ss,
+		queries:  queries,
 	}
 }
 
@@ -178,6 +183,9 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) floa
 			ch <- prometheus.MustNewConstMetric(mysqlScrapeDurationSeconds, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), label)
 		}(scraper)
 	}
+
+	// 添加自定义采集的逻辑
+	e.collectCustomQueries(ctx, db, e.ss, e.queries)
 
 	return 1.0
 }

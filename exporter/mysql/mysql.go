@@ -3,7 +3,6 @@ package mysql
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/exporter/mysql/collector"
@@ -23,17 +22,9 @@ type Global struct {
 	ScraperEnabled        []string `toml:"scraper_enabled"`
 }
 
-type Query struct {
-	Mesurement   string        `toml:"mesurement"`
-	MetricFields []string      `toml:"metric_fields"`
-	LabelFields  []string      `toml:"label_fields"`
-	Timeout      time.Duration `toml:"timeout"`
-	Request      string        `toml:"request"`
-}
-
 type Config struct {
-	Global  *Global  `toml:"global"`
-	Queries []*Query `toml:"queries"`
+	Global  *Global                 `toml:"global"`
+	Queries []collector.CustomQuery `toml:"queries"`
 
 	CollectGlobalStatus struct {
 		Enabled bool `toml:"enabled"`
@@ -342,7 +333,7 @@ func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples)
 	}
 
 	scrapers := cfg.EnabledScrapers()
-	exporter := collector.New(ctx, dsn, scrapers)
+	exporter := collector.New(ctx, dsn, scrapers, ss, cfg.Queries)
 
 	ch := make(chan prometheus.Metric)
 	go func() {

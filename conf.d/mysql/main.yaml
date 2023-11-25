@@ -35,3 +35,4 @@ scrape_configs:
   scrape_rule_files:
   - 'rule_head.toml'
   - 'rule_coll.toml'
+  - 'rule_cust.toml'

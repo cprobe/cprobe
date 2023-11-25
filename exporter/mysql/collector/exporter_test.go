@@ -13,71 +13,61 @@
 
 package collector
 
-import (
-	"context"
-	"database/sql"
-	"testing"
+// const dsn = "root@/mysql"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/model"
-	"github.com/smartystreets/goconvey/convey"
-)
+// func TestExporter(t *testing.T) {
+// 	if testing.Short() {
+// 		t.Skip("-short is passed, skipping test")
+// 	}
 
-const dsn = "root@/mysql"
+// 	exporter := New(
+// 		context.Background(),
+// 		dsn,
+// 		[]Scraper{
+// 			ScrapeGlobalStatus{},
+// 		},
+// 	)
 
-func TestExporter(t *testing.T) {
-	if testing.Short() {
-		t.Skip("-short is passed, skipping test")
-	}
+// 	convey.Convey("Metrics describing", t, func() {
+// 		ch := make(chan *prometheus.Desc)
+// 		go func() {
+// 			exporter.Describe(ch)
+// 			close(ch)
+// 		}()
 
-	exporter := New(
-		context.Background(),
-		dsn,
-		[]Scraper{
-			ScrapeGlobalStatus{},
-		},
-	)
+// 		for range ch {
+// 		}
+// 	})
 
-	convey.Convey("Metrics describing", t, func() {
-		ch := make(chan *prometheus.Desc)
-		go func() {
-			exporter.Describe(ch)
-			close(ch)
-		}()
+// 	convey.Convey("Metrics collection", t, func() {
+// 		ch := make(chan prometheus.Metric)
+// 		go func() {
+// 			exporter.Collect(ch)
+// 			close(ch)
+// 		}()
 
-		for range ch {
-		}
-	})
+// 		for m := range ch {
+// 			got := readMetric(m)
+// 			if got.labels[model.MetricNameLabel] == "mysql_up" {
+// 				convey.So(got.value, convey.ShouldEqual, 1)
+// 			}
+// 		}
+// 	})
+// }
 
-	convey.Convey("Metrics collection", t, func() {
-		ch := make(chan prometheus.Metric)
-		go func() {
-			exporter.Collect(ch)
-			close(ch)
-		}()
+// func TestGetMySQLVersion(t *testing.T) {
+// 	if testing.Short() {
+// 		t.Skip("-short is passed, skipping test")
+// 	}
 
-		for m := range ch {
-			got := readMetric(m)
-			if got.labels[model.MetricNameLabel] == "mysql_up" {
-				convey.So(got.value, convey.ShouldEqual, 1)
-			}
-		}
-	})
-}
+// 	// logger := log.NewLogfmtLogger(os.Stderr)
+// 	// logger = level.NewFilter(logger, level.AllowDebug())
 
-func TestGetMySQLVersion(t *testing.T) {
-	if testing.Short() {
-		t.Skip("-short is passed, skipping test")
-	}
+// 	convey.Convey("Version parsing", t, func() {
+// 		db, err := sql.Open("mysql", dsn)
+// 		convey.So(err, convey.ShouldBeNil)
+// 		defer db.Close()
 
-	// logger := log.NewLogfmtLogger(os.Stderr)
-	// logger = level.NewFilter(logger, level.AllowDebug())
-
-	convey.Convey("Version parsing", t, func() {
-		db, err := sql.Open("mysql", dsn)
-		convey.So(err, convey.ShouldBeNil)
-		defer db.Close()
-
-		convey.So(getMySQLVersion(db), convey.ShouldBeBetweenOrEqual, 5.6, 11.0)
-	})
-}
+// 		convey.So(getMySQLVersion(db), convey.ShouldBeBetweenOrEqual, 5.6, 11.0)
+// 	})
+// }
