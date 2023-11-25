@@ -96,7 +96,7 @@ func (ScrapeInfoSchemaInnodbTablespaces) Scrape(ctx context.Context, db *sql.DB,
 	case "INNODB_SYS_TABLESPACES", "INNODB_TABLESPACES":
 		query = fmt.Sprintf(innodbTablespacesQuery, tablespacesTablename, tablespacesTablename)
 	default:
-		return errors.New("Couldn't find INNODB_SYS_TABLESPACES or INNODB_TABLESPACES in information_schema.")
+		return errors.New("cannot find INNODB_SYS_TABLESPACES or INNODB_TABLESPACES in information_schema")
 	}
 
 	tablespacesRows, err := db.QueryContext(ctx, query)
