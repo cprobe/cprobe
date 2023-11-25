@@ -198,9 +198,10 @@ func getMySQLVersion(db *sql.DB) float64 {
 	var versionNum float64
 	if err := db.QueryRow(versionQuery).Scan(&versionStr); err == nil {
 		versionNum, _ = strconv.ParseFloat(versionRE.FindString(versionStr), 64)
-	} else {
-		// level.Debug(logger).Log("msg", "Error querying version", "err", err)
 	}
+	// else {
+	// 	level.Debug(logger).Log("msg", "Error querying version", "err", err)
+	// }
 	// If we can't match/parse the version, set it some big value that matches all versions.
 	if versionNum == 0 {
 		// level.Debug(logger).Log("msg", "Error parsing version string", "version", versionStr)
