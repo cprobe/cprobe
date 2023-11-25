@@ -1,0 +1,132 @@
+[collect_global_status]
+enabled = true
+
+[collect_global_variables]
+enabled = true
+
+[collect_slave_status]
+enabled = true
+
+[collect_info_schema_innodb_cmp]
+enabled = true
+
+[collect_info_schema_innodb_cmpmem]
+enabled = true
+
+[collect_info_schema_query_response_time]
+enabled = true
+
+[collect_info_schema_processlist]
+enabled = false
+# Minimum time a thread must be in each state to be counted
+min_time = 0
+# Enable collecting the number of processes by user
+processes_by_user = true
+# Enable collecting the number of processes by host
+processes_by_host = true
+
+[collect_info_schema_tables]
+enabled = false
+# The list of databases to collect table stats for, or '*' for all
+databases = "*"
+
+[collect_info_schema_innodb_tablespaces]
+enabled = false
+
+[collect_info_schema_innodb_metrics]
+enabled = false
+
+[collect_info_schema_userstats]
+enabled = false
+
+[collect_info_schema_clientstats]
+enabled = false
+
+[collect_info_schema_tablestats]
+enabled = false
+
+[collect_info_schema_schemastats]
+enabled = false
+
+[collect_info_schema_replica_host]
+enabled = false
+
+[collect_mysql_user]
+enabled = false
+# Enable collecting user privileges from mysql.user
+collect_user_privileges = false
+
+[collect_auto_increment_columns]
+enabled = false
+
+[collect_binlog_size]
+enabled = false
+
+[collect_perf_schema_tableiowaits]
+enabled = false
+
+[collect_perf_schema_indexiowaits]
+enabled = false
+
+[collect_perf_schema_tablelocks]
+enabled = false
+
+[collect_perf_schema_eventsstatements]
+enabled = false
+# Limit the number of events statements digests by response time
+limit = 250
+# Limit how old the 'last_seen' events statements can be, in seconds
+timelimit = 86400
+# Maximum length of the normalized statement text
+digest_text_limit = 120
+
+[collect_perf_schema_eventsstatementssum]
+enabled = false
+
+[collect_perf_schema_eventswaits]
+enabled = false
+
+[collect_perf_schema_file_events]
+enabled = false
+
+[collect_perf_schema_file_instances]
+enabled = false
+# RegEx file_name filter for performance_schema.file_summary_by_instance
+filter = ".*"
+# Remove path prefix in performance_schema.file_summary_by_instance
+remove_prefix = "/var/lib/mysql/"
+
+[collect_perf_schema_memory_events]
+enabled = false
+# Remove instrument prefix in performance_schema.memory_summary_global_by_event_name
+remove_prefix = "memory/"
+
+[collect_perf_schema_replication_group_members]
+enabled = false
+
+[collect_perf_schema_replication_group_member_stats]
+enabled = false
+
+[collect_perf_schema_replication_applier_status_by_worker]
+enabled = false
+
+[collect_sys_user_summary]
+enabled = false
+
+[collect_engine_tokudb_status]
+enabled = false
+
+[collect_engine_innodb_status]
+enabled = false
+
+[collect_heartbeat]
+enabled = false
+# Database from where to collect heartbeat data
+database = "heartbeat"
+# Table from where to collect heartbeat data
+table = "heartbeat"
+# Use UTC for timestamps of the current server
+utc = true
+
+[collect_slave_hosts]
+enabled = false

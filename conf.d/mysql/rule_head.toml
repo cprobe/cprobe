@@ -1,5 +1,8 @@
 [global]
-username = 'root'
-password = '%{LANG}'
-extra_status_metrics = true
-extra_innodb_metrics = false
+user = 'root'
+password = 'cProbePa55'
+# ssl_ca = '/etc/mysql/ssl/ca.pem'
+# ssl_cert = '/etc/mysql/ssl/client-cert.pem'
+# ssl_key = '/etc/mysql/ssl/client-key.pem'
+# ssl_skip_verfication = true
+# tls = 'skip-verify'
