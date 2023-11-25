@@ -7,6 +7,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/exporter/mysql/collector"
+	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/types"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -349,9 +350,11 @@ func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples)
 		close(ch)
 	}()
 
-	// for m := range ch {
-	// 	m.Write()
-	// }
+	for m := range ch {
+		if err := ss.AddPromMetric(m); err != nil {
+			logger.Warnf("failed to tranform prometheus metric: %s", err)
+		}
+	}
 
 	return nil
 }

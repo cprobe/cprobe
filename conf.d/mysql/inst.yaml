@@ -1,13 +1,4 @@
-- targets: ["10.1.2.3:3306"]
-  labels:
-    project: foo
-    region: beijing
-- targets: ["10.1.2.4:3306"]
-  labels:
-    project: foo
-    region: shanghai
-- targets: ["10.1.2.5:3306"]
-  labels:
-    project: bar
-    region: shanghai
+- targets:
+  - 127.0.0.1:3306
+
 

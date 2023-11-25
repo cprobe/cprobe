@@ -64,7 +64,7 @@ var (
 // metric definition
 var (
 	mysqlUp = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "up"),
+		prometheus.BuildFQName(namespace, "instance", "up"),
 		"Whether the MySQL server is up.",
 		nil,
 		nil,
@@ -147,11 +147,12 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) floa
 	db.SetConnMaxLifetime(1 * time.Minute)
 
 	if err := db.PingContext(ctx); err != nil {
-		logger.Errorf("cannot ping: %s, target: %s, error: %s", e.getTargetFromDsn(), err)
+		logger.Errorf("cannot ping mysql %s, error: %s", e.getTargetFromDsn(), err)
 		// level.Error(e.logger).Log("msg", "Error pinging mysqld", "err", err)
 		return 0.0
 	}
 
+	ch <- prometheus.MustNewConstMetric(mysqlUp, prometheus.GaugeValue, 1)
 	ch <- prometheus.MustNewConstMetric(mysqlScrapeDurationSeconds, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "connection")
 
 	version := getMySQLVersion(db)
@@ -177,6 +178,7 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) floa
 			ch <- prometheus.MustNewConstMetric(mysqlScrapeDurationSeconds, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), label)
 		}(scraper)
 	}
+
 	return 1.0
 }
 

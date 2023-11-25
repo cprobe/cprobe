@@ -247,11 +247,16 @@ func (j *JobGoroutine) run(ctx context.Context) {
 						item.Add(lb.Name, lb.Value)
 					}
 
-					for k, v := range tags {
-						item.Add(k, v)
+					for tagk, tagv := range tags {
+						item.Add(tagk, tagv)
 					}
 
-					item.Add("__name__", metrics[i].Name()+"_"+k)
+					if k == "" {
+						item.Add("__name__", metrics[i].Name())
+					} else {
+						item.Add("__name__", metrics[i].Name()+"_"+k)
+					}
+
 					item.Add("cplugin", j.plugin)
 					item.RemoveDuplicates()
 

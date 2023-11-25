@@ -1,7 +1,5 @@
 global:
   scrape_interval: 10s
-  external_labels:
-    monitor: 'mysql'
 
 scrape_configs:
 # - job_name: 'mysql_prod'
@@ -31,15 +29,6 @@ scrape_configs:
 #   - 'rules.d/common.toml'
 
 - job_name: 'mysql_abcd'
-  relabel_configs:
-  - source_labels: [__address__]
-    regex: '(.*)'
-    target_label: xxx
-    replacement: '${1}'
-  - source_labels: [__address__]
-    regex: '(.*)'
-    target_label: yyy
-    replacement: '${1}'
   file_sd_configs:
   - files:
     - 'inst.yaml'
