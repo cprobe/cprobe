@@ -20,15 +20,15 @@ var (
 
 func checkFlag() error {
 	if *probeDir == "" {
-		return fmt.Errorf("-conf.dir is empty")
+		return fmt.Errorf("-conf.d is empty")
 	}
 
 	if !fileutil.IsExist(*probeDir) {
-		return fmt.Errorf("-conf.dir %s does not exist", *probeDir)
+		return fmt.Errorf("-conf.d %s does not exist", *probeDir)
 	}
 
 	if !fileutil.IsDir(*probeDir) {
-		return fmt.Errorf("-conf.dir %s is not a directory", *probeDir)
+		return fmt.Errorf("-conf.d %s is not a directory", *probeDir)
 	}
 
 	return nil
