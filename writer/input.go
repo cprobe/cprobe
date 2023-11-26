@@ -1,6 +1,8 @@
 package writer
 
 import (
+	"strings"
+
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/prompbmarshal"
 	"github.com/golang/snappy"
@@ -13,7 +15,26 @@ type Vector struct {
 }
 
 func WriteTimeSeries(tss []prompbmarshal.TimeSeries) {
-	if len(tss) == 0 || len(WriterConfig.Writers) == 0 {
+	if len(tss) == 0 {
+		return
+	}
+
+	if *writerDisable {
+		for i := range tss {
+			point := tss[i]
+			var sb strings.Builder
+			for j := range point.Labels {
+				sb.WriteString(point.Labels[j].Name)
+				sb.WriteString("=")
+				sb.WriteString(point.Labels[j].Value)
+				sb.WriteString(" ")
+			}
+			logger.Infof(">> %s %d %f ", sb.String(), point.Samples[0].Timestamp, point.Samples[0].Value)
+		}
+		return
+	}
+
+	if len(WriterConfig.Writers) == 0 {
 		return
 	}
 
