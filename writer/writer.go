@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,7 +21,7 @@ import (
 )
 
 var (
-	writerFile = flag.String("writer.file", "conf.d/writer.yaml", "Filepath to writer.yaml")
+	writerDisable = flag.Bool("no-writer", false, "Disable remote writer")
 
 	WriterConfig = &WriterYaml{}
 )
@@ -171,20 +172,22 @@ func (wy *WriterYaml) Parse() (err error) {
 	return nil
 }
 
-func Init() error {
-	if *writerFile == "" {
-		return fmt.Errorf("writer.file is empty")
+func Init(configDirectory string) error {
+	if *writerDisable {
+		return nil
 	}
 
-	if !fileutil.IsExist(*writerFile) {
-		return fmt.Errorf("writer.file %s does not exist", *writerFile)
+	writerFile := filepath.Join(configDirectory, "writer.yaml")
+
+	if !fileutil.IsExist(writerFile) {
+		return fmt.Errorf("writer.file %s does not exist", writerFile)
 	}
 
-	if !fileutil.IsFile(*writerFile) {
-		return fmt.Errorf("writer.file %s is not a file", *writerFile)
+	if !fileutil.IsFile(writerFile) {
+		return fmt.Errorf("writer.file %s is not a file", writerFile)
 	}
 
-	err := fileutil.ReadYaml(*writerFile, WriterConfig)
+	err := fileutil.ReadYaml(writerFile, WriterConfig)
 	if err != nil {
 		return errors.Wrap(err, "cannot read writer config")
 	}

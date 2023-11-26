@@ -14,41 +14,26 @@ import (
 )
 
 var (
-	probeDir      = flag.String("conf.d", "conf.d", "Filepath to conf.d")
 	pluginsFilter = flag.String("plugins", "", "Filter plugins, separated by comma, e.g. -plugins=mysql,redis")
 )
 
-func checkFlag() error {
-	if *probeDir == "" {
-		return fmt.Errorf("-conf.d is empty")
-	}
-
-	if !fileutil.IsExist(*probeDir) {
-		return fmt.Errorf("-conf.d %s does not exist", *probeDir)
-	}
-
-	if !fileutil.IsDir(*probeDir) {
-		return fmt.Errorf("-conf.d %s is not a directory", *probeDir)
-	}
-
-	return nil
-}
-
-func listPlugins() ([]string, error) {
-	pluginDirs, err := fileutil.DirsUnder(*probeDir)
+func listPlugins(configDirectory string) ([]string, error) {
+	pluginDirs, err := fileutil.DirsUnder(configDirectory)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot list plugin dirs")
 	}
 
+	if *pluginsFilter == "" {
+		return pluginDirs, nil
+	}
+
 	ret := make([]string, 0, len(pluginDirs))
 
-	if *pluginsFilter != "" {
-		filters := strings.Split(strings.ReplaceAll(*pluginsFilter, ":", ","), ",")
-		for i := 0; i < len(pluginDirs); i++ {
-			for j := 0; j < len(filters); j++ {
-				if pluginDirs[i] == filters[j] {
-					ret = append(ret, pluginDirs[i])
-				}
+	filters := strings.Split(strings.ReplaceAll(*pluginsFilter, ":", ","), ",")
+	for i := 0; i < len(pluginDirs); i++ {
+		for j := 0; j < len(filters); j++ {
+			if pluginDirs[i] == filters[j] {
+				ret = append(ret, pluginDirs[i])
 			}
 		}
 	}
@@ -57,22 +42,18 @@ func listPlugins() ([]string, error) {
 }
 
 // Start starts the probe goroutines.
-func Start(ctx context.Context) error {
-	if err := checkFlag(); err != nil {
-		return err
-	}
-
-	pluginDirs, err := listPlugins()
+func Start(ctx context.Context, configDirectory string) error {
+	pluginDirs, err := listPlugins(configDirectory)
 	if err != nil {
 		return err
 	}
 
 	if len(pluginDirs) == 0 {
-		return fmt.Errorf("no plugin dirs found under %s", *probeDir)
+		return fmt.Errorf("no plugin dirs found under %s", configDirectory)
 	}
 
 	for i := 0; i < len(pluginDirs); i++ {
-		if err := startPlugin(ctx, pluginDirs[i]); err != nil {
+		if err := startPlugin(ctx, configDirectory, pluginDirs[i]); err != nil {
 			return errors.Wrapf(err, "cannot start plugin %s", pluginDirs[i])
 		}
 	}
@@ -80,8 +61,8 @@ func Start(ctx context.Context) error {
 	return nil
 }
 
-func startPlugin(ctx context.Context, pluginDir string) error {
-	pluginDirPath := filepath.Join(*probeDir, pluginDir)
+func startPlugin(ctx context.Context, configDirectory, pluginDir string) error {
+	pluginDirPath := filepath.Join(configDirectory, pluginDir)
 	entryYamlFilePaths, err := filepath.Glob(filepath.Join(pluginDirPath, "main*.yaml"))
 	if err != nil {
 		return errors.Wrapf(err, "cannot glob main*.yaml under %s", pluginDirPath)
@@ -129,8 +110,8 @@ func startEntry(ctx context.Context, pluginName, entryYamlFilePath string) error
 }
 
 // Reload 读取磁盘配置文件，与内存中的配置文件进行比较，增删 JobGoroutine
-func Reload(ctx context.Context) {
-	newJobs, err := readFiles()
+func Reload(ctx context.Context, configDirectory string) {
+	newJobs, err := readFiles(configDirectory)
 	if err != nil {
 		logger.Errorf("cannot read files: %s", err)
 		return
@@ -169,8 +150,8 @@ func Reload(ctx context.Context) {
 	}
 }
 
-func readFiles() (map[string]map[JobID]*JobGoroutine, error) {
-	pluginDirs, err := listPlugins()
+func readFiles(configDirectory string) (map[string]map[JobID]*JobGoroutine, error) {
+	pluginDirs, err := listPlugins(configDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +160,7 @@ func readFiles() (map[string]map[JobID]*JobGoroutine, error) {
 
 	for i := 0; i < len(pluginDirs); i++ {
 		pluginDir := pluginDirs[i]
-		pluginDirPath := filepath.Join(*probeDir, pluginDir)
+		pluginDirPath := filepath.Join(configDirectory, pluginDir)
 
 		entryYamlFilePaths, err := filepath.Glob(filepath.Join(pluginDirPath, "main*.yaml"))
 		if err != nil {
