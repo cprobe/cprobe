@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/cprobe/cprobe/lib/fileutil"
@@ -13,7 +14,8 @@ import (
 )
 
 var (
-	probeDir = flag.String("conf.dir", "conf.d", "Filepath to conf.d")
+	probeDir      = flag.String("conf.dir", "conf.d", "Filepath to conf.d")
+	pluginsFilter = flag.String("plugins", "", "Filter plugins, separated by comma, e.g. -plugins=mysql,redis")
 )
 
 func checkFlag() error {
@@ -32,15 +34,37 @@ func checkFlag() error {
 	return nil
 }
 
+func listPlugins() ([]string, error) {
+	pluginDirs, err := fileutil.DirsUnder(*probeDir)
+	if err != nil {
+		return nil, errors.Wrap(err, "cannot list plugin dirs")
+	}
+
+	ret := make([]string, 0, len(pluginDirs))
+
+	if *pluginsFilter != "" {
+		filters := strings.Split(strings.ReplaceAll(*pluginsFilter, ":", ","), ",")
+		for i := 0; i < len(pluginDirs); i++ {
+			for j := 0; j < len(filters); j++ {
+				if pluginDirs[i] == filters[j] {
+					ret = append(ret, pluginDirs[i])
+				}
+			}
+		}
+	}
+
+	return ret, nil
+}
+
 // Start starts the probe goroutines.
 func Start(ctx context.Context) error {
 	if err := checkFlag(); err != nil {
 		return err
 	}
 
-	pluginDirs, err := fileutil.DirsUnder(*probeDir)
+	pluginDirs, err := listPlugins()
 	if err != nil {
-		return errors.Wrap(err, "cannot list plugin dirs")
+		return err
 	}
 
 	if len(pluginDirs) == 0 {
@@ -146,9 +170,9 @@ func Reload(ctx context.Context) {
 }
 
 func readFiles() (map[string]map[JobID]*JobGoroutine, error) {
-	pluginDirs, err := fileutil.DirsUnder(*probeDir)
+	pluginDirs, err := listPlugins()
 	if err != nil {
-		return nil, fmt.Errorf("cannot list plugin dirs: %s", err)
+		return nil, err
 	}
 
 	newJobs := makeJobs()
