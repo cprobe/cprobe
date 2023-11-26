@@ -8,12 +8,6 @@ import (
 	"github.com/golang/snappy"
 )
 
-type Vector struct {
-	Labels map[string]string
-	Clock  int64
-	Value  float64
-}
-
 func WriteTimeSeries(tss []prompbmarshal.TimeSeries) {
 	if len(tss) == 0 {
 		return
@@ -98,18 +92,4 @@ func (w *Writer) writeTimeSeries(tss []prompbmarshal.TimeSeries) {
 	}
 
 	w.RequestQueue.PushFront(httpReq)
-}
-
-func (w *Writer) makeTimeSeries(vs []*Vector) []prompbmarshal.TimeSeries {
-	tss := make([]prompbmarshal.TimeSeries, len(vs))
-	for i := range vs {
-		tss[i] = prompbmarshal.TimeSeries{
-			Labels:  make([]prompbmarshal.Label, 0, len(vs[i].Labels)),
-			Samples: []prompbmarshal.Sample{{Value: vs[i].Value, Timestamp: vs[i].Clock}},
-		}
-		for key, value := range vs[i].Labels {
-			tss[i].Labels = append(tss[i].Labels, prompbmarshal.Label{Name: key, Value: value})
-		}
-	}
-	return tss
 }
