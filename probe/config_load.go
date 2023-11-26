@@ -111,23 +111,23 @@ func (cfg *Config) parseData(data []byte, path string) error {
 				scrapeInterval = defaultScrapeInterval
 			}
 		}
-		scrapeTimeout := sc.ScrapeTimeout.Duration()
-		if scrapeTimeout <= 0 {
-			scrapeTimeout = cfg.Global.ScrapeTimeout.Duration()
-			if scrapeTimeout <= 0 {
-				scrapeTimeout = defaultScrapeTimeout
-			}
-		}
-		if scrapeTimeout > scrapeInterval {
-			// Limit the `scrape_timeout` with `scrape_interval` like Prometheus does.
-			// This guarantees that the scraper can miss only a single scrape if the target sometimes responds slowly.
-			// See https://github.com/VictoriaMetrics/VictoriaMetrics/issues/1281#issuecomment-840538907
-			scrapeTimeout = scrapeInterval
-		}
+		// scrapeTimeout := sc.ScrapeTimeout.Duration()
+		// if scrapeTimeout <= 0 {
+		// 	scrapeTimeout = cfg.Global.ScrapeTimeout.Duration()
+		// 	if scrapeTimeout <= 0 {
+		// 		scrapeTimeout = defaultScrapeTimeout
+		// 	}
+		// }
+		// if scrapeTimeout > scrapeInterval {
+		// 	// Limit the `scrape_timeout` with `scrape_interval` like Prometheus does.
+		// 	// This guarantees that the scraper can miss only a single scrape if the target sometimes responds slowly.
+		// 	// See https://github.com/VictoriaMetrics/VictoriaMetrics/issues/1281#issuecomment-840538907
+		// 	scrapeTimeout = scrapeInterval
+		// }
 
 		sc.ScrapeConcurrency = scrapeConcurrency
 		sc.ScrapeInterval = promutils.NewDuration(scrapeInterval)
-		sc.ScrapeTimeout = promutils.NewDuration(scrapeTimeout)
+		// sc.ScrapeTimeout = promutils.NewDuration(scrapeTimeout)
 
 		sc.ConfigRef = cfg
 	}

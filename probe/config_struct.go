@@ -58,7 +58,7 @@ type ScrapeConfig struct {
 	JobName           string              `yaml:"job_name"`
 	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"`
 	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
-	ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
+	// ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
 
 	// 抓取数据的逻辑大变，已经不止是 HTTP /metrics 数据的抓取，可能是抓取的 SNMP、也可能抓的 MySQL
 	ScrapeRuleFiles []string `yaml:"scrape_rule_files,omitempty"`
