@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	probeDir      = flag.String("conf.dir", "conf.d", "Filepath to conf.d")
+	probeDir      = flag.String("conf.d", "conf.d", "Filepath to conf.d")
 	pluginsFilter = flag.String("plugins", "", "Filter plugins, separated by comma, e.g. -plugins=mysql,redis")
 )
 
