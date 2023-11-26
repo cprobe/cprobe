@@ -15,6 +15,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang/snappy v0.0.4
 	github.com/google/uuid v1.4.0
+	github.com/kardianos/service v1.2.2
 	github.com/klauspost/compress v1.15.15
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
