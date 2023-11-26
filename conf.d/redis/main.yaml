@@ -1,22 +1,3 @@
 global:
-  scrape_interval: 10s
-  external_labels:
-    monitor: 'redis'
+  scrape_interval: 15s
 
-# scrape_configs:
-# - job_name: 'redis_prod'
-#   scrape_interval: 5s
-#   relabel_configs:
-#   - source_labels: [__address__]
-#     regex: '(.*)'
-#     target_label: www
-#     replacement: '${1}'
-#   scrape_rule_files:
-#   - 'rule_common.toml'
-#   static_configs:
-#   - targets:
-#     - 'c.com:6379'
-#     - 'd.com:6379'
-#     labels:
-#       city: 'shanghai'
-#       lang: '%{LANG}'
