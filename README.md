@@ -1,7 +1,8 @@
+- [快速开始](https://github.com/cprobe/cprobe/issues/4)
 - 设计
   - [整体设计思路](https://github.com/cprobe/cprobe/issues/1)
   - [remote write 设计](https://github.com/cprobe/cprobe/issues/2)
   - [采集插件的设计](https://github.com/cprobe/cprobe/issues/3)
 - 安装
 - 插件
-  - [mysql](conf.d/mysql)
+  - [mysql](conf.d/mysql/doc)
