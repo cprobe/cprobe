@@ -238,7 +238,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 						continue
 					}
 
-					item := promutils.NewLabels(len(tags) + pt.Len() + 1)
+					item := promutils.NewLabels(len(tags) + pt.Len())
 
 					for _, lb := range pt.GetLabels() {
 						if lb.Name == "__address__" {
@@ -257,7 +257,6 @@ func (j *JobGoroutine) run(ctx context.Context) {
 						item.Add("__name__", metrics[i].Name()+"_"+k)
 					}
 
-					item.Add("cplugin", j.plugin)
 					item.RemoveDuplicates()
 
 					// metric relabel

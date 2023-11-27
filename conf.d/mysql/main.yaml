@@ -1,5 +1,7 @@
 global:
   scrape_interval: 15s
+  external_labels:
+    cplugin: 'mysql'
 
 # scrape_configs:
 # - job_name: 'mysql_prod'
