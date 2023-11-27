@@ -26,6 +26,8 @@ type Global struct {
 	TlsInsecureSkipVerify bool     `toml:"ssl_skip_verfication"`
 	Tls                   string   `toml:"tls"`
 	ScraperEnabled        []string `toml:"scraper_enabled"`
+	LockWaitTimeout       int      `toml:"lock_wait_timeout"`
+	LogSlowFilter         bool     `toml:"log_slow_filter"`
 }
 
 func (g Global) FormDSN(target string) (string, error) {
@@ -400,7 +402,7 @@ func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples)
 	}
 
 	scrapers := cfg.EnabledScrapers()
-	exporter := collector.New(ctx, dsn, scrapers, ss, cfg.Queries)
+	exporter := collector.New(ctx, dsn, scrapers, ss, cfg.Queries, cfg.Global.LockWaitTimeout, cfg.Global.LogSlowFilter)
 
 	ch := make(chan prometheus.Metric)
 	go func() {

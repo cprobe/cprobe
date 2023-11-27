@@ -6,3 +6,7 @@ password = 'cProbePa55'
 # ssl_key = '/etc/mysql/ssl/client-key.pem'
 # ssl_skip_verfication = true
 # tls = 'skip-verify'
+# # Set a lock_wait_timeout (in seconds) on the connection to avoid long metadata locking.
+# lock_wait_timeout = 2
+# # Add a log_slow_filter to avoid slow query logging of scrapes. NOTE: Not supported by Oracle MySQL.
+# log_slow_filter = false

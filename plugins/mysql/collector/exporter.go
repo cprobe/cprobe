@@ -23,7 +23,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alecthomas/kingpin/v2"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/types"
 	"github.com/go-sql-driver/mysql"
@@ -51,16 +50,12 @@ var (
 )
 
 // Tunable flags.
-var (
-	exporterLockTimeout = kingpin.Flag(
-		"exporter.lock_wait_timeout",
-		"Set a lock_wait_timeout (in seconds) on the connection to avoid long metadata locking.",
-	).Default("2").Int()
-	slowLogFilter = kingpin.Flag(
-		"exporter.log_slow_filter",
-		"Add a log_slow_filter to avoid slow query logging of scrapes. NOTE: Not supported by Oracle MySQL.",
-	).Default("false").Bool()
-)
+// var (
+// 	slowLogFilter = kingpin.Flag(
+// 		"exporter.log_slow_filter",
+// 		"Add a log_slow_filter to avoid slow query logging of scrapes. NOTE: Not supported by Oracle MySQL.",
+// 	).Default("false").Bool()
+// )
 
 // metric definition
 var (
@@ -96,11 +91,11 @@ type Exporter struct {
 }
 
 // New returns a new MySQL exporter for the provided DSN.
-func New(ctx context.Context, dsn string, scrapers []Scraper, ss *types.Samples, queries []CustomQuery) *Exporter {
+func New(ctx context.Context, dsn string, scrapers []Scraper, ss *types.Samples, queries []CustomQuery, lockWaitTimeout int, logSlowFilter bool) *Exporter {
 	// Setup extra params for the DSN, default to having a lock timeout.
-	dsnParams := []string{fmt.Sprintf(timeoutParam, *exporterLockTimeout)}
+	dsnParams := []string{fmt.Sprintf(timeoutParam, lockWaitTimeout)}
 
-	if *slowLogFilter {
+	if logSlowFilter {
 		dsnParams = append(dsnParams, sessionSettingsParam)
 	}
 
