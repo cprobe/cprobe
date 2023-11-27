@@ -63,31 +63,30 @@ func (g Global) FormDSN(target string) (string, error) {
 	return config.FormatDSN(), nil
 }
 
-func (m Global) CustomizeTLS() error {
+func (g Global) CustomizeTLS() error {
 	var tlsCfg tls.Config
 	caBundle := x509.NewCertPool()
-	pemCA, err := os.ReadFile(m.SslCa)
+	pemCA, err := os.ReadFile(g.SslCa)
 	if err != nil {
 		return err
 	}
 	if ok := caBundle.AppendCertsFromPEM(pemCA); ok {
 		tlsCfg.RootCAs = caBundle
 	} else {
-		return fmt.Errorf("failed parse pem-encoded CA certificates from %s", m.SslCa)
+		return fmt.Errorf("failed parse pem-encoded CA certificates from %s", g.SslCa)
 	}
-	if m.SslCert != "" && m.SslKey != "" {
+	if g.SslCert != "" && g.SslKey != "" {
 		certPairs := make([]tls.Certificate, 0, 1)
-		keypair, err := tls.LoadX509KeyPair(m.SslCert, m.SslKey)
+		keypair, err := tls.LoadX509KeyPair(g.SslCert, g.SslKey)
 		if err != nil {
 			return fmt.Errorf("failed to parse pem-encoded SSL cert %s or SSL key %s: %w",
-				m.SslCert, m.SslKey, err)
+				g.SslCert, g.SslKey, err)
 		}
 		certPairs = append(certPairs, keypair)
 		tlsCfg.Certificates = certPairs
 	}
-	tlsCfg.InsecureSkipVerify = m.TlsInsecureSkipVerify
-	mysql.RegisterTLSConfig("custom", &tlsCfg)
-	return nil
+	tlsCfg.InsecureSkipVerify = g.TlsInsecureSkipVerify
+	return mysql.RegisterTLSConfig("custom", &tlsCfg)
 }
 
 type Config struct {
@@ -411,7 +410,7 @@ func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples)
 
 	for m := range ch {
 		if err := ss.AddPromMetric(m); err != nil {
-			logger.Warnf("failed to tranform prometheus metric: %s", err)
+			logger.Warnf("failed to transform prometheus metric: %s", err)
 		}
 	}
 
