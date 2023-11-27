@@ -9,8 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cprobe/cprobe/exporter/mysql"
-	"github.com/cprobe/cprobe/exporter/redis"
 	"github.com/cprobe/cprobe/lib/conv"
 	"github.com/cprobe/cprobe/lib/envtemplate"
 	"github.com/cprobe/cprobe/lib/fasttime"
@@ -18,6 +16,8 @@ import (
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/prompbmarshal"
 	"github.com/cprobe/cprobe/lib/promutils"
+	"github.com/cprobe/cprobe/plugins/mysql"
+	"github.com/cprobe/cprobe/plugins/redis"
 	"github.com/cprobe/cprobe/types"
 	"github.com/cprobe/cprobe/writer"
 	"gopkg.in/yaml.v2"

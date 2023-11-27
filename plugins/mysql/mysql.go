@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/cprobe/cprobe/exporter/mysql/collector"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/plugins/mysql/collector"
 	"github.com/cprobe/cprobe/types"
 	"github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
