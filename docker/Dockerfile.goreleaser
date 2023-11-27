@@ -2,7 +2,7 @@ FROM --platform=$TARGETPLATFORM ubuntu:23.04
 
 WORKDIR /app
 ADD cprobe /app
-COPY conf.d /app/conf.d
+# COPY conf.d /app/conf.d
 
 EXPOSE 5858
 
