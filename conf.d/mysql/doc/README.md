@@ -46,6 +46,14 @@ SELECT count(*) as total FROM information_schema.innodb_trx WHERE trx_state='LOC
 
 自定义 SQL 功能，通常用于监控业务数据，当然，如果现在内置的性能指标不够用，也可以通过这个扩展机制来自定义 SQL 采集更多性能指标。
 
+## 仪表盘
+
+TODO
+
+## 告警规则
+
+TODO
+
 ## 声明
 
 cprobe 是一个缝合怪，类似 grafana-agent，相当于集成了众多 exporter 为一个二进制。MySQL 的监控集成的是 [mysqld_exporter](https://github.com/prometheus/mysqld_exporter)。更多使用方法请参考原项目的文档。
