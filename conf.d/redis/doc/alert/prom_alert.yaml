@@ -1,0 +1,64 @@
+groups:
+- name: RedisRules
+  rules:
+  - alert: RedisDown
+    expr: redis_up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
+  - alert: RedisOutOfMemory
+    expr: redis_memory_used_bytes / redis_total_system_memory_bytes * 100 > 85
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} out of memory."
+
+  - alert: RedisHighMemory
+    expr: redis_config_maxmemory != 0 and redis_memory_used_bytes / redis_memory_max_bytes * 100 > 85
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} high memory."
+
+  - alert: RedisTooManyConnections
+    expr: redis_connected_clients > 200
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} too many connections."
+
+  - alert: RedisRejectConnections
+    expr: increase(redis_rejected_connections_total[1m]) > 0
+    labels:
+      severity: critical
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} reject connections."
+
+  - alert: RedisMasterMissed
+    expr: (count(redis_instance_info{role="master"}) by (cluster_name)) < 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} master missed."
+
+  - alert: RedisMultiMasterOccur
+    expr: (count(redis_instance_info{role="master"}) by (cluster_name)) > 1
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} multi master occur."
+
+  - alert: RedisConnectedSlavesChanged
+    expr: changes(redis_connected_slaves[1m]) > 0
+    labels:
+      severity: warning
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} connected slaves changed."
