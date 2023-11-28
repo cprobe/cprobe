@@ -116,6 +116,7 @@ func (*Redis) ParseConfig(bs []byte) (any, error) {
 }
 
 func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
+	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
 	cfg := c.(*Config)
 	if !strings.Contains(target, "://") {
 		target = "redis://" + target

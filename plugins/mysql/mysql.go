@@ -405,6 +405,7 @@ func (*MySQL) ParseConfig(bs []byte) (any, error) {
 // 如果直接修改 collector pkg 下面的变量，就会有并发使用变量的问题
 // 把这些自定义参数封装到一个一个的 collector.Scraper 对象中，每个 target 抓取时实例化这些 collector.Scraper 对象
 func (*MySQL) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
+	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
 	cfg := c.(*Config)
 	dsn, err := cfg.Global.FormDSN(address)
 	if err != nil {
