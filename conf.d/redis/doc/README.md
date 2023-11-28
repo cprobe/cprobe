@@ -39,7 +39,7 @@ scrape_configs:
 
 ## 告警规则
 
-- Prometheus 告警规则请参考 [这里](./alert/prom_alert.yaml)。
+- Prometheus 告警规则请参考 [这里](./alert/prom_alert_01.yaml)。
 
 ## 声明
 
