@@ -10,6 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/plugins/redis/exporter"
 	"github.com/cprobe/cprobe/types"
 	"github.com/pkg/errors"
@@ -57,10 +58,14 @@ type Config struct {
 }
 
 type Redis struct {
-	Name string
+	// 这个数据结构中未来如果有变量，千万要小心并发使用变量的问题
 }
 
-func (r *Redis) ParseConfig(bs []byte) (any, error) {
+func init() {
+	plugins.RegisterPlugin(types.PluginRedis, &Redis{})
+}
+
+func (*Redis) ParseConfig(bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
@@ -110,7 +115,7 @@ func (r *Redis) ParseConfig(bs []byte) (any, error) {
 	return &c, nil
 }
 
-func (r *Redis) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
+func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
 	cfg := c.(*Config)
 	if !strings.Contains(target, "://") {
 		target = "redis://" + target

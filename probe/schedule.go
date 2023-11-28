@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/cprobe/cprobe/plugins"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -17,6 +16,7 @@ import (
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/prompbmarshal"
 	"github.com/cprobe/cprobe/lib/promutils"
+	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/types"
 	"github.com/cprobe/cprobe/writer"
 	"gopkg.in/yaml.v2"
@@ -148,14 +148,15 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 	tomlBytes := bytesBuffer.Bytes()
 
-	plugin, err := plugins.GetPlugin(j.plugin)
-	if err != nil {
+	plugin, has := plugins.GetPlugin(j.plugin)
+	if !has {
 		logger.Errorf("job(%s) unknown plugin: %s", jobName, j.plugin)
 		return
 	}
+
 	config, err := plugin.ParseConfig(tomlBytes)
 	if err != nil {
-		logger.Errorf("job(%s) parse mysql config error: %s", jobName, err)
+		logger.Errorf("job(%s) parse plugin config error: %s", jobName, err)
 		return
 	}
 
@@ -189,7 +190,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			ss := types.NewSamples()
 
 			if err = plugin.Scrape(ctx, targetAddress, config, ss); err != nil {
-				logger.Errorf("job(%s) scrape plugin(%s) error: %s", jobName, targetAddress, err)
+				logger.Errorf("failed to scrape. job: %s, plugin: %s, target: %s, error: %s", jobName, j.plugin, targetAddress, err)
 			}
 
 			// 把抓取到的数据做格式转换，转换成 []prompbmarshal.TimeSeries

@@ -2,10 +2,8 @@ package plugins
 
 import (
 	"context"
-	"fmt"
-	"github.com/cprobe/cprobe/plugins/mysql"
+
 	"github.com/cprobe/cprobe/types"
-	"github.com/pkg/errors"
 )
 
 type Plugin interface {
@@ -15,16 +13,13 @@ type Plugin interface {
 	Scrape(ctx context.Context, target string, cfg any, ss *types.Samples) error
 }
 
-var plugin = make(map[string]Plugin)
+var registry = make(map[string]Plugin)
 
-func InitPlugin() {
-	plugin[types.PluginMySQL] = &mysql.Mysql{Name: types.PluginMySQL}
-	plugin[types.PluginRedis] = &mysql.Mysql{Name: types.PluginRedis}
+func GetPlugin(pluginName string) (Plugin, bool) {
+	p, ok := registry[pluginName]
+	return p, ok
 }
-func GetPlugin(pluginName string) (Plugin, error) {
-	p, ok := plugin[pluginName]
-	if !ok {
-		return nil, errors.New(fmt.Sprintf("Unknown plugin: %s", pluginName))
-	}
-	return p, nil
+
+func RegisterPlugin(pluginName string, p Plugin) {
+	registry[pluginName] = p
 }

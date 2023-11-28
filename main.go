@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/cprobe/cprobe/plugins"
 	"os"
 	"os/signal"
 	"strings"
@@ -72,7 +71,6 @@ func main() {
 	buildinfo.Init()
 	logger.Init()
 	runner.PrintRuntime()
-	plugins.InitPlugin()
 
 	ctx, cancel := context.WithCancel(context.Background())
 

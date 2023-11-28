@@ -11,6 +11,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/plugins/mysql/collector"
 	"github.com/cprobe/cprobe/types"
 	"github.com/go-sql-driver/mysql"
@@ -381,11 +382,15 @@ func (c *Config) EnabledScrapers() (ret []collector.Scraper) {
 	return
 }
 
-type Mysql struct {
-	Name string
+type MySQL struct {
+	// 这个数据结构中未来如果有变量，千万要小心并发使用变量的问题
 }
 
-func (m *Mysql) ParseConfig(bs []byte) (any, error) {
+func init() {
+	plugins.RegisterPlugin(types.PluginMySQL, &MySQL{})
+}
+
+func (*MySQL) ParseConfig(bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
@@ -399,7 +404,7 @@ func (m *Mysql) ParseConfig(bs []byte) (any, error) {
 // cprobe 是并发抓取很多个数据库实例的监控数据，不同的数据库实例其抓取参数可能不同
 // 如果直接修改 collector pkg 下面的变量，就会有并发使用变量的问题
 // 把这些自定义参数封装到一个一个的 collector.Scraper 对象中，每个 target 抓取时实例化这些 collector.Scraper 对象
-func (m *Mysql) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
+func (*MySQL) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
 	cfg := c.(*Config)
 	dsn, err := cfg.Global.FormDSN(address)
 	if err != nil {
