@@ -31,7 +31,7 @@ func (e *Exporter) extractLatencyLatestMetrics(outChan chan<- prometheus.Metric,
 			we're logging this only once as an Error and always as Debugf()
 		*/
 		logLatestErrOnce.Do(func() {
-			logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY LATEST, err: %s", err)
+			logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY LATEST, redis target:%s, err: %s", e.redisAddr, err)
 		})
 		// log.Debugf("cmd LATENCY LATEST, err: %s", err)
 		return
@@ -54,7 +54,7 @@ func (e *Exporter) extractLatencyHistogramMetrics(outChan chan<- prometheus.Metr
 	reply, err := redis.Values(doRedisCmd(redisConn, "LATENCY", "HISTOGRAM"))
 	if err != nil {
 		logHistogramErrOnce.Do(func() {
-			logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY HISTOGRAM, err: %s", err)
+			logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY HISTOGRAM, redis target:%s, err: %s", e.redisAddr, err)
 		})
 		// log.Debugf("cmd LATENCY HISTOGRAM, err: %s", err)
 		return
