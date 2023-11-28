@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/cprobe/cprobe/plugins"
 	"os"
 	"os/signal"
 	"strings"
@@ -71,10 +72,13 @@ func main() {
 	buildinfo.Init()
 	logger.Init()
 	runner.PrintRuntime()
+	plugins.InitPlugin()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	writer.Init(flags.ConfigDirectory)
+	if err := writer.Init(flags.ConfigDirectory); err != nil {
+		logger.Fatalf("cannot init writer: %v", err)
+	}
 
 	if err := probe.Start(ctx, flags.ConfigDirectory); err != nil {
 		logger.Fatalf("cannot start probe: %v", err)

@@ -56,7 +56,11 @@ type Config struct {
 	Global Global `toml:"global"`
 }
 
-func ParseConfig(bs []byte) (*Config, error) {
+type Redis struct {
+	Name string
+}
+
+func (r *Redis) ParseConfig(bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
@@ -106,7 +110,8 @@ func ParseConfig(bs []byte) (*Config, error) {
 	return &c, nil
 }
 
-func Scrape(_ context.Context, target string, cfg *Config, ss *types.Samples) error {
+func (r *Redis) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
+	cfg := c.(*Config)
 	if !strings.Contains(target, "://") {
 		target = "redis://" + target
 	}

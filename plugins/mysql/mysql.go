@@ -381,7 +381,11 @@ func (c *Config) EnabledScrapers() (ret []collector.Scraper) {
 	return
 }
 
-func ParseConfig(bs []byte) (*Config, error) {
+type Mysql struct {
+	Name string
+}
+
+func (m *Mysql) ParseConfig(bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
@@ -395,7 +399,8 @@ func ParseConfig(bs []byte) (*Config, error) {
 // cprobe 是并发抓取很多个数据库实例的监控数据，不同的数据库实例其抓取参数可能不同
 // 如果直接修改 collector pkg 下面的变量，就会有并发使用变量的问题
 // 把这些自定义参数封装到一个一个的 collector.Scraper 对象中，每个 target 抓取时实例化这些 collector.Scraper 对象
-func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples) error {
+func (m *Mysql) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
+	cfg := c.(*Config)
 	dsn, err := cfg.Global.FormDSN(address)
 	if err != nil {
 		return fmt.Errorf("failed to form dsn for %s: %s", address, err)
