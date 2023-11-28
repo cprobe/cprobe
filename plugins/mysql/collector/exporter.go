@@ -60,7 +60,7 @@ var (
 // metric definition
 var (
 	mysqlUp = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "instance", "up"),
+		prometheus.BuildFQName(namespace, "", "up"),
 		"Whether the MySQL server is up.",
 		nil,
 		nil,

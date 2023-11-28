@@ -1,6 +1,7 @@
 package writer
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/cprobe/cprobe/lib/logger"
@@ -23,7 +24,7 @@ func WriteTimeSeries(tss []prompbmarshal.TimeSeries) {
 				sb.WriteString(point.Labels[j].Value)
 				sb.WriteString(" ")
 			}
-			logger.Infof(">> %s %d %f ", sb.String(), point.Samples[0].Timestamp, point.Samples[0].Value)
+			fmt.Printf(">> %s %d %f\n", sb.String(), point.Samples[0].Timestamp, point.Samples[0].Value)
 		}
 		return
 	}

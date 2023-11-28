@@ -48,7 +48,7 @@ SELECT count(*) as total FROM information_schema.innodb_trx WHERE trx_state='LOC
 
 ## 仪表盘
 
-TODO
+TODO，希望社区能够贡献一些仪表盘，这个文档里直接放置 Grafana 的仪表盘 ID 或链接即可。
 
 ## 告警规则
 
