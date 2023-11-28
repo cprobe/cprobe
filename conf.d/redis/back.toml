@@ -10,7 +10,7 @@ skip_tls_verification = true
 client_cert_file = ""
 client_key_file = ""
 ca_cert_file = ""
-include_system_metrics = false
+include_system_metrics = true
 include_config_metrics = true
 redact_config_metrics = true
 
