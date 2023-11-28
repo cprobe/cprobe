@@ -8,7 +8,8 @@ cprobe 对 redis 的监控是把 [redis_exporter](https://github.com/oliver006/r
 
 ## 仪表盘
 
-- [Grafana 仪表盘](./dash/)
+- 没有使用 redis 集群或者只有一个 redis 集群，用 [这个仪表盘](./dash/grafana_redis_01.json)
+- 如果有多个 redis 集群，要为每套集群分别附加一个 cluster_name 的标签，用 [这个仪表盘](./dash/grafana_redis_02.json)
 
 ## 告警规则
 
