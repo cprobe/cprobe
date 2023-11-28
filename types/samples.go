@@ -1,6 +1,8 @@
 package types
 
 import (
+	"fmt"
+
 	"github.com/cprobe/cprobe/lib/listx"
 	"github.com/cprobe/cprobe/types/metric"
 	"github.com/prometheus/client_golang/prometheus"
@@ -47,6 +49,10 @@ func (s *Samples) AddPromMetric(m prometheus.Metric) error {
 		s.AddMetric(desc.Name(), map[string]interface{}{
 			"": pb.Counter.GetValue(),
 		}, tags)
+	} else if pb.Summary != nil {
+		s.handleSummary(pb, desc.Name(), tags)
+	} else if pb.Histogram != nil {
+		s.handleHistogram(pb, desc.Name(), tags)
 	} else {
 		s.AddMetric(desc.Name(), map[string]interface{}{
 			"": pb.Untyped.GetValue(),
@@ -54,6 +60,50 @@ func (s *Samples) AddPromMetric(m prometheus.Metric) error {
 	}
 
 	return nil
+}
+
+func (s *Samples) handleSummary(pb *dto.Metric, metricName string, tags map[string]string) {
+	count := pb.GetSummary().GetSampleCount()
+	sum := pb.GetSummary().GetSampleSum()
+
+	s.AddMetric(metricName, map[string]interface{}{
+		"count": count,
+		"sum":   sum,
+	}, tags)
+
+	for _, q := range pb.GetSummary().Quantile {
+		s.AddMetric(metricName, map[string]interface{}{
+			"quantile": q.GetValue(),
+		}, tags, map[string]string{
+			"quantile": fmt.Sprint(q.GetQuantile()),
+		})
+	}
+}
+
+func (s *Samples) handleHistogram(pb *dto.Metric, metricName string, tags map[string]string) {
+	count := pb.GetHistogram().GetSampleCount()
+	sum := pb.GetHistogram().GetSampleSum()
+
+	s.AddMetric(metricName, map[string]interface{}{
+		"count": count,
+		"sum":   sum,
+	}, tags)
+
+	s.AddMetric(metricName, map[string]interface{}{
+		"bucket": count,
+	}, tags, map[string]string{
+		"le": "+Inf",
+	})
+
+	for _, b := range pb.GetHistogram().Bucket {
+		le := fmt.Sprint(b.GetUpperBound())
+		value := float64(b.GetCumulativeCount())
+		s.AddMetric(metricName, map[string]interface{}{
+			"bucket": value,
+		}, tags, map[string]string{
+			"le": le,
+		})
+	}
 }
 
 func (s *Samples) AddMetric(mesurement string, fields map[string]interface{}, tagss ...map[string]string) {

@@ -5,15 +5,13 @@ import (
 	"strconv"
 	"strings"
 
-	"sync"
-
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/gomodule/redigo/redis"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (
-	logLatestErrOnce, logHistogramErrOnce sync.Once
+	// logLatestErrOnce, logHistogramErrOnce sync.Once
 
 	extractUsecRegexp = regexp.MustCompile(`(?m)^cmdstat_([a-zA-Z0-9\|]+):.*usec=([0-9]+).*$`)
 )
@@ -30,9 +28,9 @@ func (e *Exporter) extractLatencyLatestMetrics(outChan chan<- prometheus.Metric,
 			this can be a little too verbose, see e.g. https://github.com/oliver006/redis_exporter/issues/495
 			we're logging this only once as an Error and always as Debugf()
 		*/
-		logLatestErrOnce.Do(func() {
-			logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY LATEST, redis target:%s, err: %s", e.redisAddr, err)
-		})
+		// logLatestErrOnce.Do(func() {
+		// 	logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY LATEST, redis target:%s, err: %s", e.redisAddr, err)
+		// })
 		// log.Debugf("cmd LATENCY LATEST, err: %s", err)
 		return
 	}
@@ -53,9 +51,9 @@ func (e *Exporter) extractLatencyLatestMetrics(outChan chan<- prometheus.Metric,
 func (e *Exporter) extractLatencyHistogramMetrics(outChan chan<- prometheus.Metric, infoAll string, redisConn redis.Conn) {
 	reply, err := redis.Values(doRedisCmd(redisConn, "LATENCY", "HISTOGRAM"))
 	if err != nil {
-		logHistogramErrOnce.Do(func() {
-			logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY HISTOGRAM, redis target:%s, err: %s", e.redisAddr, err)
-		})
+		// logHistogramErrOnce.Do(func() {
+		// 	logger.Errorf("WARNING, LOGGED ONCE ONLY: cmd LATENCY HISTOGRAM, redis target:%s, err: %s", e.redisAddr, err)
+		// })
 		// log.Debugf("cmd LATENCY HISTOGRAM, err: %s", err)
 		return
 	}
