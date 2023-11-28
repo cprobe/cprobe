@@ -33,8 +33,8 @@ type Global struct {
 	ClientKeyFile       string `toml:"client_key_file"`
 	CaCertFile          string `toml:"ca_cert_file"`
 
-	IncludeSystemMetrics bool  `toml:"include_system_metrics"`
-	IncludeConfigMetrics bool  `toml:"include_config_metrics"`
+	IncludeSystemMetrics *bool `toml:"include_system_metrics"`
+	IncludeConfigMetrics *bool `toml:"include_config_metrics"`
 	RedactConfigMetrics  *bool `toml:"redact_config_metrics"`
 
 	CheckKeys                 []string `toml:"check_keys"`
@@ -93,6 +93,16 @@ func ParseConfig(bs []byte) (*Config, error) {
 		c.Global.RedactConfigMetrics = &b
 	}
 
+	if c.Global.IncludeConfigMetrics == nil {
+		b := true
+		c.Global.IncludeConfigMetrics = &b
+	}
+
+	if c.Global.IncludeSystemMetrics == nil {
+		b := true
+		c.Global.IncludeSystemMetrics = &b
+	}
+
 	return &c, nil
 }
 
@@ -131,8 +141,8 @@ func Scrape(_ context.Context, target string, cfg *Config, ss *types.Samples) er
 		ClientCertFile:            conf.ClientCertFile,
 		ClientKeyFile:             conf.ClientKeyFile,
 		CaCertFile:                conf.CaCertFile,
-		InclSystemMetrics:         conf.IncludeSystemMetrics,
-		InclConfigMetrics:         conf.IncludeConfigMetrics,
+		InclSystemMetrics:         *conf.IncludeSystemMetrics,
+		InclConfigMetrics:         *conf.IncludeConfigMetrics,
 		RedactConfigMetrics:       *conf.RedactConfigMetrics,
 		CheckKeys:                 conf.CheckKeys,
 		CheckSingleKeys:           conf.CheckSingleKeys,
