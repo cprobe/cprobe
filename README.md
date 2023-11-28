@@ -6,3 +6,4 @@
 - [安装](https://github.com/cprobe/cprobe/issues/5)
 - 插件
   - [mysql](conf.d/mysql/doc)
+  - [redis](conf.d/redis/doc)
