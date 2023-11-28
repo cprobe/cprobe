@@ -8,7 +8,7 @@ cprobe 对 redis 的监控是把 [redis_exporter](https://github.com/oliver006/r
 
 ## 仪表盘
 
-TODO，希望社区能够贡献一些仪表盘，这个文档里直接放置 Grafana 的仪表盘 ID 或链接即可。
+- [Grafana 仪表盘](./dash/)
 
 ## 告警规则
 
