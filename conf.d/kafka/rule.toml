@@ -1,0 +1,4 @@
+[global]
+namespace="kafka"
+kafka_version="2.6.2"
+topic_filter="vot-forward-center-dspt"

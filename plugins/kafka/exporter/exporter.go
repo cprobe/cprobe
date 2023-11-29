@@ -5,12 +5,11 @@ import (
 	"crypto/x509"
 	"flag"
 	"fmt"
+	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/krallistic/kazoo-go"
 	"github.com/rcrowley/go-metrics"
 	"io/ioutil"
 	"k8s.io/klog/v2"
-	"log"
-	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -22,9 +21,6 @@ import (
 	kingpin "github.com/alecthomas/kingpin/v2"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	plog "github.com/prometheus/common/promlog"
-	plogflag "github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
 )
 
@@ -80,40 +76,40 @@ type Exporter struct {
 	consumerGroupFetchAll   bool
 }
 
-type kafkaOpts struct {
-	uri                      []string
-	useSASL                  bool
-	useSASLHandshake         bool
-	saslUsername             string
-	saslPassword             string
-	saslMechanism            string
-	saslDisablePAFXFast      bool
-	useTLS                   bool
-	tlsServerName            string
-	tlsCAFile                string
-	tlsCertFile              string
-	tlsKeyFile               string
-	serverUseTLS             bool
-	serverMutualAuthEnabled  bool
-	serverTlsCAFile          string
-	serverTlsCertFile        string
-	serverTlsKeyFile         string
-	tlsInsecureSkipTLSVerify bool
-	kafkaVersion             string
-	useZooKeeperLag          bool
-	uriZookeeper             []string
-	labels                   string
-	metadataRefreshInterval  string
-	serviceName              string
-	kerberosConfigPath       string
-	realm                    string
-	keyTabPath               string
-	kerberosAuthType         string
-	offsetShowAll            bool
-	topicWorkers             int
-	allowConcurrent          bool
-	allowAutoTopicCreation   bool
-	verbosityLogLevel        int
+type KafkaOpts struct {
+	Uri                      []string
+	UseSASL                  bool
+	UseSASLHandshake         bool
+	SaslUsername             string
+	SaslPassword             string
+	SaslMechanism            string
+	SaslDisablePAFXFast      bool
+	UseTLS                   bool
+	TlsServerName            string
+	TlsCAFile                string
+	TlsCertFile              string
+	TlsKeyFile               string
+	ServerUseTLS             bool
+	ServerMutualAuthEnabled  bool
+	ServerTlsCAFile          string
+	ServerTlsCertFile        string
+	ServerTlsKeyFile         string
+	TlsInsecureSkipTLSVerify bool
+	KafkaVersion             string
+	UseZooKeeperLag          bool
+	UriZookeeper             []string
+	Labels                   string
+	MetadataRefreshInterval  string
+	ServiceName              string
+	KerberosConfigPath       string
+	Realm                    string
+	KeyTabPath               string
+	KerberosAuthType         string
+	OffsetShowAll            bool
+	TopicWorkers             int
+	AllowConcurrent          bool
+	AllowAutoTopicCreation   bool
+	VerbosityLogLevel        int
 }
 
 // CanReadCertAndKey returns true if the certificate and key files already exists,
@@ -151,20 +147,20 @@ func canReadFile(path string) bool {
 }
 
 // NewExporter returns an initialized Exporter.
-func NewExporter(opts kafkaOpts, topicFilter string, topicExclude string, groupFilter string, groupExclude string) (*Exporter, error) {
+func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupFilter string, groupExclude string) (*Exporter, error) {
 	var zookeeperClient *kazoo.Kazoo
 	config := sarama.NewConfig()
 	config.ClientID = clientID
-	kafkaVersion, err := sarama.ParseKafkaVersion(opts.kafkaVersion)
+	kafkaVersion, err := sarama.ParseKafkaVersion(opts.KafkaVersion)
 	if err != nil {
 		return nil, err
 	}
 	config.Version = kafkaVersion
 
-	if opts.useSASL {
+	if opts.UseSASL {
 		// Convert to lowercase so that SHA512 and SHA256 is still valid
-		opts.saslMechanism = strings.ToLower(opts.saslMechanism)
-		switch opts.saslMechanism {
+		opts.SaslMechanism = strings.ToLower(opts.SaslMechanism)
+		switch opts.SaslMechanism {
 		case "scram-sha512":
 			config.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient { return &XDGSCRAMClient{HashGeneratorFcn: SHA512} }
 			config.Net.SASL.Mechanism = sarama.SASLMechanism(sarama.SASLTypeSCRAMSHA512)
@@ -173,50 +169,50 @@ func NewExporter(opts kafkaOpts, topicFilter string, topicExclude string, groupF
 			config.Net.SASL.Mechanism = sarama.SASLMechanism(sarama.SASLTypeSCRAMSHA256)
 		case "gssapi":
 			config.Net.SASL.Mechanism = sarama.SASLMechanism(sarama.SASLTypeGSSAPI)
-			config.Net.SASL.GSSAPI.ServiceName = opts.serviceName
-			config.Net.SASL.GSSAPI.KerberosConfigPath = opts.kerberosConfigPath
-			config.Net.SASL.GSSAPI.Realm = opts.realm
-			config.Net.SASL.GSSAPI.Username = opts.saslUsername
-			if opts.kerberosAuthType == "keytabAuth" {
+			config.Net.SASL.GSSAPI.ServiceName = opts.ServiceName
+			config.Net.SASL.GSSAPI.KerberosConfigPath = opts.KerberosConfigPath
+			config.Net.SASL.GSSAPI.Realm = opts.Realm
+			config.Net.SASL.GSSAPI.Username = opts.SaslUsername
+			if opts.KerberosAuthType == "keytabAuth" {
 				config.Net.SASL.GSSAPI.AuthType = sarama.KRB5_KEYTAB_AUTH
-				config.Net.SASL.GSSAPI.KeyTabPath = opts.keyTabPath
+				config.Net.SASL.GSSAPI.KeyTabPath = opts.KeyTabPath
 			} else {
 				config.Net.SASL.GSSAPI.AuthType = sarama.KRB5_USER_AUTH
-				config.Net.SASL.GSSAPI.Password = opts.saslPassword
+				config.Net.SASL.GSSAPI.Password = opts.SaslPassword
 			}
-			if opts.saslDisablePAFXFast {
+			if opts.SaslDisablePAFXFast {
 				config.Net.SASL.GSSAPI.DisablePAFXFAST = true
 			}
 		case "plain":
 		default:
 			return nil, fmt.Errorf(
 				`invalid sasl mechanism "%s": can only be "scram-sha256", "scram-sha512", "gssapi" or "plain"`,
-				opts.saslMechanism,
+				opts.SaslMechanism,
 			)
 		}
 
 		config.Net.SASL.Enable = true
-		config.Net.SASL.Handshake = opts.useSASLHandshake
+		config.Net.SASL.Handshake = opts.UseSASLHandshake
 
-		if opts.saslUsername != "" {
-			config.Net.SASL.User = opts.saslUsername
+		if opts.SaslUsername != "" {
+			config.Net.SASL.User = opts.SaslUsername
 		}
 
-		if opts.saslPassword != "" {
-			config.Net.SASL.Password = opts.saslPassword
+		if opts.SaslPassword != "" {
+			config.Net.SASL.Password = opts.SaslPassword
 		}
 	}
 
-	if opts.useTLS {
+	if opts.UseTLS {
 		config.Net.TLS.Enable = true
 
 		config.Net.TLS.Config = &tls.Config{
-			ServerName:         opts.tlsServerName,
-			InsecureSkipVerify: opts.tlsInsecureSkipTLSVerify,
+			ServerName:         opts.TlsServerName,
+			InsecureSkipVerify: opts.TlsInsecureSkipTLSVerify,
 		}
 
-		if opts.tlsCAFile != "" {
-			if ca, err := ioutil.ReadFile(opts.tlsCAFile); err == nil {
+		if opts.TlsCAFile != "" {
+			if ca, err := ioutil.ReadFile(opts.TlsCAFile); err == nil {
 				config.Net.TLS.Config.RootCAs = x509.NewCertPool()
 				config.Net.TLS.Config.RootCAs.AppendCertsFromPEM(ca)
 			} else {
@@ -224,12 +220,12 @@ func NewExporter(opts kafkaOpts, topicFilter string, topicExclude string, groupF
 			}
 		}
 
-		canReadCertAndKey, err := CanReadCertAndKey(opts.tlsCertFile, opts.tlsKeyFile)
+		canReadCertAndKey, err := CanReadCertAndKey(opts.TlsCertFile, opts.TlsKeyFile)
 		if err != nil {
 			return nil, errors.Wrap(err, "error reading cert and key")
 		}
 		if canReadCertAndKey {
-			cert, err := tls.LoadX509KeyPair(opts.tlsCertFile, opts.tlsKeyFile)
+			cert, err := tls.LoadX509KeyPair(opts.TlsCertFile, opts.TlsKeyFile)
 			if err == nil {
 				config.Net.TLS.Config.Certificates = []tls.Certificate{cert}
 			} else {
@@ -238,30 +234,30 @@ func NewExporter(opts kafkaOpts, topicFilter string, topicExclude string, groupF
 		}
 	}
 
-	if opts.useZooKeeperLag {
+	if opts.UseZooKeeperLag {
 		klog.V(DEBUG).Infoln("Using zookeeper lag, so connecting to zookeeper")
-		zookeeperClient, err = kazoo.NewKazoo(opts.uriZookeeper, nil)
+		zookeeperClient, err = kazoo.NewKazoo(opts.UriZookeeper, nil)
 		if err != nil {
 			return nil, errors.Wrap(err, "error connecting to zookeeper")
 		}
 	}
 
-	interval, err := time.ParseDuration(opts.metadataRefreshInterval)
+	interval, err := time.ParseDuration(opts.MetadataRefreshInterval)
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot parse metadata refresh interval")
 	}
 
 	config.Metadata.RefreshFrequency = interval
 
-	config.Metadata.AllowAutoTopicCreation = opts.allowAutoTopicCreation
+	config.Metadata.AllowAutoTopicCreation = opts.AllowAutoTopicCreation
 
-	client, err := sarama.NewClient(opts.uri, config)
+	client, err := sarama.NewClient(opts.Uri, config)
 
 	if err != nil {
 		return nil, errors.Wrap(err, "Error Init Kafka Client")
 	}
 
-	klog.V(TRACE).Infoln("Done Init Clients")
+	logger.Infof("Done Init Clients")
 	// Init our exporter.
 	return &Exporter{
 		client:                  client,
@@ -269,13 +265,13 @@ func NewExporter(opts kafkaOpts, topicFilter string, topicExclude string, groupF
 		topicExclude:            regexp.MustCompile(topicExclude),
 		groupFilter:             regexp.MustCompile(groupFilter),
 		groupExclude:            regexp.MustCompile(groupExclude),
-		useZooKeeperLag:         opts.useZooKeeperLag,
+		useZooKeeperLag:         opts.UseZooKeeperLag,
 		zookeeperClient:         zookeeperClient,
 		nextMetadataRefresh:     time.Now(),
 		metadataRefreshInterval: interval,
-		offsetShowAll:           opts.offsetShowAll,
-		topicWorkers:            opts.topicWorkers,
-		allowConcurrent:         opts.allowConcurrent,
+		offsetShowAll:           opts.OffsetShowAll,
+		topicWorkers:            opts.TopicWorkers,
+		allowConcurrent:         opts.AllowConcurrent,
 		sgMutex:                 sync.Mutex{},
 		sgWaitCh:                nil,
 		sgChans:                 []chan<- prometheus.Metric{},
@@ -329,7 +325,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		e.sgWaitCh = make(chan struct{})
 		go e.collectChans(e.sgWaitCh)
 	} else {
-		klog.V(TRACE).Info("concurrent calls detected, waiting for first to finish")
+		logger.Infof("concurrent calls detected, waiting for first to finish")
 	}
 	// Put in another variable to ensure not overwriting it in another Collect once we wait
 	waiter := e.sgWaitCh
@@ -390,6 +386,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 	}
 
 	topics, err := e.client.Topics()
+	logger.Infof("kafka topics: ", topics)
 	if err != nil {
 		klog.Errorf("Cannot get topics: %v", err)
 		return
@@ -399,12 +396,14 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 
 	getTopicMetrics := func(topic string) {
 		defer wg.Done()
+		logger.Infof("开始获取topic指标", topic)
 
 		if !e.topicFilter.MatchString(topic) || e.topicExclude.MatchString(topic) {
 			return
 		}
 
 		partitions, err := e.client.Partitions(topic)
+		logger.Infof("the partition of topics", partitions, topics)
 		if err != nil {
 			klog.Errorf("Cannot get partitions of topic %s: %v", topic, err)
 			return
@@ -509,6 +508,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 		ok := true
 		for ok {
 			topic, open := <-topicChannel
+			logger.Warnf("open", open)
 			ok = open
 			if open {
 				getTopicMetrics(topic)
@@ -530,6 +530,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 	}
 
 	for w := 1; w <= N; w++ {
+		logger.Infof("准备获取topic指标")
 		go loopTopics()
 	}
 
@@ -708,98 +709,10 @@ func toFlagIntVar(name string, help string, value int, valueString string, targe
 	kingpin.Flag(name, help).Default(valueString).IntVar(target)
 }
 
-func main() {
-	var (
-		listenAddress = toFlagString("web.listen-address", "Address to listen on for web interface and telemetry.", ":9308")
-		metricsPath   = toFlagString("web.telemetry-path", "Path under which to expose metrics.", "/metrics")
-		topicFilter   = toFlagString("topic.filter", "Regex that determines which topics to collect.", ".*")
-		topicExclude  = toFlagString("topic.exclude", "Regex that determines which topics to exclude.", "^$")
-		groupFilter   = toFlagString("group.filter", "Regex that determines which consumer groups to collect.", ".*")
-		groupExclude  = toFlagString("group.exclude", "Regex that determines which consumer groups to exclude.", "^$")
-		logSarama     = toFlagBool("log.enable-sarama", "Turn on Sarama logging, default is false.", false, "false")
+func Setup(topicFilter string, topicExclude string, groupFilter string, groupExclude string, opts KafkaOpts, labels map[string]string) (*Exporter, error) {
 
-		opts = kafkaOpts{}
-	)
-
-	toFlagStringsVar("kafka.server", "Address (host:port) of Kafka server.", "kafka:9092", &opts.uri)
-	toFlagBoolVar("sasl.enabled", "Connect using SASL/PLAIN, default is false.", false, "false", &opts.useSASL)
-	toFlagBoolVar("sasl.handshake", "Only set this to false if using a non-Kafka SASL proxy, default is true.", true, "true", &opts.useSASLHandshake)
-	toFlagStringVar("sasl.username", "SASL user name.", "", &opts.saslUsername)
-	toFlagStringVar("sasl.password", "SASL user password.", "", &opts.saslPassword)
-	toFlagStringVar("sasl.mechanism", "The SASL SCRAM SHA algorithm sha256 or sha512 or gssapi as mechanism", "", &opts.saslMechanism)
-	toFlagStringVar("sasl.service-name", "Service name when using kerberos Auth", "", &opts.serviceName)
-	toFlagStringVar("sasl.kerberos-config-path", "Kerberos config path", "", &opts.kerberosConfigPath)
-	toFlagStringVar("sasl.realm", "Kerberos realm", "", &opts.realm)
-	toFlagStringVar("sasl.kerberos-auth-type", "Kerberos auth type. Either 'keytabAuth' or 'userAuth'", "", &opts.kerberosAuthType)
-	toFlagStringVar("sasl.keytab-path", "Kerberos keytab file path", "", &opts.keyTabPath)
-	toFlagBoolVar("sasl.disable-PA-FX-FAST", "Configure the Kerberos client to not use PA_FX_FAST, default is false.", false, "false", &opts.saslDisablePAFXFast)
-	toFlagBoolVar("tls.enabled", "Connect to Kafka using TLS, default is false.", false, "false", &opts.useTLS)
-	toFlagStringVar("tls.server-name", "Used to verify the hostname on the returned certificates unless tls.insecure-skip-tls-verify is given. The kafka server's name should be given.", "", &opts.tlsServerName)
-	toFlagStringVar("tls.ca-file", "The optional certificate authority file for Kafka TLS client authentication.", "", &opts.tlsCAFile)
-	toFlagStringVar("tls.cert-file", "The optional certificate file for Kafka client authentication.", "", &opts.tlsCertFile)
-	toFlagStringVar("tls.key-file", "The optional key file for Kafka client authentication.", "", &opts.tlsKeyFile)
-	toFlagBoolVar("server.tls.enabled", "Enable TLS for web server, default is false.", false, "false", &opts.serverUseTLS)
-	toFlagBoolVar("server.tls.mutual-auth-enabled", "Enable TLS client mutual authentication, default is false.", false, "false", &opts.serverMutualAuthEnabled)
-	toFlagStringVar("server.tls.ca-file", "The certificate authority file for the web server.", "", &opts.serverTlsCAFile)
-	toFlagStringVar("server.tls.cert-file", "The certificate file for the web server.", "", &opts.serverTlsCertFile)
-	toFlagStringVar("server.tls.key-file", "The key file for the web server.", "", &opts.serverTlsKeyFile)
-	toFlagBoolVar("tls.insecure-skip-tls-verify", "If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure. Default is false", false, "false", &opts.tlsInsecureSkipTLSVerify)
-	toFlagStringVar("kafka.version", "Kafka broker version", sarama.V2_0_0_0.String(), &opts.kafkaVersion)
-	toFlagBoolVar("use.consumelag.zookeeper", "if you need to use a group from zookeeper, default is false", false, "false", &opts.useZooKeeperLag)
-	toFlagStringsVar("zookeeper.server", "Address (hosts) of zookeeper server.", "localhost:2181", &opts.uriZookeeper)
-	toFlagStringVar("kafka.labels", "Kafka cluster name", "", &opts.labels)
-	toFlagStringVar("refresh.metadata", "Metadata refresh interval", "30s", &opts.metadataRefreshInterval)
-	toFlagBoolVar("offset.show-all", "Whether show the offset/lag for all consumer group, otherwise, only show connected consumer groups, default is true", true, "true", &opts.offsetShowAll)
-	toFlagBoolVar("concurrent.enable", "If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters. Default is false", false, "false", &opts.allowConcurrent)
-	toFlagIntVar("topic.workers", "Number of topic workers", 100, "100", &opts.topicWorkers)
-	toFlagBoolVar("kafka.allow-auto-topic-creation", "If true, the broker may auto-create topics that we requested which do not already exist, default is false.", false, "false", &opts.allowAutoTopicCreation)
-	toFlagIntVar("verbosity", "Verbosity log level", 0, "0", &opts.verbosityLogLevel)
-
-	plConfig := plog.Config{}
-	plogflag.AddFlags(kingpin.CommandLine, &plConfig)
-	kingpin.Version(version.Print("kafka_exporter"))
-	kingpin.HelpFlag.Short('h')
-	kingpin.Parse()
-
-	labels := make(map[string]string)
-
-	// Protect against empty labels
-	if opts.labels != "" {
-		for _, label := range strings.Split(opts.labels, ",") {
-			splitted := strings.Split(label, "=")
-			if len(splitted) >= 2 {
-				labels[splitted[0]] = splitted[1]
-			}
-		}
-	}
-
-	setup(*listenAddress, *metricsPath, *topicFilter, *topicExclude, *groupFilter, *groupExclude, *logSarama, opts, labels)
-}
-
-func setup(
-	listenAddress string,
-	metricsPath string,
-	topicFilter string,
-	topicExclude string,
-	groupFilter string,
-	groupExclude string,
-	logSarama bool,
-	opts kafkaOpts,
-	labels map[string]string,
-) {
-	klog.InitFlags(flag.CommandLine)
-	if err := flag.Set("logtostderr", "true"); err != nil {
-		klog.Errorf("Error on setting logtostderr to true: %v", err)
-	}
-	err := flag.Set("v", strconv.Itoa(opts.verbosityLogLevel))
-	if err != nil {
-		klog.Errorf("Error on setting v to %v: %v", strconv.Itoa(opts.verbosityLogLevel), err)
-	}
-	defer klog.Flush()
-
-	klog.V(INFO).Infoln("Starting kafka_exporter", version.Info())
-	klog.V(DEBUG).Infoln("Build context", version.BuildContext())
-
+	logger.Infof("Starting kafka_exporter", version.Info())
+	logger.Infof("Build context", version.BuildContext())
 	clusterBrokers = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, "", "brokers"),
 		"Number of Brokers in the Kafka Cluster.",
@@ -891,84 +804,11 @@ func setup(
 		"Amount of members in a consumer group",
 		[]string{"consumergroup"}, labels,
 	)
+	exp, err := NewExporter(opts, topicFilter, topicExclude, groupFilter, groupExclude)
+	//if err != nil {
+	//	logger.Errorf("Get Exporter error: %s", err.Error())
+	//}
 
-	if logSarama {
-		sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
-	}
-
-	exporter, err := NewExporter(opts, topicFilter, topicExclude, groupFilter, groupExclude)
-	if err != nil {
-		klog.Fatalln(err)
-	}
-	defer exporter.client.Close()
-	prometheus.MustRegister(exporter)
-
-	http.Handle(metricsPath, promhttp.Handler())
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte(`<html>
-	        <head><title>Kafka Exporter</title></head>
-	        <body>
-	        <h1>Kafka Exporter</h1>
-	        <p><a href='` + metricsPath + `'>Metrics</a></p>
-	        </body>
-	        </html>`))
-		if err != nil {
-			klog.Error("Error handle / request", err)
-		}
-	})
-	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
-		// need more specific sarama check
-		_, err := w.Write([]byte("ok"))
-		if err != nil {
-			klog.Error("Error handle /healthz request", err)
-		}
-	})
-
-	if opts.serverUseTLS {
-		klog.V(INFO).Infoln("Listening on HTTPS", listenAddress)
-
-		_, err := CanReadCertAndKey(opts.serverTlsCertFile, opts.serverTlsKeyFile)
-		if err != nil {
-			klog.Error("error reading server cert and key")
-		}
-
-		clientAuthType := tls.NoClientCert
-		if opts.serverMutualAuthEnabled {
-			clientAuthType = tls.RequireAndVerifyClientCert
-		}
-
-		certPool := x509.NewCertPool()
-		if opts.serverTlsCAFile != "" {
-			if caCert, err := ioutil.ReadFile(opts.serverTlsCAFile); err == nil {
-				certPool.AppendCertsFromPEM(caCert)
-			} else {
-				klog.Error("error reading server ca")
-			}
-		}
-
-		tlsConfig := &tls.Config{
-			ClientCAs:                certPool,
-			ClientAuth:               clientAuthType,
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
-			},
-		}
-		server := &http.Server{
-			Addr:      listenAddress,
-			TLSConfig: tlsConfig,
-		}
-		klog.Fatal(server.ListenAndServeTLS(opts.serverTlsCertFile, opts.serverTlsKeyFile))
-	} else {
-		klog.V(INFO).Infoln("Listening on HTTP", listenAddress)
-		klog.Fatal(http.ListenAndServe(listenAddress, nil))
-	}
+	//prometheus.MustRegister(exp)
+	return exp, err
 }

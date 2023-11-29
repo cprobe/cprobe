@@ -2,410 +2,196 @@ package kafka
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/logger"
-	"github.com/cprobe/cprobe/plugins/mysql/collector"
+	"github.com/cprobe/cprobe/plugins"
+	"github.com/cprobe/cprobe/plugins/kafka/exporter"
 	"github.com/cprobe/cprobe/types"
-	"github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"net"
-	"os"
 	"strings"
 )
 
 type Global struct {
-	User                  string   `toml:"user"`
-	Password              string   `toml:"password"`
-	SslCa                 string   `toml:"ssl_ca"`
-	SslCert               string   `toml:"ssl_cert"`
-	SslKey                string   `toml:"ssl_key"`
-	TlsInsecureSkipVerify bool     `toml:"ssl_skip_verfication"`
-	Tls                   string   `toml:"tls"`
-	ScraperEnabled        []string `toml:"scraper_enabled"`
-	LockWaitTimeout       int      `toml:"lock_wait_timeout"`
-	LogSlowFilter         bool     `toml:"log_slow_filter"`
-}
+	KafkaServer  string `toml:"kafka_server" description:"Addresses of Kafka Server"`
+	KafkaVersion string `toml:"kafka_version" description:"Kafka broker version"`
+	KafkaLabels  string `toml:"kafka_labels" description:"Kafka cluster name"`
+	Namespace    string `toml:"namespace"`
 
-func (g Global) FormDSN(target string) (string, error) {
-	if target == "" {
-		logger.Fatalf("BUG: mysql target is blank")
-	}
+	SaslEnabled            *bool  `toml:"sasl_enabled" description:"Connect using SASL/PLAIN"`
+	SASLHandshake          *bool  `toml:"sasl_handshake" description:"Only set this to false if using a non-Kafka SASL proxy"`
+	SaslUsername           string `toml:"sasl_username" description:"SASL user name"`
+	SaslPassword           string `toml:"sasl_password" description:"SASL user password"`
+	SaslMechanism          string `toml:"sasl_mechanism" description:"SASL mechanism can be plain, scram-sha512, scram-sha256"`
+	SaslServiceName        string `toml:"sasl_service_name" description:"Service name when using Kerberos Auth"`
+	SaslKerberosConfigPath string `toml:"sasl_kerberos_config_path" description:"Kerberos config path"`
+	SaslRealm              string `toml:"sasl_realm" description:"Kerberos realm"`
+	SaslKeytabPath         string `toml:"sasl_keytab_path" description:"Kerberos keytab file path"`
+	SaslKerberosAuthType   string `toml:"sasl_kerberos_auth_type" description:"Kerberos auth type. Either 'keytabAuth' or 'userAuth'"`
 
-	config := mysql.NewConfig()
-	config.User = g.User
-	config.Passwd = g.Password
-	config.Net = "tcp"
-	if prefix := "unix://"; strings.HasPrefix(target, prefix) {
-		config.Net = "unix"
-		config.Addr = target[len(prefix):]
-	} else {
-		if _, _, err := net.SplitHostPort(target); err != nil {
-			return "", fmt.Errorf("failed to parse target: %s", err)
-		}
-		config.Addr = target
-	}
+	TLSEnabled               *bool  `toml:"tls_enabled" description:"Connect to Kafka using TLS"`
+	TLSServerName            string `toml:"tls_server_name" description:"Used to verify the hostname on the returned certificates unless tls.insecure-skip-tls-verify is given. The kafka server's name should be given"`
+	TLSCAFile                string `toml:"tls_ca_file" description:"The optional certificate authority file for Kafka TLS client authentication"`
+	TLSCertFile              string `toml:"tls_cert_file" description:"The optional certificate file for Kafka client authentication"`
+	TLSKeyFile               string `toml:"tls_key_file" description:"The optional key file for Kafka client authentication"`
+	TLSInsecureSkipTLSVerify *bool  `toml:"tls_insecure_skip_tls_verify" description:"If true, the server's certificate will not be checked for validity"`
 
-	if g.TlsInsecureSkipVerify {
-		config.TLSConfig = "skip-verify"
-	} else {
-		config.TLSConfig = g.Tls
-		if g.SslCa != "" {
-			if err := g.CustomizeTLS(); err != nil {
-				err = fmt.Errorf("failed to register a custom TLS configuration for mysql dsn: %w", err)
-				return "", err
-			}
-			config.TLSConfig = "custom"
-		}
-	}
+	TopicFilter  string `toml:"topic_filter" description:"Regex that determines which topics to collect"`
+	TopicExclude string `toml:"topic_exclude" description:"Regex that determines which topics to exclude"`
+	GroupFilter  string `toml:"group_filter" description:"Regex that determines which consumer groups to collect"`
+	GroupExclude string `toml:"group_exclude" description:"Regex that determines which consumer groups to exclude"`
 
-	return config.FormatDSN(), nil
-}
+	UseConsumeLagZookeeper *bool  `toml:"use_consume_lag_zookeeper" description:"if you need to use a group from zookeeper"`
+	ZookeeperServer        string `toml:"zookeeper_server" description:"Address (hosts) of zookeeper server"`
 
-func (g Global) CustomizeTLS() error {
-	var tlsCfg tls.Config
-	caBundle := x509.NewCertPool()
-	pemCA, err := os.ReadFile(g.SslCa)
-	if err != nil {
-		return err
-	}
-	if ok := caBundle.AppendCertsFromPEM(pemCA); ok {
-		tlsCfg.RootCAs = caBundle
-	} else {
-		return fmt.Errorf("failed parse pem-encoded CA certificates from %s", g.SslCa)
-	}
-	if g.SslCert != "" && g.SslKey != "" {
-		certPairs := make([]tls.Certificate, 0, 1)
-		keypair, err := tls.LoadX509KeyPair(g.SslCert, g.SslKey)
-		if err != nil {
-			return fmt.Errorf("failed to parse pem-encoded SSL cert %s or SSL key %s: %w",
-				g.SslCert, g.SslKey, err)
-		}
-		certPairs = append(certPairs, keypair)
-		tlsCfg.Certificates = certPairs
-	}
-	tlsCfg.InsecureSkipVerify = g.TlsInsecureSkipVerify
-	return mysql.RegisterTLSConfig("custom", &tlsCfg)
+	RefreshMetadata  string `toml:"refresh_metadata" description:"Metadata refresh interval"`
+	OffsetShowAll    *bool  `toml:"offset_show_all" description:"Whether show the offset/lag for all consumer group, otherwise, only show connected consumer groups"`
+	ConcurrentEnable *bool  `toml:"concurrent_enable" description:"If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters"`
+	TopicWorks       int    `toml:"topic_works" description:"Number of topic workers"`
+	Verbosity        int    `toml:"verbosity" description:"Verbosity log level"`
+	LogSarama        *bool  `toml:"log_sarama"`
 }
 
 type Config struct {
-	Global  *Global                 `toml:"global"`
-	Queries []collector.CustomQuery `toml:"queries"`
-
-	CollectGlobalStatus struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_global_status"`
-	CollectGlobalVariables struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_global_variables"`
-	CollectSlaveStatus struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_slave_status"`
-	CollectInfoSchemaInnodbCmp struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_innodb_cmp"`
-	CollectInfoSchemaInnodbCmpmem struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_innodb_cmpmem"`
-	CollectInfoSchemaQueryResponseTime struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_query_response_time"`
-	CollectInfoSchemaProcesslist struct {
-		Enabled         bool `toml:"enabled"`
-		MinTime         int  `toml:"min_time"`
-		ProcessesByUser bool `toml:"processes_by_user"`
-		ProcessesByHost bool `toml:"processes_by_host"`
-	} `toml:"collect_info_schema_processlist"`
-	CollectInfoSchemaTables struct {
-		Enabled   bool   `toml:"enabled"`
-		Databases string `toml:"databases"`
-	} `toml:"collect_info_schema_tables"`
-	CollectInfoSchemaInnodbTablespaces struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_innodb_tablespaces"`
-	CollectInfoSchemaInnodbMetrics struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_innodb_metrics"`
-	CollectInfoSchemaUserstats struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_userstats"`
-	CollectInfoSchemaClientstats struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_clientstats"`
-	CollectInfoSchemaTablestats struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_tablestats"`
-	CollectInfoSchemaSchemastats struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_schemastats"`
-	CollectInfoSchemaReplicaHost struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_info_schema_replica_host"`
-	CollectMysqlUser struct {
-		Enabled               bool `toml:"enabled"`
-		CollectUserPrivileges bool `toml:"collect_user_privileges"`
-	} `toml:"collect_mysql_user"`
-	CollectAutoIncrementColumns struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_auto_increment_columns"`
-	CollectBinlogSize struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_binlog_size"`
-	CollectPerfSchemaTableiowaits struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_tableiowaits"`
-	CollectPerfSchemaIndexiowaits struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_indexiowaits"`
-	CollectPerfSchemaTablelocks struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_tablelocks"`
-	CollectPerfSchemaEventsstatements struct {
-		Enabled         bool `toml:"enabled"`
-		Limit           int  `toml:"limit"`
-		Timelimit       int  `toml:"timelimit"`
-		DigestTextLimit int  `toml:"digest_text_limit"`
-	} `toml:"collect_perf_schema_eventsstatements"`
-	CollectPerfSchemaEventsstatementssum struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_eventsstatementssum"`
-	CollectPerfSchemaEventswaits struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_eventswaits"`
-	CollectPerfSchemaFileEvents struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_file_events"`
-	CollectPerfSchemaFileInstances struct {
-		Enabled      bool   `toml:"enabled"`
-		Filter       string `toml:"filter"`
-		RemovePrefix string `toml:"remove_prefix"`
-	} `toml:"collect_perf_schema_file_instances"`
-	CollectPerfSchemaMemoryEvents struct {
-		Enabled      bool   `toml:"enabled"`
-		RemovePrefix string `toml:"remove_prefix"`
-	} `toml:"collect_perf_schema_memory_events"`
-	CollectPerfSchemaReplicationGroupMembers struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_replication_group_members"`
-	CollectPerfSchemaReplicationGroupMemberStats struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_replication_group_member_stats"`
-	CollectPerfSchemaReplicationApplierStatusByWorker struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_perf_schema_replication_applier_status_by_worker"`
-	CollectSysUserSummary struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_sys_user_summary"`
-	CollectEngineTokudbStatus struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_engine_tokudb_status"`
-	CollectEngineInnodbStatus struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_engine_innodb_status"`
-	CollectHeartbeat struct {
-		Enabled  bool   `toml:"enabled"`
-		Database string `toml:"database"`
-		Table    string `toml:"table"`
-		UTC      bool   `toml:"utc"`
-	} `toml:"collect_heartbeat"`
-	CollectSlaveHosts struct {
-		Enabled bool `toml:"enabled"`
-	} `toml:"collect_slave_hosts"`
+	Global Global `toml:"global"`
 }
 
-func (c *Config) EnabledScrapers() (ret []collector.Scraper) {
-	if c.CollectGlobalStatus.Enabled {
-		ret = append(ret, collector.ScrapeGlobalStatus{})
-	}
-
-	if c.CollectGlobalVariables.Enabled {
-		ret = append(ret, collector.ScrapeGlobalVariables{})
-	}
-
-	if c.CollectSlaveStatus.Enabled {
-		ret = append(ret, collector.ScrapeSlaveStatus{})
-	}
-
-	if c.CollectInfoSchemaInnodbCmp.Enabled {
-		ret = append(ret, collector.ScrapeInnodbCmp{})
-	}
-
-	if c.CollectInfoSchemaInnodbCmpmem.Enabled {
-		ret = append(ret, collector.ScrapeInnodbCmpMem{})
-	}
-
-	if c.CollectInfoSchemaQueryResponseTime.Enabled {
-		ret = append(ret, collector.ScrapeQueryResponseTime{})
-	}
-
-	if c.CollectInfoSchemaProcesslist.Enabled {
-		ret = append(ret, collector.ScrapeProcesslist{
-			ProcesslistMinTime: c.CollectInfoSchemaProcesslist.MinTime,
-			ProcessesByUser:    c.CollectInfoSchemaProcesslist.ProcessesByUser,
-			ProcessesByHost:    c.CollectInfoSchemaProcesslist.ProcessesByHost,
-		})
-	}
-
-	if c.CollectInfoSchemaTables.Enabled {
-		ret = append(ret, collector.ScrapeTableSchema{
-			TableSchemaDatabases: c.CollectInfoSchemaTables.Databases,
-		})
-	}
-
-	if c.CollectInfoSchemaInnodbTablespaces.Enabled {
-		ret = append(ret, collector.ScrapeInfoSchemaInnodbTablespaces{})
-	}
-
-	if c.CollectInfoSchemaInnodbMetrics.Enabled {
-		ret = append(ret, collector.ScrapeInnodbMetrics{})
-	}
-
-	if c.CollectInfoSchemaUserstats.Enabled {
-		ret = append(ret, collector.ScrapeUserStat{})
-	}
-
-	if c.CollectInfoSchemaClientstats.Enabled {
-		ret = append(ret, collector.ScrapeClientStat{})
-	}
-
-	if c.CollectInfoSchemaTablestats.Enabled {
-		ret = append(ret, collector.ScrapeTableStat{})
-	}
-
-	if c.CollectInfoSchemaSchemastats.Enabled {
-		ret = append(ret, collector.ScrapeSchemaStat{})
-	}
-
-	if c.CollectInfoSchemaReplicaHost.Enabled {
-		ret = append(ret, collector.ScrapeReplicaHost{})
-	}
-
-	if c.CollectMysqlUser.Enabled {
-		ret = append(ret, collector.ScrapeUser{
-			UserPrivilegesFlag: c.CollectMysqlUser.CollectUserPrivileges,
-		})
-	}
-
-	if c.CollectAutoIncrementColumns.Enabled {
-		ret = append(ret, collector.ScrapeAutoIncrementColumns{})
-	}
-
-	if c.CollectBinlogSize.Enabled {
-		ret = append(ret, collector.ScrapeBinlogSize{})
-	}
-
-	if c.CollectPerfSchemaTableiowaits.Enabled {
-		ret = append(ret, collector.ScrapePerfTableIOWaits{})
-	}
-
-	if c.CollectPerfSchemaIndexiowaits.Enabled {
-		ret = append(ret, collector.ScrapePerfIndexIOWaits{})
-	}
-
-	if c.CollectPerfSchemaTablelocks.Enabled {
-		ret = append(ret, collector.ScrapePerfTableLockWaits{})
-	}
-
-	if c.CollectPerfSchemaEventsstatements.Enabled {
-		ret = append(ret, collector.ScrapePerfEventsStatements{
-			PerfEventsStatementsLimit:           c.CollectPerfSchemaEventsstatements.Limit,
-			PerfEventsStatementsTimeLimit:       c.CollectPerfSchemaEventsstatements.Timelimit,
-			PerfEventsStatementsDigestTextLimit: c.CollectPerfSchemaEventsstatements.DigestTextLimit,
-		})
-	}
-
-	if c.CollectPerfSchemaEventsstatementssum.Enabled {
-		ret = append(ret, collector.ScrapePerfEventsStatementsSum{})
-	}
-
-	if c.CollectPerfSchemaEventswaits.Enabled {
-		ret = append(ret, collector.ScrapePerfEventsWaits{})
-	}
-
-	if c.CollectPerfSchemaFileEvents.Enabled {
-		ret = append(ret, collector.ScrapePerfFileEvents{})
-	}
-
-	if c.CollectPerfSchemaFileInstances.Enabled {
-		ret = append(ret, collector.ScrapePerfFileInstances{
-			PerformanceSchemaFileInstancesFilter:       c.CollectPerfSchemaFileInstances.Filter,
-			PerformanceSchemaFileInstancesRemovePrefix: c.CollectPerfSchemaFileInstances.RemovePrefix,
-		})
-	}
-
-	if c.CollectPerfSchemaMemoryEvents.Enabled {
-		ret = append(ret, collector.ScrapePerfMemoryEvents{
-			PerformanceSchemaMemoryEventsRemovePrefix: c.CollectPerfSchemaMemoryEvents.RemovePrefix,
-		})
-	}
-
-	if c.CollectPerfSchemaReplicationGroupMembers.Enabled {
-		ret = append(ret, collector.ScrapePerfReplicationGroupMembers{})
-	}
-
-	if c.CollectPerfSchemaReplicationGroupMemberStats.Enabled {
-		ret = append(ret, collector.ScrapePerfReplicationGroupMemberStats{})
-	}
-
-	if c.CollectPerfSchemaReplicationApplierStatusByWorker.Enabled {
-		ret = append(ret, collector.ScrapePerfReplicationApplierStatsByWorker{})
-	}
-
-	if c.CollectSysUserSummary.Enabled {
-		ret = append(ret, collector.ScrapeSysUserSummary{})
-	}
-
-	if c.CollectEngineTokudbStatus.Enabled {
-		ret = append(ret, collector.ScrapeEngineTokudbStatus{})
-	}
-
-	if c.CollectEngineInnodbStatus.Enabled {
-		ret = append(ret, collector.ScrapeEngineInnodbStatus{})
-	}
-
-	if c.CollectHeartbeat.Enabled {
-		ret = append(ret, collector.ScrapeHeartbeat{
-			CollectHeartbeatDatabase: c.CollectHeartbeat.Database,
-			CollectHeartbeatTable:    c.CollectHeartbeat.Table,
-			CollectHeartbeatUtc:      c.CollectHeartbeat.UTC,
-		})
-	}
-
-	if c.CollectSlaveHosts.Enabled {
-		ret = append(ret, collector.ScrapeSlaveHosts{})
-	}
-
-	return
+type Kafka struct {
+	// 这个数据结构中未来如果有变量，千万要小心并发使用变量的问题
 }
 
-func ParseConfig(bs []byte) (*Config, error) {
+func init() {
+	plugins.RegisterPlugin(types.PluginKafka, &Kafka{})
+}
+
+func (*Kafka) ParseConfig(bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
 		return nil, err
 	}
 
+	if c.Global.Namespace == "" {
+		c.Global.Namespace = "kafka"
+	}
+
+	if c.Global.RefreshMetadata == "" {
+		c.Global.RefreshMetadata = "30s"
+	}
+
+	if c.Global.OffsetShowAll == nil {
+		b := true
+		c.Global.OffsetShowAll = &b
+	}
+
+	if c.Global.ConcurrentEnable == nil {
+		b := false
+		c.Global.ConcurrentEnable = &b
+	}
+
+	if c.Global.TopicWorks == 0 {
+		c.Global.TopicWorks = 100
+	}
+
+	if c.Global.Verbosity == 0 {
+		c.Global.Verbosity = 0
+	}
+
+	if c.Global.SaslEnabled == nil {
+		b := false
+		c.Global.SaslEnabled = &b
+	}
+
+	if c.Global.SASLHandshake == nil {
+		b := false
+		c.Global.SASLHandshake = &b
+	}
+
+	if c.Global.TLSEnabled == nil {
+		b := false
+		c.Global.TLSEnabled = &b
+	}
+
+	if c.Global.TLSInsecureSkipTLSVerify == nil {
+		b := false
+		c.Global.TLSInsecureSkipTLSVerify = &b
+	}
+
+	if c.Global.UseConsumeLagZookeeper == nil {
+		b := false
+		c.Global.UseConsumeLagZookeeper = &b
+	}
+
 	return &c, nil
 }
 
-// mysqld_exporter 原来的很多参数都是通过命令行传的，在 cprobe 的场景下，需要改造
-// cprobe 是并发抓取很多个数据库实例的监控数据，不同的数据库实例其抓取参数可能不同
-// 如果直接修改 collector pkg 下面的变量，就会有并发使用变量的问题
-// 把这些自定义参数封装到一个一个的 collector.Scraper 对象中，每个 target 抓取时实例化这些 collector.Scraper 对象
-func Scrape(ctx context.Context, address string, cfg *Config, ss *types.Samples) error {
-	dsn, err := cfg.Global.FormDSN(address)
-	if err != nil {
-		return fmt.Errorf("failed to form dsn for %s: %s", address, err)
+func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
+	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
+	cfg := c.(*Config)
+	//if !strings.Contains(target, "://") {
+	//	target = "kafka://" + target
+	//}
+
+	//u, err := url.Parse(target)
+	//if err != nil {
+	//	return errors.WithMessagef(err, "failed to parse target %s", target)
+	//}
+
+	var targets []string
+	targets = append(targets, target)
+
+	conf := cfg.Global
+	opts := exporter.KafkaOpts{
+		Uri:                      targets,
+		UseSASL:                  *conf.SaslEnabled,
+		UseSASLHandshake:         *conf.SASLHandshake,
+		SaslUsername:             conf.SaslUsername,
+		SaslPassword:             conf.SaslPassword,
+		SaslMechanism:            conf.SaslMechanism,
+		SaslDisablePAFXFast:      false,
+		UseTLS:                   *conf.TLSEnabled,
+		TlsServerName:            conf.TLSServerName,
+		TlsCAFile:                "",
+		TlsCertFile:              conf.TLSCertFile,
+		TlsKeyFile:               conf.TLSKeyFile,
+		TlsInsecureSkipTLSVerify: *conf.TLSInsecureSkipTLSVerify,
+		KafkaVersion:             conf.KafkaVersion,
+		UseZooKeeperLag:          *conf.UseConsumeLagZookeeper,
+		UriZookeeper:             nil,
+		Labels:                   conf.KafkaLabels,
+		MetadataRefreshInterval:  conf.RefreshMetadata,
+		ServiceName:              "",
+		KerberosConfigPath:       "",
+		Realm:                    conf.SaslRealm,
+		KeyTabPath:               "",
+		KerberosAuthType:         "",
+		OffsetShowAll:            *conf.OffsetShowAll,
+		TopicWorkers:             conf.TopicWorks,
+		AllowConcurrent:          *conf.ConcurrentEnable,
+		AllowAutoTopicCreation:   false,
+		VerbosityLogLevel:        conf.Verbosity,
 	}
 
-	scrapers := cfg.EnabledScrapers()
-	exporter := collector.New(ctx, dsn, scrapers, ss, cfg.Queries, cfg.Global.LockWaitTimeout, cfg.Global.LogSlowFilter)
+	labels := make(map[string]string)
+	if opts.Labels != "" {
+		for _, label := range strings.Split(opts.Labels, ",") {
+			splitted := strings.Split(label, "=")
+			if len(splitted) >= 2 {
+				labels[splitted[0]] = splitted[1]
+			}
+		}
+	}
+
+	exp, err := exporter.Setup(conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude, opts, labels)
+
+	////exp, err := exporter.NewRedisExporter(target, opts)
+	if err != nil {
+		return errors.Wrap(err, "failed to create kafka exporter")
+	}
 
 	ch := make(chan prometheus.Metric)
 	go func() {
-		exporter.Collect(ch)
+		exp.Collect(ch)
 		close(ch)
 	}()
 
