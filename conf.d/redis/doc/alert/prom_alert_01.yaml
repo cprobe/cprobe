@@ -70,3 +70,11 @@ groups:
       severity: warning
     annotations:
       description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} too many clients."
+
+  - alert: RedisLatencyHigh
+    expr: sum(rate(redis_commands_duration_seconds_total[5m])) by (instance) / sum(rate(redis_commands_processed_total[5m])) by (instance) > 0.250
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "Redis instance {{ $labels.instance }} latency high."
