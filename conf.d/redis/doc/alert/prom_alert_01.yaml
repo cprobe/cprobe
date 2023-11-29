@@ -18,7 +18,7 @@ groups:
       description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} out of memory."
 
   - alert: RedisHighMemory
-    expr: redis_config_maxmemory != 0 and redis_memory_used_bytes / redis_memory_max_bytes * 100 > 85
+    expr: redis_memory_used_bytes / redis_config_maxmemory * 100 > 85 and redis_config_maxmemory > 0
     for: 1m
     labels:
       severity: warning
@@ -62,3 +62,11 @@ groups:
       severity: warning
     annotations:
       description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} connected slaves changed."
+
+  - alert: RedisTooManyClients
+    expr: redis_connected_clients / redis_config_maxclients * 100 > 85 and redis_config_maxclients > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      description: "Redis instance {{ $labels.instance }} of job {{ $labels.job }} too many clients."

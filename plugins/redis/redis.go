@@ -10,6 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/plugins/redis/exporter"
 	"github.com/cprobe/cprobe/types"
 	"github.com/pkg/errors"
@@ -56,7 +57,15 @@ type Config struct {
 	Global Global `toml:"global"`
 }
 
-func ParseConfig(bs []byte) (*Config, error) {
+type Redis struct {
+	// 这个数据结构中未来如果有变量，千万要小心并发使用变量的问题
+}
+
+func init() {
+	plugins.RegisterPlugin(types.PluginRedis, &Redis{})
+}
+
+func (*Redis) ParseConfig(bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
@@ -106,7 +115,9 @@ func ParseConfig(bs []byte) (*Config, error) {
 	return &c, nil
 }
 
-func Scrape(_ context.Context, target string, cfg *Config, ss *types.Samples) error {
+func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
+	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
+	cfg := c.(*Config)
 	if !strings.Contains(target, "://") {
 		target = "redis://" + target
 	}

@@ -16,8 +16,7 @@ import (
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/prompbmarshal"
 	"github.com/cprobe/cprobe/lib/promutils"
-	"github.com/cprobe/cprobe/plugins/mysql"
-	"github.com/cprobe/cprobe/plugins/redis"
+	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/types"
 	"github.com/cprobe/cprobe/writer"
 	"gopkg.in/yaml.v2"
@@ -149,25 +148,15 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 	tomlBytes := bytesBuffer.Bytes()
 
-	// 不同的插件配置是不同的，需要分别解析
-	var mysqlConfig *mysql.Config
-	var redisConfig *redis.Config
+	plugin, has := plugins.GetPlugin(j.plugin)
+	if !has {
+		logger.Errorf("job(%s) unknown plugin: %s", jobName, j.plugin)
+		return
+	}
 
-	switch j.plugin {
-	case types.PluginMySQL:
-		mysqlConfig, err = mysql.ParseConfig(tomlBytes)
-		if err != nil {
-			logger.Errorf("job(%s) parse mysql config error: %s", jobName, err)
-			return
-		}
-	case types.PluginRedis:
-		redisConfig, err = redis.ParseConfig(tomlBytes)
-		if err != nil {
-			logger.Errorf("job(%s) parse redis config error: %s", jobName, err)
-			return
-		}
-	default:
-		logger.Errorf("unknown plugin: %s of job: %s", j.plugin, jobName)
+	config, err := plugin.ParseConfig(tomlBytes)
+	if err != nil {
+		logger.Errorf("job(%s) parse plugin config error: %s", jobName, err)
 		return
 	}
 
@@ -200,18 +189,8 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			// 准备一个并发安全的容器，传给 Scrape 方法，Scrape 方法会把抓取到的数据放进去，外层还要做 relabel 然后最终发给 writer
 			ss := types.NewSamples()
 
-			// 不同的插件，调用不同的 Scrape 方法，未来这里会很长，毕竟每个插件都要写一个 switch case
-			switch j.plugin {
-			case types.PluginMySQL:
-				confCopy := *mysqlConfig
-				if serr := mysql.Scrape(ctx, targetAddress, &confCopy, ss); serr != nil {
-					logger.Errorf("job(%s) scrape mysql(%s) error: %s", jobName, targetAddress, serr)
-				}
-			case types.PluginRedis:
-				confCopy := *redisConfig
-				if serr := redis.Scrape(ctx, targetAddress, &confCopy, ss); serr != nil {
-					logger.Errorf("job(%s) scrape redis(%s) error: %s", jobName, targetAddress, serr)
-				}
+			if err = plugin.Scrape(ctx, targetAddress, config, ss); err != nil {
+				logger.Errorf("failed to scrape. job: %s, plugin: %s, target: %s, error: %s", jobName, j.plugin, targetAddress, err)
 			}
 
 			// 把抓取到的数据做格式转换，转换成 []prompbmarshal.TimeSeries
