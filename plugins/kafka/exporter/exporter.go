@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/Shopify/sarama"
 	"github.com/cprobe/cprobe/lib/logger"
@@ -31,7 +30,6 @@ type Exporter struct {
 	mu                    sync.Mutex
 	useZooKeeperLag       bool
 	zookeeperClient       *kazoo.Kazoo
-	nextMetadataRefresh   time.Time
 	offsetShowAll         bool
 	topicWorkers          int
 	sgMutex               sync.Mutex
@@ -152,7 +150,6 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		groupExclude:          regexp.MustCompile(groupExclude),
 		useZooKeeperLag:       opts.UseZooKeeperLag,
 		zookeeperClient:       zookeeperClient,
-		nextMetadataRefresh:   time.Now(),
 		offsetShowAll:         opts.OffsetShowAll,
 		topicWorkers:          opts.TopicWorkers,
 		sgMutex:               sync.Mutex{},
