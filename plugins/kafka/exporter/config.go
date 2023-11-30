@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/Shopify/sarama"
-	"github.com/pkg/errors"
 )
 
 func fillSaslFields(config *sarama.Config, opts KafkaOpts) error {
@@ -79,11 +78,7 @@ func fillTlsFields(config *sarama.Config, opts KafkaOpts) error {
 			}
 		}
 
-		canReadCertAndKey, err := CanReadCertAndKey(opts.TlsCertFile, opts.TlsKeyFile)
-		if err != nil {
-			return errors.Wrap(err, "error reading cert and key")
-		}
-		if canReadCertAndKey {
+		if opts.TlsCertFile != "" && opts.TlsKeyFile != "" {
 			cert, err := tls.LoadX509KeyPair(opts.TlsCertFile, opts.TlsKeyFile)
 			if err == nil {
 				config.Net.TLS.Config.Certificates = []tls.Certificate{cert}
