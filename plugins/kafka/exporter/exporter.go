@@ -47,23 +47,22 @@ var (
 // Exporter collects Kafka stats from the given server and exports them using
 // the prometheus metrics package.
 type Exporter struct {
-	client                  sarama.Client
-	topicFilter             *regexp.Regexp
-	topicExclude            *regexp.Regexp
-	groupFilter             *regexp.Regexp
-	groupExclude            *regexp.Regexp
-	mu                      sync.Mutex
-	useZooKeeperLag         bool
-	zookeeperClient         *kazoo.Kazoo
-	nextMetadataRefresh     time.Time
-	metadataRefreshInterval time.Duration
-	offsetShowAll           bool
-	topicWorkers            int
-	allowConcurrent         bool
-	sgMutex                 sync.Mutex
-	sgWaitCh                chan struct{}
-	sgChans                 []chan<- prometheus.Metric
-	consumerGroupFetchAll   bool
+	client                sarama.Client
+	topicFilter           *regexp.Regexp
+	topicExclude          *regexp.Regexp
+	groupFilter           *regexp.Regexp
+	groupExclude          *regexp.Regexp
+	mu                    sync.Mutex
+	useZooKeeperLag       bool
+	zookeeperClient       *kazoo.Kazoo
+	nextMetadataRefresh   time.Time
+	offsetShowAll         bool
+	topicWorkers          int
+	allowConcurrent       bool
+	sgMutex               sync.Mutex
+	sgWaitCh              chan struct{}
+	sgChans               []chan<- prometheus.Metric
+	consumerGroupFetchAll bool
 }
 
 type KafkaOpts struct {
@@ -90,7 +89,6 @@ type KafkaOpts struct {
 	UseZooKeeperLag          bool
 	UriZookeeper             []string
 	Labels                   string
-	MetadataRefreshInterval  string
 	ServiceName              string
 	KerberosConfigPath       string
 	Realm                    string
@@ -233,13 +231,6 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		}
 	}
 
-	interval, err := time.ParseDuration(opts.MetadataRefreshInterval)
-	if err != nil {
-		return nil, errors.Wrap(err, "Cannot parse metadata refresh interval")
-	}
-
-	config.Metadata.RefreshFrequency = interval
-
 	config.Metadata.AllowAutoTopicCreation = opts.AllowAutoTopicCreation
 
 	client, err := sarama.NewClient(opts.Uri, config)
@@ -251,22 +242,21 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 	logger.Infof("Done Init Clients")
 	// Init our exporter.
 	return &Exporter{
-		client:                  client,
-		topicFilter:             regexp.MustCompile(topicFilter),
-		topicExclude:            regexp.MustCompile(topicExclude),
-		groupFilter:             regexp.MustCompile(groupFilter),
-		groupExclude:            regexp.MustCompile(groupExclude),
-		useZooKeeperLag:         opts.UseZooKeeperLag,
-		zookeeperClient:         zookeeperClient,
-		nextMetadataRefresh:     time.Now(),
-		metadataRefreshInterval: interval,
-		offsetShowAll:           opts.OffsetShowAll,
-		topicWorkers:            opts.TopicWorkers,
-		allowConcurrent:         opts.AllowConcurrent,
-		sgMutex:                 sync.Mutex{},
-		sgWaitCh:                nil,
-		sgChans:                 []chan<- prometheus.Metric{},
-		consumerGroupFetchAll:   config.Version.IsAtLeast(sarama.V2_0_0_0),
+		client:                client,
+		topicFilter:           regexp.MustCompile(topicFilter),
+		topicExclude:          regexp.MustCompile(topicExclude),
+		groupFilter:           regexp.MustCompile(groupFilter),
+		groupExclude:          regexp.MustCompile(groupExclude),
+		useZooKeeperLag:       opts.UseZooKeeperLag,
+		zookeeperClient:       zookeeperClient,
+		nextMetadataRefresh:   time.Now(),
+		offsetShowAll:         opts.OffsetShowAll,
+		topicWorkers:          opts.TopicWorkers,
+		allowConcurrent:       opts.AllowConcurrent,
+		sgMutex:               sync.Mutex{},
+		sgWaitCh:              nil,
+		sgChans:               []chan<- prometheus.Metric{},
+		consumerGroupFetchAll: config.Version.IsAtLeast(sarama.V2_0_0_0),
 	}, nil
 }
 
@@ -364,20 +354,8 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 
 	offset := make(map[string]map[int32]int64)
 
-	now := time.Now()
-
-	if now.After(e.nextMetadataRefresh) {
-		logger.Infof("Refreshing client metadata")
-
-		if err := e.client.RefreshMetadata(); err != nil {
-			logger.Errorf("Cannot refresh topics, using cached data: %v", err)
-		}
-
-		e.nextMetadataRefresh = now.Add(e.metadataRefreshInterval)
-	}
-
 	topics, err := e.client.Topics()
-	logger.Infof("kafka topics: ", topics)
+	//logger.Infof("kafka topics: ", topics)
 	if err != nil {
 		logger.Errorf("Cannot get topics: %v", err)
 		return
@@ -395,7 +373,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 		}
 
 		partitions, err := e.client.Partitions(topic)
-		logger.Infof("the partition of topics", partitions, topics)
+		//logger.Infof("the partition of topics", partitions, topics)
 		if err != nil {
 			logger.Errorf("Cannot get partitions of topic %s: %v", topic, err)
 			return
@@ -673,82 +651,82 @@ func init() {
 //	return kingpin.Flag(name, help)
 //}
 
-func Setup(topicFilter string, topicExclude string, groupFilter string, groupExclude string, opts KafkaOpts, labels map[string]string) (*Exporter, error) {
+func Setup(topicFilter string, topicExclude string, groupFilter string, groupExclude string, opts KafkaOpts) (*Exporter, error) {
 
 	logger.Infof("Starting kafka_exporter", version.Info())
 	logger.Infof("Build context", version.BuildContext())
 	clusterBrokers = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "", "brokers"),
 		"Number of Brokers in the Kafka Cluster.",
-		nil, labels,
+		nil, nil,
 	)
 	clusterBrokerInfo = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "", "broker_info"),
 		"Information about the Kafka Broker.",
-		[]string{"id", "address"}, labels,
+		[]string{"id", "address"}, nil,
 	)
 	topicPartitions = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partitions"),
 		"Number of partitions for this Topic",
-		[]string{"topic"}, labels,
+		[]string{"topic"}, nil,
 	)
 	topicCurrentOffset = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_current_offset"),
 		"Current Offset of a Broker at Topic/Partition",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 	topicOldestOffset = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_oldest_offset"),
 		"Oldest Offset of a Broker at Topic/Partition",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 
 	topicPartitionLeader = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_leader"),
 		"Leader Broker ID of this Topic/Partition",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 
 	topicPartitionReplicas = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_replicas"),
 		"Number of Replicas for this Topic/Partition",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 
 	topicPartitionInSyncReplicas = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_in_sync_replica"),
 		"Number of In-Sync Replicas for this Topic/Partition",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 
 	topicPartitionUsesPreferredReplica = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_leader_is_preferred"),
 		"1 if Topic/Partition is using the Preferred Broker",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 
 	topicUnderReplicatedPartition = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "topic", "partition_under_replicated_partition"),
 		"1 if Topic/Partition is under Replicated",
-		[]string{"topic", "partition"}, labels,
+		[]string{"topic", "partition"}, nil,
 	)
 
 	consumergroupCurrentOffset = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "consumergroup", "current_offset"),
 		"Current Offset of a ConsumerGroup at Topic/Partition",
-		[]string{"consumergroup", "topic", "partition"}, labels,
+		[]string{"consumergroup", "topic", "partition"}, nil,
 	)
 
 	consumergroupCurrentOffsetSum = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "consumergroup", "current_offset_sum"),
 		"Current Offset of a ConsumerGroup at Topic for all partitions",
-		[]string{"consumergroup", "topic"}, labels,
+		[]string{"consumergroup", "topic"}, nil,
 	)
 
 	consumergroupLag = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "consumergroup", "lag"),
 		"Current Approximate Lag of a ConsumerGroup at Topic/Partition",
-		[]string{"consumergroup", "topic", "partition"}, labels,
+		[]string{"consumergroup", "topic", "partition"}, nil,
 	)
 
 	consumergroupLagZookeeper = prometheus.NewDesc(
@@ -760,13 +738,13 @@ func Setup(topicFilter string, topicExclude string, groupFilter string, groupExc
 	consumergroupLagSum = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "consumergroup", "lag_sum"),
 		"Current Approximate Lag of a ConsumerGroup at Topic for all partitions",
-		[]string{"consumergroup", "topic"}, labels,
+		[]string{"consumergroup", "topic"}, nil,
 	)
 
 	consumergroupMembers = prometheus.NewDesc(
 		prometheus.BuildFQName(opts.Namespace, "consumergroup", "members"),
 		"Amount of members in a consumer group",
-		[]string{"consumergroup"}, labels,
+		[]string{"consumergroup"}, nil,
 	)
 	return NewExporter(opts, topicFilter, topicExclude, groupFilter, groupExclude)
 }

@@ -1,6 +1,5 @@
 [global]
 kafka_version="2.6.2"
-kafka_labels=""
 namespace=""
 
 sasl_enabled=false
@@ -29,7 +28,6 @@ group_exclude="^$"
 use_consume_lag_zookeeper=false
 zookeeper_server=""
 
-refresh_metadata="30s"
 offset_show_all=true
 concurrent_enable=false
 topic_works =100

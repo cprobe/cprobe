@@ -14,7 +14,6 @@ import (
 
 type Global struct {
 	KafkaVersion string `toml:"kafka_version" description:"Kafka broker version"`
-	KafkaLabels  string `toml:"kafka_labels" description:"Kafka cluster name"`
 	Namespace    string `toml:"namespace"`
 
 	SaslEnabled            *bool  `toml:"sasl_enabled" description:"Connect using SASL/PLAIN"`
@@ -43,11 +42,10 @@ type Global struct {
 	UseConsumeLagZookeeper *bool  `toml:"use_consume_lag_zookeeper" description:"if you need to use a group from zookeeper"`
 	ZookeeperServer        string `toml:"zookeeper_server" description:"Address (hosts) of zookeeper server"`
 
-	RefreshMetadata  string `toml:"refresh_metadata" description:"Metadata refresh interval"`
-	OffsetShowAll    *bool  `toml:"offset_show_all" description:"Whether show the offset/lag for all consumer group, otherwise, only show connected consumer groups"`
-	ConcurrentEnable *bool  `toml:"concurrent_enable" description:"If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters"`
-	TopicWorks       int    `toml:"topic_works" description:"Number of topic workers"`
-	Verbosity        int    `toml:"verbosity" description:"Verbosity log level"`
+	OffsetShowAll    *bool `toml:"offset_show_all" description:"Whether show the offset/lag for all consumer group, otherwise, only show connected consumer groups"`
+	ConcurrentEnable *bool `toml:"concurrent_enable" description:"If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters"`
+	TopicWorks       int   `toml:"topic_works" description:"Number of topic workers"`
+	Verbosity        int   `toml:"verbosity" description:"Verbosity log level"`
 }
 
 type Config struct {
@@ -71,10 +69,6 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 
 	if c.Global.Namespace == "" {
 		c.Global.Namespace = "kafka"
-	}
-
-	if c.Global.RefreshMetadata == "" {
-		c.Global.RefreshMetadata = "30s"
 	}
 
 	if c.Global.OffsetShowAll == nil {
@@ -142,14 +136,6 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
 	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
 	cfg := c.(*Config)
-	//if !strings.Contains(target, "://") {
-	//	target = "kafka://" + target
-	//}
-
-	//u, err := url.Parse(target)
-	//if err != nil {
-	//	return errors.WithMessagef(err, "failed to parse target %s", target)
-	//}
 
 	conf := cfg.Global
 	opts := exporter.KafkaOpts{
@@ -170,8 +156,6 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		KafkaVersion:             conf.KafkaVersion,
 		UseZooKeeperLag:          *conf.UseConsumeLagZookeeper,
 		UriZookeeper:             strings.Split(conf.ZookeeperServer, ","),
-		Labels:                   conf.KafkaLabels,
-		MetadataRefreshInterval:  conf.RefreshMetadata,
 		ServiceName:              "",
 		KerberosConfigPath:       "",
 		Realm:                    conf.SaslRealm,
@@ -184,17 +168,7 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		VerbosityLogLevel:        conf.Verbosity,
 	}
 
-	labels := make(map[string]string)
-	if opts.Labels != "" {
-		for _, label := range strings.Split(opts.Labels, ",") {
-			splitted := strings.Split(label, "=")
-			if len(splitted) >= 2 {
-				labels[splitted[0]] = splitted[1]
-			}
-		}
-	}
-
-	exp, err := exporter.Setup(conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude, opts, labels)
+	exp, err := exporter.Setup(conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude, opts)
 
 	////exp, err := exporter.NewRedisExporter(target, opts)
 	if err != nil {
