@@ -16,7 +16,6 @@ import (
 	"github.com/krallistic/kazoo-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/version"
 	"github.com/rcrowley/go-metrics"
 )
 
@@ -238,18 +237,6 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		consumerGroupFetchAll: config.Version.IsAtLeast(sarama.V2_0_0_0),
 	}, nil
 }
-
-//func (e *Exporter) fetchOffsetVersion() int16 {
-//	version := e.client.Config().Version
-//	if e.client.Config().Version.IsAtLeast(sarama.V2_0_0_0) {
-//		return 4
-//	} else if version.IsAtLeast(sarama.V0_10_2_0) {
-//		return 2
-//	} else if version.IsAtLeast(sarama.V0_8_2_2) {
-//		return 1
-//	}
-//	return 0
-//}
 
 // Describe describes all the metrics ever exported by the Kafka exporter. It
 // implements prometheus.Collector.
@@ -622,15 +609,9 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 
 func init() {
 	metrics.UseNilMetrics = true
-	// prometheus.MustRegister(version.NewCollector("kafka_exporter"))
 }
 
 func Setup(topicFilter string, topicExclude string, groupFilter string, groupExclude string, opts KafkaOpts) (*Exporter, error) {
-
-	logger.Infof("Starting kafka_exporter", version.Info())
-	logger.Infof("Build context", version.BuildContext())
-
 	initDesc(opts.Namespace)
-
 	return NewExporter(opts, topicFilter, topicExclude, groupFilter, groupExclude)
 }
