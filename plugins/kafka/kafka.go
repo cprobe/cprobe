@@ -2,6 +2,8 @@ package kafka
 
 import (
 	"context"
+	"strings"
+
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins"
@@ -9,7 +11,6 @@ import (
 	"github.com/cprobe/cprobe/types"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"strings"
 )
 
 type Global struct {
@@ -45,7 +46,6 @@ type Global struct {
 	OffsetShowAll    *bool `toml:"offset_show_all" description:"Whether show the offset/lag for all consumer group, otherwise, only show connected consumer groups"`
 	ConcurrentEnable *bool `toml:"concurrent_enable" description:"If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters"`
 	TopicWorks       int   `toml:"topic_works" description:"Number of topic workers"`
-	Verbosity        int   `toml:"verbosity" description:"Verbosity log level"`
 }
 
 type Config struct {
@@ -83,10 +83,6 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 
 	if c.Global.TopicWorks == 0 {
 		c.Global.TopicWorks = 100
-	}
-
-	if c.Global.Verbosity == 0 {
-		c.Global.Verbosity = 0
 	}
 
 	if c.Global.SaslEnabled == nil {
@@ -165,7 +161,6 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		TopicWorkers:             conf.TopicWorks,
 		AllowConcurrent:          *conf.ConcurrentEnable,
 		AllowAutoTopicCreation:   false,
-		VerbosityLogLevel:        conf.Verbosity,
 	}
 
 	exp, err := exporter.Setup(conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude, opts)

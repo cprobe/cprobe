@@ -74,6 +74,8 @@ func (*Redis) ParseConfig(bs []byte) (any, error) {
 
 	if c.Global.Namespace == "" {
 		c.Global.Namespace = "redis"
+	} else if c.Global.Namespace == "-" {
+		c.Global.Namespace = ""
 	}
 
 	if c.Global.ConnectionTimeout == 0 {

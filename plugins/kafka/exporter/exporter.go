@@ -4,10 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/cprobe/cprobe/lib/logger"
-	"github.com/krallistic/kazoo-go"
-	"github.com/rcrowley/go-metrics"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strconv"
@@ -16,9 +12,12 @@ import (
 	"time"
 
 	"github.com/Shopify/sarama"
+	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/krallistic/kazoo-go"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
+	"github.com/rcrowley/go-metrics"
 )
 
 const (
@@ -98,7 +97,6 @@ type KafkaOpts struct {
 	TopicWorkers             int
 	AllowConcurrent          bool
 	AllowAutoTopicCreation   bool
-	VerbosityLogLevel        int
 }
 
 // CanReadCertAndKey returns true if the certificate and key files already exists,
@@ -201,7 +199,7 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		}
 
 		if opts.TlsCAFile != "" {
-			if ca, err := ioutil.ReadFile(opts.TlsCAFile); err == nil {
+			if ca, err := os.ReadFile(opts.TlsCAFile); err == nil {
 				config.Net.TLS.Config.RootCAs = x509.NewCertPool()
 				config.Net.TLS.Config.RootCAs.AppendCertsFromPEM(ca)
 			} else {
