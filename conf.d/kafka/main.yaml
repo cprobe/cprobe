@@ -3,10 +3,10 @@ global:
   external_labels:
     cplugin: 'kafka'
 
-scrape_configs:
-- job_name: 'kafka'
-  static_configs:
-  - targets:
-    - '172.21.0.162:9092'
-  scrape_rule_files:
-  - 'rule.toml'
+#scrape_configs:
+#- job_name: 'kafka'
+#  static_configs:
+#  - targets:
+#    - '172.21.0.162:9092'
+#  scrape_rule_files:
+#  - 'rule.toml'
