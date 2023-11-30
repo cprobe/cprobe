@@ -1,0 +1,3 @@
+[global]
+namespace="kafka"
+kafka_version="2.6.2"

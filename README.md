@@ -8,3 +8,4 @@
   - [编写指南](https://github.com/cprobe/cprobe/issues/12)
   - [mysql](conf.d/mysql/doc)
   - [redis](conf.d/redis/doc)
+  - [kafka](conf.d/kafka/doc)
