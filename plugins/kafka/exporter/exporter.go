@@ -32,9 +32,6 @@ type Exporter struct {
 	zookeeperClient       *kazoo.Kazoo
 	offsetShowAll         bool
 	topicWorkers          int
-	sgMutex               sync.Mutex
-	sgWaitCh              chan struct{}
-	sgChans               []chan<- prometheus.Metric
 	consumerGroupFetchAll bool
 }
 
@@ -152,9 +149,6 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		zookeeperClient:       zookeeperClient,
 		offsetShowAll:         opts.OffsetShowAll,
 		topicWorkers:          opts.TopicWorkers,
-		sgMutex:               sync.Mutex{},
-		sgWaitCh:              nil,
-		sgChans:               []chan<- prometheus.Metric{},
 		consumerGroupFetchAll: config.Version.IsAtLeast(sarama.V2_0_0_0),
 	}, nil
 }
