@@ -5,5 +5,6 @@
   - [采集插件的设计](https://github.com/cprobe/cprobe/issues/3)
 - [安装](https://github.com/cprobe/cprobe/issues/5)
 - 插件
+  - [编写指南](https://github.com/cprobe/cprobe/issues/12)
   - [mysql](conf.d/mysql/doc)
   - [redis](conf.d/redis/doc)
