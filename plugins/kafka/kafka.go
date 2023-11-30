@@ -137,8 +137,6 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		KerberosAuthType:         conf.SaslKerberosAuthType,
 		OffsetShowAll:            *conf.OffsetShowAll,
 		TopicWorkers:             conf.TopicWorks,
-		AllowConcurrent:          conf.ConcurrentEnable,
-		AllowAutoTopicCreation:   false,
 	}
 
 	exp, err := exporter.Setup(conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude, opts)

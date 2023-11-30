@@ -34,7 +34,6 @@ type Exporter struct {
 	nextMetadataRefresh   time.Time
 	offsetShowAll         bool
 	topicWorkers          int
-	allowConcurrent       bool
 	sgMutex               sync.Mutex
 	sgWaitCh              chan struct{}
 	sgChans               []chan<- prometheus.Metric
@@ -72,8 +71,6 @@ type KafkaOpts struct {
 	KerberosAuthType         string
 	OffsetShowAll            bool
 	TopicWorkers             int
-	AllowConcurrent          bool
-	AllowAutoTopicCreation   bool
 }
 
 // CanReadCertAndKey returns true if the certificate and key files already exists,
@@ -137,7 +134,7 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		}
 	}
 
-	config.Metadata.AllowAutoTopicCreation = opts.AllowAutoTopicCreation
+	config.Metadata.AllowAutoTopicCreation = false
 
 	client, err := sarama.NewClient(opts.Uri, config)
 
@@ -158,7 +155,6 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		nextMetadataRefresh:   time.Now(),
 		offsetShowAll:         opts.OffsetShowAll,
 		topicWorkers:          opts.TopicWorkers,
-		allowConcurrent:       opts.AllowConcurrent,
 		sgMutex:               sync.Mutex{},
 		sgWaitCh:              nil,
 		sgChans:               []chan<- prometheus.Metric{},
@@ -185,57 +181,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	ch <- consumergroupLagSum
 }
 
-// Collect fetches the stats from configured Kafka location and delivers them
-// as Prometheus metrics. It implements prometheus.Collector.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	if e.allowConcurrent {
-		e.collect(ch)
-		return
-	}
-	// Locking to avoid race add
-	e.sgMutex.Lock()
-	e.sgChans = append(e.sgChans, ch)
-	// Safe to compare length since we own the Lock
-	if len(e.sgChans) == 1 {
-		e.sgWaitCh = make(chan struct{})
-		go e.collectChans(e.sgWaitCh)
-	} else {
-		logger.Infof("concurrent calls detected, waiting for first to finish")
-	}
-	// Put in another variable to ensure not overwriting it in another Collect once we wait
-	waiter := e.sgWaitCh
-	e.sgMutex.Unlock()
-	// Released lock, we have insurance that our chan will be part of the collectChan slice
-	<-waiter
-	// collectChan finished
-}
-
-func (e *Exporter) collectChans(quit chan struct{}) {
-	original := make(chan prometheus.Metric)
-	container := make([]prometheus.Metric, 0, 100)
-	go func() {
-		for metric := range original {
-			container = append(container, metric)
-		}
-	}()
-	e.collect(original)
-	close(original)
-	// Lock to avoid modification on the channel slice
-	e.sgMutex.Lock()
-	for _, ch := range e.sgChans {
-		for _, metric := range container {
-			ch <- metric
-		}
-	}
-	// Reset the slice
-	e.sgChans = e.sgChans[:0]
-	// Notify remaining waiting Collect they can return
-	close(quit)
-	// Release the lock so Collect can append to the slice again
-	e.sgMutex.Unlock()
-}
-
-func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 	var wg = sync.WaitGroup{}
 	ch <- prometheus.MustNewConstMetric(
 		clusterBrokers, prometheus.GaugeValue, float64(len(e.client.Brokers())),
