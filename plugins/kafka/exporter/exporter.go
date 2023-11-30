@@ -105,15 +105,15 @@ func CanReadCertAndKey(certPath, keyPath string) (bool, error) {
 	certReadable := canReadFile(certPath)
 	keyReadable := canReadFile(keyPath)
 
-	if certReadable == false && keyReadable == false {
+	if !certReadable && !keyReadable {
 		return false, nil
 	}
 
-	if certReadable == false {
+	if !certReadable {
 		return false, fmt.Errorf("error reading %s, certificate and key must be supplied as a pair", certPath)
 	}
 
-	if keyReadable == false {
+	if !keyReadable {
 		return false, fmt.Errorf("error reading %s, certificate and key must be supplied as a pair", keyPath)
 	}
 
@@ -641,13 +641,8 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) {
 
 func init() {
 	metrics.UseNilMetrics = true
-	prometheus.MustRegister(version.NewCollector("kafka_exporter"))
+	// prometheus.MustRegister(version.NewCollector("kafka_exporter"))
 }
-
-//func toFlag(name string, help string) *kingpin.FlagClause {
-//	flag.CommandLine.String(name, "", help) // hack around flag.Parse and klog.init flags
-//	return kingpin.Flag(name, help)
-//}
 
 func Setup(topicFilter string, topicExclude string, groupFilter string, groupExclude string, opts KafkaOpts) (*Exporter, error) {
 

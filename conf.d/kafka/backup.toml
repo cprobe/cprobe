@@ -12,6 +12,7 @@ sasl_kerberos_config_path = ""
 sasl_realm = ""
 sasl_keytab_path = ""
 sasl_kerberos_auth_type = ""
+sasl_disable_PA_FX_FAST = false
 
 tls_enabled = false
 tls_server_name = ""
@@ -26,7 +27,7 @@ group_filter = ".*"
 group_exclude = "^$"
 
 use_consume_lag_zookeeper = false
-zookeeper_server = ""
+zookeeper_servers = [""]
 
 offset_show_all = true
 concurrent_enable = false
