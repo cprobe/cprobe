@@ -7,3 +7,4 @@
 - 插件
   - [mysql](conf.d/mysql/doc)
   - [redis](conf.d/redis/doc)
+  - [kafka](conf.d/kafka/doc)

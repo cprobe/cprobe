@@ -13,7 +13,6 @@ import (
 )
 
 type Global struct {
-	KafkaServer  string `toml:"kafka_server" description:"Addresses of Kafka Server"`
 	KafkaVersion string `toml:"kafka_version" description:"Kafka broker version"`
 	KafkaLabels  string `toml:"kafka_labels" description:"Kafka cluster name"`
 	Namespace    string `toml:"namespace"`
@@ -49,7 +48,6 @@ type Global struct {
 	ConcurrentEnable *bool  `toml:"concurrent_enable" description:"If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters"`
 	TopicWorks       int    `toml:"topic_works" description:"Number of topic workers"`
 	Verbosity        int    `toml:"verbosity" description:"Verbosity log level"`
-	LogSarama        *bool  `toml:"log_sarama"`
 }
 
 type Config struct {
@@ -122,6 +120,22 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 		c.Global.UseConsumeLagZookeeper = &b
 	}
 
+	if c.Global.TopicFilter == "" {
+		c.Global.TopicFilter = ".*"
+	}
+
+	if c.Global.TopicExclude == "" {
+		c.Global.TopicExclude = "^$"
+	}
+
+	if c.Global.GroupFilter == "" {
+		c.Global.GroupFilter = ".*"
+	}
+
+	if c.Global.GroupExclude == "" {
+		c.Global.GroupExclude = "^$"
+	}
+
 	return &c, nil
 }
 
@@ -137,12 +151,10 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 	//	return errors.WithMessagef(err, "failed to parse target %s", target)
 	//}
 
-	var targets []string
-	targets = append(targets, target)
-
 	conf := cfg.Global
 	opts := exporter.KafkaOpts{
-		Uri:                      targets,
+		Namespace:                conf.Namespace,
+		Uri:                      strings.Split(target, ","),
 		UseSASL:                  *conf.SaslEnabled,
 		UseSASLHandshake:         *conf.SASLHandshake,
 		SaslUsername:             conf.SaslUsername,
@@ -157,7 +169,7 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		TlsInsecureSkipTLSVerify: *conf.TLSInsecureSkipTLSVerify,
 		KafkaVersion:             conf.KafkaVersion,
 		UseZooKeeperLag:          *conf.UseConsumeLagZookeeper,
-		UriZookeeper:             nil,
+		UriZookeeper:             strings.Split(conf.ZookeeperServer, ","),
 		Labels:                   conf.KafkaLabels,
 		MetadataRefreshInterval:  conf.RefreshMetadata,
 		ServiceName:              "",
