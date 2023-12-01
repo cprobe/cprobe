@@ -139,9 +139,12 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		TopicWorkers:             conf.TopicWorks,
 	}
 
-	exp, err := exporter.Setup(conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude, opts)
+	exp, err := exporter.NewExporter(opts, conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude)
 	if err != nil {
+		ss.AddMetric(opts.Namespace, map[string]interface{}{"up": 0.0})
 		return errors.Wrap(err, "failed to create kafka exporter")
+	} else {
+		ss.AddMetric(opts.Namespace, map[string]interface{}{"up": 1.0})
 	}
 
 	ch := make(chan prometheus.Metric)

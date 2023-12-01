@@ -17,6 +17,11 @@ const (
 	clientID = "kafka_exporter"
 )
 
+func init() {
+	// https://l1905.github.io/golang/2020/04/30/golang-kafka-sarama/
+	metrics.UseNilMetrics = true
+}
+
 // Exporter collects Kafka stats from the given server and exports them using
 // the prometheus metrics package.
 type Exporter struct {
@@ -68,6 +73,8 @@ type KafkaOpts struct {
 
 // NewExporter returns an initialized Exporter.
 func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupFilter string, groupExclude string) (*Exporter, error) {
+	initDesc(opts.Namespace)
+
 	var zookeeperClient *kazoo.Kazoo
 	config := sarama.NewConfig()
 	config.ClientID = clientID
@@ -86,23 +93,18 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 	}
 
 	if opts.UseZooKeeperLag {
-		logger.Infof("Using zookeeper lag, so connecting to zookeeper")
 		zookeeperClient, err = kazoo.NewKazoo(opts.UriZookeeper, nil)
 		if err != nil {
-			return nil, errors.Wrap(err, "error connecting to zookeeper")
+			return nil, errors.Wrap(err, "cannot connect to zookeeper")
 		}
 	}
 
 	config.Metadata.AllowAutoTopicCreation = false
-
 	client, err := sarama.NewClient(opts.Uri, config)
-
 	if err != nil {
-		return nil, errors.Wrap(err, "Error Init Kafka Client")
+		return nil, errors.Wrap(err, "cannot init kafka client")
 	}
 
-	logger.Infof("Done Init Clients")
-	// Init our exporter.
 	return &Exporter{
 		client:                client,
 		topicFilter:           regexp.MustCompile(topicFilter),
@@ -424,7 +426,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	logger.Infof("Fetching consumer group metrics")
 	if len(e.client.Brokers()) > 0 {
 		for _, broker := range e.client.Brokers() {
 			wg.Add(1)
@@ -434,13 +435,4 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	} else {
 		logger.Errorf("No valid broker, cannot get consumer group metrics")
 	}
-}
-
-func init() {
-	metrics.UseNilMetrics = true
-}
-
-func Setup(topicFilter string, topicExclude string, groupFilter string, groupExclude string, opts KafkaOpts) (*Exporter, error) {
-	initDesc(opts.Namespace)
-	return NewExporter(opts, topicFilter, topicExclude, groupFilter, groupExclude)
 }

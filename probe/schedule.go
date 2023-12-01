@@ -205,7 +205,9 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			now := int64(fasttime.UnixTimestamp() * 1000) // s -> ms
 			for i := range metrics {
 				// 统一在这里设置时间
-				metrics[i].SetTime(now)
+				if metrics[i].Time() == 0 {
+					metrics[i].SetTime(now)
+				}
 
 				// 一个 telegraf metric 有多个 fields，每个 field 都是一个 prometheus metric
 				tags := metrics[i].Tags()
@@ -230,10 +232,15 @@ func (j *JobGoroutine) run(ctx context.Context) {
 						item.Add(tagk, tagv)
 					}
 
-					if k == "" {
+					if len(k) == 0 {
 						item.Add("__name__", metrics[i].Name())
 					} else {
-						item.Add("__name__", metrics[i].Name()+"_"+k)
+						name := metrics[i].Name()
+						if len(name) == 0 {
+							item.Add("__name__", k)
+						} else {
+							item.Add("__name__", name+"_"+k)
+						}
 					}
 
 					item.RemoveDuplicates()
