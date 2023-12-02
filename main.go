@@ -33,7 +33,7 @@ var (
 	status     = flag.Bool("status", false, "Show service status")
 	update     = flag.Bool("update", false, "Update binary")
 	updateFile = flag.String("updateFile", "", "new version tar.gz file or url")
-	nohttp     = flag.Bool("no-http", false, "Disable http server")
+	nohttp     = flag.Bool("no-httpd", false, "Disable http server")
 )
 
 func init() {
