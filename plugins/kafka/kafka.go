@@ -6,6 +6,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/Shopify/sarama"
+	"github.com/cprobe/cprobe/lib/cgroup"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/plugins/kafka/exporter"
@@ -85,7 +86,7 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 	}
 
 	if c.Global.TopicWorks == 0 {
-		c.Global.TopicWorks = 100
+		c.Global.TopicWorks = cgroup.AvailableCPUs() * 2
 	}
 
 	if c.Global.TopicFilter == "" {
