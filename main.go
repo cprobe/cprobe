@@ -33,6 +33,7 @@ var (
 	status     = flag.Bool("status", false, "Show service status")
 	update     = flag.Bool("update", false, "Update binary")
 	updateFile = flag.String("updateFile", "", "new version tar.gz file or url")
+	nohttp     = flag.Bool("no-http", false, "Disable http server")
 )
 
 func init() {
@@ -82,8 +83,11 @@ func main() {
 		logger.Fatalf("cannot start probe: %v", err)
 	}
 
-	// http server
-	closeHTTP := httpd.Router().Config().Start()
+	var closeHTTP func() error
+	if !*nohttp {
+		// http server
+		closeHTTP = httpd.Router().Config().Start()
+	}
 
 	sc := make(chan os.Signal, 1)
 	// syscall.SIGUSR2 == 0xc , not available on windows
@@ -104,9 +108,10 @@ EXIT:
 		}
 	}
 
-	// stop process
-	if err := closeHTTP(); err != nil {
-		logger.Fatalf("cannot stop the webservice: %s", err)
+	if !*nohttp {
+		if err := closeHTTP(); err != nil {
+			logger.Fatalf("cannot stop the webservice: %s", err)
+		}
 	}
 
 	cancel()
