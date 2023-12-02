@@ -5,6 +5,7 @@ cprobe 对 kafka 的监控是把 [kafka_exporter](https://github.com/danielqsj/k
 - 统一化日志打印库，和 cprobe 主程序使用同一个日志库，方便日志的统一化
 - 把命令行参数、环境变量参数、配置文件参数统一化，支持了配置文件切分管理
 - 干掉了原来的 HTTP Server，毕竟 metrics 直接通过 remote write 方式发走了，不需要通过 `/metrics` 接口暴露了
+- 增加了 kafka_up 指标，用于判断 kafka 是否能够连通
 
 ## 集群监控
 
@@ -59,7 +60,7 @@ scrape_configs:
 
 ## 仪表盘
 
-- 呈现kafka-exporter监控数据,用 [这个仪表盘](./dashboard/kafka-exporter.json)
+- 呈现kafka-exporter监控数据，用 [这个仪表盘](./dash/grafana_kafka_01.json)
 
 ## 告警规则
 
@@ -67,7 +68,7 @@ TODO
 
 ## 声明
 
-cprobe 是一个缝合怪，类似 grafana-agent，相当于集成了众多 exporter 为一个二进制。Redis 的监控集成的是 [kafka-exporter](https://github.com/danielqsj/kafka_exporter)。更多使用方法请参考原项目的文档。
+cprobe 是一个缝合怪，类似 grafana-agent，相当于集成了众多 exporter 为一个二进制。Kafka 的监控集成的是 [kafka-exporter](https://github.com/danielqsj/kafka_exporter)。更多使用方法请参考原项目的文档。
 
 另外，本插件并没有其他文档，如果上面的信息不足以帮到你，你可能需要自行阅读源码了。当然，并非所有人都有能力阅读源码，所以欢迎大家提 PR 一起完善这个文档，这才是开源的正确协作模式。
 
