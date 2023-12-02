@@ -31,4 +31,4 @@ zookeeper_servers = [""]
 
 offset_show_all = true
 concurrent_enable = false
-topic_works = 100
+topic_workers = 32

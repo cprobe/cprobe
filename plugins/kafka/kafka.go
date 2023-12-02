@@ -48,7 +48,7 @@ type Global struct {
 
 	OffsetShowAll    *bool `toml:"offset_show_all" description:"Whether show the offset/lag for all consumer group, otherwise, only show connected consumer groups"`
 	ConcurrentEnable bool  `toml:"concurrent_enable" description:"If true, all scrapes will trigger kafka operations otherwise, they will share results. WARN: This should be disabled on large clusters"`
-	TopicWorks       int   `toml:"topic_works" description:"Number of topic workers"`
+	TopicWorkers     int   `toml:"topic_workers" description:"Number of topic workers"`
 }
 
 type Config struct {
@@ -85,8 +85,8 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 		c.Global.OffsetShowAll = &b
 	}
 
-	if c.Global.TopicWorks == 0 {
-		c.Global.TopicWorks = cgroup.AvailableCPUs() * 2
+	if c.Global.TopicWorkers == 0 {
+		c.Global.TopicWorkers = cgroup.AvailableCPUs() * 2
 	}
 
 	if c.Global.TopicFilter == "" {
@@ -129,7 +129,7 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		KeyTabPath:               conf.SaslKeytabPath,
 		KerberosAuthType:         conf.SaslKerberosAuthType,
 		OffsetShowAll:            *conf.OffsetShowAll,
-		TopicWorkers:             conf.TopicWorks,
+		TopicWorkers:             conf.TopicWorkers,
 	}
 
 	exp, err := exporter.NewExporter(opts, conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude)
