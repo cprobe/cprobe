@@ -383,15 +383,15 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 						consumergroupCurrentOffset, prometheus.GaugeValue, float64(currentOffset), group.GroupId, topic, strconv.FormatInt(int64(partition), 10),
 					)
 
-					e.mu.Lock()
-					if offset, ok := offset[topic][partition]; ok {
+					// e.mu.Lock()
+					if currentOffset, ok := offset[topic][partition]; ok {
 						// If the topic is consumed by that consumer group, but no offset associated with the partition
 						// forcing lag to -1 to be able to alert on that
 						var lag int64
 						if offsetFetchResponseBlock.Offset == -1 {
 							lag = -1
 						} else {
-							lag = offset - offsetFetchResponseBlock.Offset
+							lag = currentOffset - offsetFetchResponseBlock.Offset
 							lagSum += lag
 						}
 						ch <- prometheus.MustNewConstMetric(
@@ -400,7 +400,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 					} else {
 						logger.Errorf("broker(%v:%v) no offset of topic %s partition %d, cannot get consumer group lag", broker.ID(), broker.Addr(), topic, partition)
 					}
-					e.mu.Unlock()
+					// e.mu.Unlock()
 				}
 
 				ch <- prometheus.MustNewConstMetric(
