@@ -22,9 +22,9 @@ tls_key_file = ""
 tls_insecure_skip_tls_verify = false
 
 topic_filter = ".*"
-topic_exclude = "^$"
+topic_exclude = ""
 group_filter = ".*"
-group_exclude = "^$"
+group_exclude = ""
 
 use_consume_lag_zookeeper = false
 zookeeper_servers = [""]

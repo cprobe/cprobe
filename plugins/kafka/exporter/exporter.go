@@ -29,8 +29,10 @@ type Exporter struct {
 	client                sarama.Client
 	topicFilter           *regexp.Regexp
 	topicExclude          *regexp.Regexp
+	topicExcludeString    string
 	groupFilter           *regexp.Regexp
 	groupExclude          *regexp.Regexp
+	groupExcludeString    string
 	mu                    sync.Mutex
 	useZooKeeperLag       bool
 	zookeeperClient       *kazoo.Kazoo
@@ -106,18 +108,28 @@ func NewExporter(opts KafkaOpts, topicFilter string, topicExclude string, groupF
 		}
 	}
 
-	return &Exporter{
+	exp := &Exporter{
 		client:                client,
+		topicExcludeString:    topicExclude,
+		groupExcludeString:    groupExclude,
 		topicFilter:           regexp.MustCompile(topicFilter),
-		topicExclude:          regexp.MustCompile(topicExclude),
 		groupFilter:           regexp.MustCompile(groupFilter),
-		groupExclude:          regexp.MustCompile(groupExclude),
 		useZooKeeperLag:       opts.UseZooKeeperLag,
 		zookeeperClient:       zookeeperClient,
 		offsetShowAll:         opts.OffsetShowAll,
 		topicWorkers:          opts.TopicWorkers,
 		consumerGroupFetchAll: config.Version.IsAtLeast(sarama.V2_0_0_0),
-	}, nil
+	}
+
+	if topicExclude != "" {
+		exp.topicExclude = regexp.MustCompile(topicExclude)
+	}
+
+	if groupExclude != "" {
+		exp.groupExclude = regexp.MustCompile(groupExclude)
+	}
+
+	return exp, nil
 }
 
 func (e *Exporter) CloseClient() {
@@ -277,7 +289,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 	// 对于匹配的 topic 挨个采集指标
 	for _, topic := range topics {
-		if e.topicFilter.MatchString(topic) && !e.topicExclude.MatchString(topic) {
+		if e.topicFilter.MatchString(topic) && (e.topicExcludeString == "" || !e.topicExclude.MatchString(topic)) {
 			semaphone <- struct{}{}
 			topicWG.Add(1)
 			go func(topic string) {
@@ -309,7 +321,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 		var groupIds []string
 		for groupId := range groups.Groups {
-			if e.groupFilter.MatchString(groupId) && !e.groupExclude.MatchString(groupId) {
+			if e.groupFilter.MatchString(groupId) && (e.groupExcludeString == "" || !e.groupExclude.MatchString(groupId)) {
 				groupIds = append(groupIds, groupId)
 			}
 		}

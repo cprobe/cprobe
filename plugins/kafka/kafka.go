@@ -92,16 +92,8 @@ func (*Kafka) ParseConfig(bs []byte) (any, error) {
 		c.Global.TopicFilter = ".*"
 	}
 
-	if c.Global.TopicExclude == "" {
-		c.Global.TopicExclude = "^$"
-	}
-
 	if c.Global.GroupFilter == "" {
 		c.Global.GroupFilter = ".*"
-	}
-
-	if c.Global.GroupExclude == "" {
-		c.Global.GroupExclude = "^$"
 	}
 
 	return &c, nil
