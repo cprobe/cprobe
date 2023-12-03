@@ -141,6 +141,20 @@ func (u *URL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+func (u *URL) UnmarshalTOML(b []byte) error {
+	parsedURL, err := url.Parse(string(b))
+	if err != nil {
+		return fmt.Errorf("cannot parse proxy_url=%q as *url.URL: %w", string(b), err)
+	}
+
+	u.URL = parsedURL
+	return nil
+}
+
+func (u *URL) UnmarshalText(b []byte) error {
+	return u.UnmarshalTOML(b)
+}
+
 // NewDialFunc returns dial func for the given u and ac.
 func (u *URL) NewDialFunc(ac *promauth.Config) (fasthttp.DialFunc, error) {
 	if u == nil || u.URL == nil {

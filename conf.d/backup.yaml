@@ -26,7 +26,7 @@ writers:
   connect_timeout_millis: 500
   request_timeout_millis: 5000
   max_idle_conns_per_host: 2
-  proxy: ""
+  proxy_url: ""
   interface: ""
   tls_skip_verify: false
   tls_ca: /etc/ssl/certs/ca-certificates.crt

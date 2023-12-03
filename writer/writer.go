@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/cprobe/cprobe/lib/cgroup"
 	"github.com/cprobe/cprobe/lib/clienttls"
 	"github.com/cprobe/cprobe/lib/fileutil"
+	"github.com/cprobe/cprobe/lib/httpproxy"
 	"github.com/cprobe/cprobe/lib/listx"
 	"github.com/cprobe/cprobe/lib/netutil"
 	"github.com/cprobe/cprobe/lib/promrelabel"
@@ -37,7 +37,7 @@ type Writer struct {
 	RequestTimeoutMillis int64                       `yaml:"request_timeout_millis"`
 	MaxIdleConnsPerHost  int                         `yaml:"max_idle_conns_per_host"`
 	Concurrency          int                         `yaml:"concurrency"`
-	Proxy                string                      `yaml:"proxy"`
+	ProxyURL             string                      `yaml:"proxy_url"`
 	Interface            string                      `yaml:"interface"`
 	FollowRedirects      bool                        `yaml:"follow_redirects"`
 	ExtraLabels          *promutils.Labels           `yaml:"extra_labels"`
@@ -47,19 +47,6 @@ type Writer struct {
 	clienttls.ClientConfig `yaml:",inline"`
 	Client                 *http.Client                   `yaml:"-"`
 	RequestQueue           *listx.SafeList[*http.Request] `yaml:"-"`
-}
-
-type proxyFunc func(req *http.Request) (*url.URL, error)
-
-func GetProxy(proxy string) (proxyFunc, error) {
-	if len(proxy) > 0 {
-		address, err := url.Parse(proxy)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing proxy url %q: %w", proxy, err)
-		}
-		return http.ProxyURL(address), nil
-	}
-	return http.ProxyFromEnvironment, nil
 }
 
 func (w *Writer) Parse() error {
@@ -92,7 +79,7 @@ func (w *Writer) Parse() error {
 		}
 	}
 
-	proxy, err := GetProxy(w.Proxy)
+	proxy, err := httpproxy.GetProxyFunc(w.ProxyURL)
 	if err != nil {
 		return err
 	}
@@ -100,7 +87,6 @@ func (w *Writer) Parse() error {
 	trans := &http.Transport{
 		Proxy:               proxy,
 		DialContext:         dialer.DialContext,
-		DisableKeepAlives:   true,
 		MaxIdleConnsPerHost: w.MaxIdleConnsPerHost,
 	}
 

@@ -22,17 +22,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func makeJobs() map[string]map[JobID]*JobGoroutine {
-	return map[string]map[JobID]*JobGoroutine{
-		types.PluginMySQL:         make(map[JobID]*JobGoroutine),
-		types.PluginRedis:         make(map[JobID]*JobGoroutine),
-		types.PluginMongoDB:       make(map[JobID]*JobGoroutine),
-		types.PluginPostgreSQL:    make(map[JobID]*JobGoroutine),
-		types.PluginElasticSearch: make(map[JobID]*JobGoroutine),
-		types.PluginKafka:         make(map[JobID]*JobGoroutine),
-	}
-}
-
 var (
 	Jobs = makeJobs()
 )

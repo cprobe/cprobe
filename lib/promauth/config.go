@@ -57,6 +57,15 @@ func (s *Secret) UnmarshalYAML(f func(interface{}) error) error {
 	return nil
 }
 
+func (s *Secret) UnmarshalTOML(b []byte) error {
+	s.S = string(b)
+	return nil
+}
+
+func (s *Secret) UnmarshalText(b []byte) error {
+	return s.UnmarshalTOML(b)
+}
+
 // String returns the secret in plaintext.
 func (s *Secret) String() string {
 	if s == nil {
@@ -69,15 +78,15 @@ func (s *Secret) String() string {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/#tls_config
 type TLSConfig struct {
-	CA                 string `yaml:"ca,omitempty"`
-	CAFile             string `yaml:"ca_file,omitempty"`
-	Cert               string `yaml:"cert,omitempty"`
-	CertFile           string `yaml:"cert_file,omitempty"`
-	Key                string `yaml:"key,omitempty"`
-	KeyFile            string `yaml:"key_file,omitempty"`
-	ServerName         string `yaml:"server_name,omitempty"`
-	InsecureSkipVerify bool   `yaml:"insecure_skip_verify,omitempty"`
-	MinVersion         string `yaml:"min_version,omitempty"`
+	CA                 string `yaml:"ca,omitempty" toml:"ca"`
+	CAFile             string `yaml:"ca_file,omitempty" toml:"ca_file"`
+	Cert               string `yaml:"cert,omitempty" toml:"cert"`
+	CertFile           string `yaml:"cert_file,omitempty" toml:"cert_file"`
+	Key                string `yaml:"key,omitempty" toml:"key"`
+	KeyFile            string `yaml:"key_file,omitempty" toml:"key_file"`
+	ServerName         string `yaml:"server_name,omitempty" toml:"server_name"`
+	InsecureSkipVerify bool   `yaml:"insecure_skip_verify,omitempty" toml:"insecure_skip_verify"`
+	MinVersion         string `yaml:"min_version,omitempty" toml:"min_version"`
 	// Do not define MaxVersion field (max_version), since this has no sense from security PoV.
 	// This can only result in lower security level if improperly set.
 }
@@ -86,32 +95,32 @@ type TLSConfig struct {
 //
 // See https://prometheus.io/docs/prometheus/latest/configuration/configuration/
 type Authorization struct {
-	Type            string  `yaml:"type,omitempty"`
-	Credentials     *Secret `yaml:"credentials,omitempty"`
-	CredentialsFile string  `yaml:"credentials_file,omitempty"`
+	Type            string  `yaml:"type,omitempty" toml:"type"`
+	Credentials     *Secret `yaml:"credentials,omitempty" toml:"credentials"`
+	CredentialsFile string  `yaml:"credentials_file,omitempty" toml:"credentials_file"`
 }
 
 // BasicAuthConfig represents basic auth config.
 type BasicAuthConfig struct {
-	Username     string  `yaml:"username"`
-	Password     *Secret `yaml:"password,omitempty"`
-	PasswordFile string  `yaml:"password_file,omitempty"`
+	Username     string  `yaml:"username" toml:"username"`
+	Password     *Secret `yaml:"password,omitempty" toml:"password"`
+	PasswordFile string  `yaml:"password_file,omitempty" toml:"password_file"`
 }
 
 // HTTPClientConfig represents http client config.
 type HTTPClientConfig struct {
-	Authorization   *Authorization   `yaml:"authorization,omitempty"`
-	BasicAuth       *BasicAuthConfig `yaml:"basic_auth,omitempty"`
-	BearerToken     *Secret          `yaml:"bearer_token,omitempty"`
-	BearerTokenFile string           `yaml:"bearer_token_file,omitempty"`
-	OAuth2          *OAuth2Config    `yaml:"oauth2,omitempty"`
-	TLSConfig       *TLSConfig       `yaml:"tls_config,omitempty"`
+	Authorization   *Authorization   `yaml:"authorization,omitempty" toml:"authorization"`
+	BasicAuth       *BasicAuthConfig `yaml:"basic_auth,omitempty" toml:"basic_auth"`
+	BearerToken     *Secret          `yaml:"bearer_token,omitempty" toml:"bearer_token"`
+	BearerTokenFile string           `yaml:"bearer_token_file,omitempty" toml:"bearer_token_file"`
+	OAuth2          *OAuth2Config    `yaml:"oauth2,omitempty" toml:"oauth2"`
+	TLSConfig       *TLSConfig       `yaml:"tls_config,omitempty" toml:"tls_config"`
 
 	// Headers contains optional HTTP headers, which must be sent in the request to the server
-	Headers []string `yaml:"headers,omitempty"`
+	Headers []string `yaml:"headers,omitempty" toml:"headers"`
 
 	// FollowRedirects specifies whether the client should follow HTTP 3xx redirects.
-	FollowRedirects *bool `yaml:"follow_redirects,omitempty"`
+	FollowRedirects *bool `yaml:"follow_redirects,omitempty" toml:"follow_redirects"`
 
 	// Do not support enable_http2 option because of the following reasons:
 	//
@@ -126,27 +135,27 @@ type HTTPClientConfig struct {
 
 // ProxyClientConfig represents proxy client config.
 type ProxyClientConfig struct {
-	Authorization   *Authorization   `yaml:"proxy_authorization,omitempty"`
-	BasicAuth       *BasicAuthConfig `yaml:"proxy_basic_auth,omitempty"`
-	BearerToken     *Secret          `yaml:"proxy_bearer_token,omitempty"`
-	BearerTokenFile string           `yaml:"proxy_bearer_token_file,omitempty"`
-	OAuth2          *OAuth2Config    `yaml:"proxy_oauth2,omitempty"`
-	TLSConfig       *TLSConfig       `yaml:"proxy_tls_config,omitempty"`
+	Authorization   *Authorization   `yaml:"proxy_authorization,omitempty" toml:"proxy_authorization"`
+	BasicAuth       *BasicAuthConfig `yaml:"proxy_basic_auth,omitempty" toml:"proxy_basic_auth"`
+	BearerToken     *Secret          `yaml:"proxy_bearer_token,omitempty" toml:"proxy_bearer_token"`
+	BearerTokenFile string           `yaml:"proxy_bearer_token_file,omitempty" toml:"proxy_bearer_token_file"`
+	OAuth2          *OAuth2Config    `yaml:"proxy_oauth2,omitempty" toml:"proxy_oauth2"`
+	TLSConfig       *TLSConfig       `yaml:"proxy_tls_config,omitempty" toml:"proxy_tls_config"`
 
 	// Headers contains optional HTTP headers, which must be sent in the request to the proxy
-	Headers []string `yaml:"proxy_headers,omitempty"`
+	Headers []string `yaml:"proxy_headers,omitempty" toml:"proxy_headers"`
 }
 
 // OAuth2Config represent OAuth2 configuration
 type OAuth2Config struct {
-	ClientID         string            `yaml:"client_id"`
-	ClientSecret     *Secret           `yaml:"client_secret,omitempty"`
-	ClientSecretFile string            `yaml:"client_secret_file,omitempty"`
-	Scopes           []string          `yaml:"scopes,omitempty"`
-	TokenURL         string            `yaml:"token_url"`
-	EndpointParams   map[string]string `yaml:"endpoint_params,omitempty"`
-	TLSConfig        *TLSConfig        `yaml:"tls_config,omitempty"`
-	ProxyURL         string            `yaml:"proxy_url,omitempty"`
+	ClientID         string            `yaml:"client_id" toml:"client_id"`
+	ClientSecret     *Secret           `yaml:"client_secret,omitempty" toml:"client_secret"`
+	ClientSecretFile string            `yaml:"client_secret_file,omitempty" toml:"client_secret_file"`
+	Scopes           []string          `yaml:"scopes,omitempty" toml:"scopes"`
+	TokenURL         string            `yaml:"token_url" toml:"token_url"`
+	EndpointParams   map[string]string `yaml:"endpoint_params,omitempty" toml:"endpoint_params"`
+	TLSConfig        *TLSConfig        `yaml:"tls_config,omitempty" toml:"tls_config"`
+	ProxyURL         string            `yaml:"proxy_url,omitempty" toml:"proxy_url"`
 }
 
 func (o *OAuth2Config) validate() error {

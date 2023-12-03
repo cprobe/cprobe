@@ -9,14 +9,14 @@ import (
 
 // ClientConfig represents the standard client TLS config.
 type ClientConfig struct {
-	TLSCA              string `yaml:"tls_ca"`
-	TLSCert            string `yaml:"tls_cert"`
-	TLSKey             string `yaml:"tls_key"`
-	TLSKeyPwd          string `yaml:"tls_key_pwd"`
-	InsecureSkipVerify bool   `yaml:"tls_skip_verify"`
-	ServerName         string `yaml:"tls_server_name"`
-	TLSMinVersion      string `yaml:"tls_min_version"`
-	TLSMaxVersion      string `yaml:"tls_max_version"`
+	TLSCA              string `yaml:"tls_ca" toml:"tls_ca"`
+	TLSCert            string `yaml:"tls_cert" toml:"tls_cert"`
+	TLSKey             string `yaml:"tls_key" toml:"tls_key"`
+	TLSKeyPwd          string `yaml:"tls_key_pwd" toml:"tls_key_pwd"`
+	InsecureSkipVerify bool   `yaml:"tls_skip_verify" toml:"tls_skip_verify"`
+	ServerName         string `yaml:"tls_server_name" toml:"tls_server_name"`
+	TLSMinVersion      string `yaml:"tls_min_version" toml:"tls_min_version"`
+	TLSMaxVersion      string `yaml:"tls_max_version" toml:"tls_max_version"`
 }
 
 // TLSConfig returns a tls.Config, may be nil without error if TLS is not

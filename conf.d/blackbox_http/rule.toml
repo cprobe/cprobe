@@ -1,0 +1,3 @@
+[global]
+timeout = "3s"
+expected_status_codes = [200]

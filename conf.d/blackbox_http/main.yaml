@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'blackbox_http'
+
+# scrape_configs:
+# - job_name: 'blackbox_http_external'
+#   static_configs:
+#   - targets:
+#     - 'https://www.baidu.com'
+#     - 'http://127.0.0.1:9090'
+#   scrape_rule_files:
+#   - 'rule.toml'

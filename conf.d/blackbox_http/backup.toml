@@ -1,0 +1,15 @@
+[global]
+namespace = "blackbox_http"
+timeout = "3s"
+headers = [
+    "Content-Type: application/json",
+]
+basic_auth_user = "zhangsan"
+basic_auth_pass = "123456"
+method = "POST"
+payload = '''
+{"name": "ulric", "age": 100}
+'''
+
+expected_status_codes = [200]
+expected_body_regexp = ".*"
