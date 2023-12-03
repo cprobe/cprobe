@@ -75,6 +75,14 @@ func (p *BlackboxHTTP) ParseConfig(baseDir string, bs []byte) (any, error) {
 		c.Global.Namespace = ""
 	}
 
+	if c.Global.Timeout == 0 {
+		c.Global.Timeout = 3 * time.Second
+	}
+
+	if c.Global.Method == "" {
+		c.Global.Method = "GET"
+	}
+
 	return &c, nil
 }
 
