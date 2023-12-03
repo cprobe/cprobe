@@ -8,7 +8,7 @@ import (
 
 type Plugin interface {
 	// ParseConfig is used to parse config
-	ParseConfig(bs []byte) (any, error)
+	ParseConfig(baseDir string, bs []byte) (any, error)
 	// Scrape is used to scrape metrics, cfg need to be cast specific cfg
 	Scrape(ctx context.Context, target string, cfg any, ss *types.Samples) error
 }

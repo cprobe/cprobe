@@ -52,7 +52,8 @@ type Global struct {
 }
 
 type Config struct {
-	Global Global `toml:"global"`
+	BaseDir string `toml:"-"`
+	Global  Global `toml:"global"`
 }
 
 type Kafka struct {
@@ -63,12 +64,14 @@ func init() {
 	plugins.RegisterPlugin(types.PluginKafka, &Kafka{})
 }
 
-func (*Kafka) ParseConfig(bs []byte) (any, error) {
+func (*Kafka) ParseConfig(baseDir string, bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
 		return nil, err
 	}
+
+	c.BaseDir = baseDir
 
 	if c.Global.Namespace == "" {
 		c.Global.Namespace = "kafka"

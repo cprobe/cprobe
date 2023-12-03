@@ -154,7 +154,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 		return
 	}
 
-	config, err := plugin.ParseConfig(tomlBytes)
+	config, err := plugin.ParseConfig(j.scrapeConfig.ConfigRef.BaseDir, tomlBytes)
 	if err != nil {
 		logger.Errorf("job(%s) parse plugin config error: %s", jobName, err)
 		return

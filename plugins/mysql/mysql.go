@@ -93,6 +93,7 @@ func (g Global) CustomizeTLS() error {
 }
 
 type Config struct {
+	BaseDir string                  `toml:"-"`
 	Global  *Global                 `toml:"global"`
 	Queries []collector.CustomQuery `toml:"queries"`
 
@@ -390,12 +391,14 @@ func init() {
 	plugins.RegisterPlugin(types.PluginMySQL, &MySQL{})
 }
 
-func (*MySQL) ParseConfig(bs []byte) (any, error) {
+func (*MySQL) ParseConfig(baseDir string, bs []byte) (any, error) {
 	var c Config
 	err := toml.Unmarshal(bs, &c)
 	if err != nil {
 		return nil, err
 	}
+
+	c.BaseDir = baseDir
 
 	return &c, nil
 }
