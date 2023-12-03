@@ -1,11 +1,12 @@
-- [快速开始](https://github.com/cprobe/cprobe/issues/4)
-- 设计
-  - [整体设计思路](https://github.com/cprobe/cprobe/issues/1)
-  - [remote write 设计](https://github.com/cprobe/cprobe/issues/2)
-  - [采集插件的设计](https://github.com/cprobe/cprobe/issues/3)
-- [安装](https://github.com/cprobe/cprobe/issues/5)
-- 插件
-  - [编写指南](https://github.com/cprobe/cprobe/issues/12)
-  - [mysql](conf.d/mysql/doc)
-  - [redis](conf.d/redis/doc)
-  - [kafka](conf.d/kafka/doc)
+- [QuickStart](https://github.com/cprobe/cprobe/issues/4)
+- Design
+  - [Concept](https://github.com/cprobe/cprobe/issues/1)
+  - [Remote write](https://github.com/cprobe/cprobe/issues/2)
+  - [Plugin](https://github.com/cprobe/cprobe/issues/3)
+- [Install](https://github.com/cprobe/cprobe/issues/5)
+- Plugins
+  - [README](https://github.com/cprobe/cprobe/issues/12)
+  - [MySQL](conf.d/mysql/doc)
+  - [Redis](conf.d/redis/doc)
+  - [Kafka](conf.d/kafka/doc)
+  - [BlackboxHTTP](conf.d/blackbox_http/doc)
