@@ -9,4 +9,4 @@
   - [MySQL](conf.d/mysql/doc)
   - [Redis](conf.d/redis/doc)
   - [Kafka](conf.d/kafka/doc)
-  - [BlackboxHTTP](conf.d/blackbox_http/doc)
+  - [Blackbox](conf.d/blackbox/doc)
