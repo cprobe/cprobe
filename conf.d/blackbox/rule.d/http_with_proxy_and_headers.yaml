@@ -1,0 +1,6 @@
+prober: http
+http:
+  proxy_url: "http://127.0.0.1:3128"
+  proxy_connect_header:
+    Proxy-Authorization:
+      - Bearer token

@@ -1,0 +1,4 @@
+prober: http
+http:
+  proxy_url: "http://127.0.0.1:3128"
+  skip_resolve_phase_with_proxy: true

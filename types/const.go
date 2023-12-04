@@ -7,6 +7,5 @@ const (
 	PluginPostgreSQL    = "postgresql"
 	PluginElasticSearch = "elasticsearch"
 	PluginKafka         = "kafka"
-	PluginBlackboxHTTP  = "blackbox_http"
-	PluginBlackboxICMP  = "blackbox_icmp"
+	PluginBlackbox      = "blackbox"
 )

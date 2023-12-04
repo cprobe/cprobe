@@ -1,0 +1,10 @@
+prober: tcp
+timeout: 5s
+tcp:
+  query_response:
+    - expect: "OK.*STARTTLS"
+    - send: ". STARTTLS"
+    - expect: "OK"
+    - starttls: true
+    - send: ". capability"
+    - expect: "CAPABILITY IMAP4rev1"

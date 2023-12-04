@@ -42,8 +42,8 @@ type Config struct {
 type GlobalConfig struct {
 	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"` // 不能一次性启动太多 target 的抓取，比如 icmp 的抓取，一次性启动太多，会导致 icmp 的抓取超时
 	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
-	ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
-	ExternalLabels    *promutils.Labels   `yaml:"external_labels,omitempty"`
+	// ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
+	ExternalLabels *promutils.Labels `yaml:"external_labels,omitempty"`
 
 	MetricRelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs,omitempty"`
 	ParsedMetricRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`

@@ -1,7 +1,7 @@
 global:
   scrape_interval: 15s
   external_labels:
-    cplugin: 'blackbox_http'
+    cplugin: 'blackbox'
 
 scrape_configs:
 - job_name: 'blackbox_http_external'
@@ -11,4 +11,4 @@ scrape_configs:
     - 'http://127.0.0.1:9090'
     - 'http://127.0.0.1:8090'
   scrape_rule_files:
-  - 'rule.toml'
+  - 'rule.d/http_2xx_get.yaml'

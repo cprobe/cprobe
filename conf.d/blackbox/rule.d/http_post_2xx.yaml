@@ -1,0 +1,7 @@
+prober: http
+timeout: 5s
+http:
+  method: POST
+  headers:
+    Content-Type: application/json
+  body: '{}'
