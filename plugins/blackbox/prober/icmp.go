@@ -23,6 +23,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/net/icmp"
 	"golang.org/x/net/ipv4"
@@ -87,7 +88,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 	dstIPAddr, lookupTime, err := chooseProtocol(ctx, module.ICMP.IPProtocol, module.ICMP.IPProtocolFallback, target, registry)
 
 	if err != nil {
-		// level.Error(logger).Log("msg", "Error resolving address", "err", err)
+		logger.Errorf("error resolving address(%s): %v", target, err)
 		return false
 	}
 	durationGaugeVec.WithLabelValues("resolve").Add(lookupTime)
@@ -95,14 +96,12 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 	var srcIP net.IP
 	if len(module.ICMP.SourceIPAddress) > 0 {
 		if srcIP = net.ParseIP(module.ICMP.SourceIPAddress); srcIP == nil {
-			// level.Error(logger).Log("msg", "Error parsing source ip address", "srcIP", module.ICMP.SourceIPAddress)
+			logger.Errorf("error parsing source ip address(%s)", module.ICMP.SourceIPAddress)
 			return false
 		}
-		// level.Info(logger).Log("msg", "Using source address", "srcIP", srcIP)
 	}
 
 	setupStart := time.Now()
-	// level.Info(logger).Log("msg", "Creating socket")
 
 	privileged := true
 	// Unprivileged sockets are supported on Darwin and Linux only.
@@ -129,7 +128,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 		if privileged {
 			icmpConn, err = icmp.ListenPacket("ip6:ipv6-icmp", srcIP.String())
 			if err != nil {
-				// level.Error(logger).Log("msg", "Error listening to socket", "err", err)
+				logger.Errorf("error listening to socket: %v", err)
 				return
 			}
 		}
@@ -152,14 +151,14 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 			// sockets as it is not possible to set IP header level options.
 			netConn, err := net.ListenPacket("ip4:icmp", srcIP.String())
 			if err != nil {
-				// level.Error(logger).Log("msg", "Error listening to socket", "err", err)
+				logger.Errorf("error listening to socket: %v", err)
 				return
 			}
 			defer netConn.Close()
 
 			v4RawConn, err = ipv4.NewRawConn(netConn)
 			if err != nil {
-				// level.Error(logger).Log("msg", "Error creating raw connection", "err", err)
+				logger.Errorf("error creating raw connection: %v", err)
 				return
 			}
 			defer v4RawConn.Close()
@@ -181,7 +180,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 			if privileged {
 				icmpConn, err = icmp.ListenPacket("ip4:icmp", srcIP.String())
 				if err != nil {
-					// level.Error(logger).Log("msg", "Error listening to socket", "err", err)
+					logger.Errorf("error listening to socket: %v", err)
 					return
 				}
 			}
@@ -221,7 +220,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 
 	wb, err := wm.Marshal(nil)
 	if err != nil {
-		// level.Error(logger).Log("msg", "Error marshalling packet", "err", err)
+		logger.Errorf("error marshalling packet: %v", err)
 		return
 	}
 
@@ -264,7 +263,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 		err = v4RawConn.WriteTo(header, wb, nil)
 	}
 	if err != nil {
-		// level.Warn(logger).Log("msg", "Error writing to socket", "err", err)
+		logger.Warnf("error writing to socket: %v", err)
 		return
 	}
 
@@ -278,7 +277,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 	}
 	wb, err = wm.Marshal(nil)
 	if err != nil {
-		// level.Error(logger).Log("msg", "Error marshalling packet", "err", err)
+		logger.Errorf("error marshalling packet: %v", err)
 		return
 	}
 
@@ -297,7 +296,7 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 		err = v4RawConn.SetReadDeadline(deadline)
 	}
 	if err != nil {
-		// level.Error(logger).Log("msg", "Error setting socket deadline", "err", err)
+		logger.Errorf("error setting socket deadline: %v", err)
 		return
 	}
 	// level.Info(logger).Log("msg", "Waiting for reply packets")
@@ -313,9 +312,10 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 			// HopLimit == 0 is valid for IPv6, although go initialize it as 0.
 			if cm != nil && hopLimitFlagSet {
 				hopLimit = float64(cm.HopLimit)
-			} else {
-				// level.Debug(logger).Log("msg", "Cannot get Hop Limit from the received packet. 'probe_icmp_reply_hop_limit' will be missing.")
 			}
+			// else {
+			// level.Debug(logger).Log("msg", "Cannot get Hop Limit from the received packet. 'probe_icmp_reply_hop_limit' will be missing.")
+			// }
 		} else {
 			var cm *ipv4.ControlMessage
 			if icmpConn != nil {
@@ -333,16 +333,17 @@ func ProbeICMP(ctx context.Context, target string, module Module, registry *prom
 			if cm != nil && hopLimitFlagSet {
 				// Not really Hop Limit, but it is in practice.
 				hopLimit = float64(cm.TTL)
-			} else {
-				// level.Debug(logger).Log("msg", "Cannot get TTL from the received packet. 'probe_icmp_reply_hop_limit' will be missing.")
 			}
+			// else {
+			// level.Debug(logger).Log("msg", "Cannot get TTL from the received packet. 'probe_icmp_reply_hop_limit' will be missing.")
+			// }
 		}
 		if err != nil {
 			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-				// level.Warn(logger).Log("msg", "Timeout reading from socket", "err", err)
+				logger.Warnf("timeout reading from socket: %v", err)
 				return
 			}
-			// level.Error(logger).Log("msg", "Error reading from socket", "err", err)
+			logger.Errorf("error reading from socket: %v", err)
 			continue
 		}
 		if peer.String() != dst.String() {

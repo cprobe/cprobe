@@ -67,6 +67,7 @@ func MustNewRegexp(s string) Regexp {
 // Blackbox 这个插件使用 yaml 配置文件，而不是 toml 配置文件
 // 一般来讲，一个 scrape job 只会关联一个 blackbox 插件
 type Module struct {
+	BaseDir string        `yaml:"-"`
 	Prober  string        `yaml:"prober,omitempty"`
 	Timeout time.Duration `yaml:"timeout,omitempty"`
 	HTTP    HTTPProbe     `yaml:"http,omitempty"`

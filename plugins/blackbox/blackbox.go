@@ -21,14 +21,13 @@ func init() {
 	plugins.RegisterPlugin(types.PluginBlackbox, &Blackbox{})
 }
 
-// 注意：这里没有使用 baseDir 这个变量，所以，如果 yaml 配置中包含路径，需要使用全路径
-// TODO：后面想办法优化一下，支持相对路径
 func (p *Blackbox) ParseConfig(baseDir string, bs []byte) (any, error) {
 	var moduleConfig prober.Module
 	err := yaml.Unmarshal(bs, &moduleConfig)
 	if err != nil {
 		return nil, err
 	}
+	moduleConfig.BaseDir = baseDir
 	return &moduleConfig, nil
 }
 
@@ -66,8 +65,6 @@ func (p *Blackbox) Scrape(ctx context.Context, address string, c any, ss *types.
 
 	if success {
 		probeSuccessGauge.Set(1)
-	} else {
-		probeSuccessGauge.Set(0)
 	}
 
 	mfs, err := registry.Gather()
