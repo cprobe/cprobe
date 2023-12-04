@@ -1,0 +1,6 @@
+prober: http
+http:
+  method: GET
+  compression: gzip
+  headers:
+    Accept-Encoding: gzip

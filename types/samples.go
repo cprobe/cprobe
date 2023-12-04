@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/cprobe/cprobe/lib/listx"
 	"github.com/cprobe/cprobe/types/metric"
@@ -103,6 +104,48 @@ func (s *Samples) handleHistogram(pb *dto.Metric, metricName string, tags map[st
 		}, tags, map[string]string{
 			"le": le,
 		})
+	}
+}
+
+func getNameAndValue(m *dto.Metric, metricName string) map[string]interface{} {
+	fields := make(map[string]interface{})
+	if m.Gauge != nil {
+		if !math.IsNaN(m.GetGauge().GetValue()) {
+			fields[metricName] = m.GetGauge().GetValue()
+		}
+	} else if m.Counter != nil {
+		if !math.IsNaN(m.GetCounter().GetValue()) {
+			fields[metricName] = m.GetCounter().GetValue()
+		}
+	} else if m.Untyped != nil {
+		if !math.IsNaN(m.GetUntyped().GetValue()) {
+			fields[metricName] = m.GetUntyped().GetValue()
+		}
+	}
+	return fields
+}
+
+func (s *Samples) AddMetricFamilies(mfs []*dto.MetricFamily) {
+	for i := range mfs {
+		mf := mfs[i]
+		metricName := mf.GetName()
+
+		for _, m := range mf.GetMetric() {
+
+			tags := make(map[string]string)
+			for _, lb := range m.GetLabel() {
+				tags[lb.GetName()] = lb.GetValue()
+			}
+
+			if mf.GetType() == dto.MetricType_SUMMARY {
+				s.handleSummary(m, metricName, tags)
+			} else if mf.GetType() == dto.MetricType_HISTOGRAM {
+				s.handleHistogram(m, metricName, tags)
+			} else {
+				fields := getNameAndValue(m, metricName)
+				s.AddMetric("", fields, tags)
+			}
+		}
 	}
 }
 

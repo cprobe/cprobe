@@ -1,0 +1,2 @@
+prober: tcp
+timeout: 5s

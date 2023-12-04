@@ -1,0 +1,5 @@
+prober: http
+http:
+  method: GET
+  tls_config:
+    ca_file: "/certs/my_cert.crt"

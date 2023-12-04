@@ -1,0 +1,4 @@
+prober: dns
+dns:
+  query_name: "prometheus.io"
+  query_type: "SOA"

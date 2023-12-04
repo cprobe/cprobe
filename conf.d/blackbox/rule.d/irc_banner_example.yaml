@@ -1,0 +1,9 @@
+prober: tcp
+timeout: 5s
+tcp:
+  query_response:
+    - send: "NICK prober"
+    - send: "USER prober prober prober :prober"
+    - expect: "PING :([^ ]+)"
+      send: "PONG ${1}"
+    - expect: "^:[^ ]+ 001"

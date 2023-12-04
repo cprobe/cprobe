@@ -1,0 +1,5 @@
+prober: http
+timeout: 5s
+http:
+  method: POST
+  body_file: "/files/body.txt"

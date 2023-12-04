@@ -143,12 +143,6 @@ func (j *JobGoroutine) run(ctx context.Context) {
 		return
 	}
 
-	config, err := plugin.ParseConfig(j.scrapeConfig.ConfigRef.BaseDir, tomlBytes)
-	if err != nil {
-		logger.Errorf("job(%s) parse plugin config error: %s", jobName, err)
-		return
-	}
-
 	// 等待所有 target 抓取完毕的 wait group
 	var wg sync.WaitGroup
 
@@ -177,6 +171,14 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 			// 准备一个并发安全的容器，传给 Scrape 方法，Scrape 方法会把抓取到的数据放进去，外层还要做 relabel 然后最终发给 writer
 			ss := types.NewSamples()
+
+			// 每个 target 分别 ParseConfig，对性能有一丢丢影响，好处是插件里就可以放心大胆的更新 config 了，不用担心并发安全问题
+			// 后面再看看是否有更好的提升性能的办法
+			config, err := plugin.ParseConfig(j.scrapeConfig.ConfigRef.BaseDir, tomlBytes)
+			if err != nil {
+				logger.Errorf("job(%s) parse plugin config error: %s", jobName, err)
+				return
+			}
 
 			if err = plugin.Scrape(ctx, targetAddress, config, ss); err != nil {
 				logger.Errorf("failed to scrape. job: %s, plugin: %s, target: %s, error: %s", jobName, j.plugin, targetAddress, err)
