@@ -1,6 +1,11 @@
 <p align="center">
   <a href="https://github.com/cprobe/cprobe">
-    <img src="misc/img/Cprobe_L_V.png" alt="cprobe logo" width="140" /></a>
+    <img src="misc/img/Cprobe_L_V.png" alt="cprobe logo" width="140" />
+  </a>
+</p>
+
+<p align="center">
+  Frankenstein made up of vmagent and exporters
 </p>
 
 <hr />
