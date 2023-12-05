@@ -1,3 +1,8 @@
+<p align="center">
+  <a href="https://github.com/cprobe/cprobe">
+    <img src="misc/img/Cprobe_L_V.png" alt="cprobe logo" width="200" /></a>
+</p>
+
 - [QuickStart](https://github.com/cprobe/cprobe/issues/4)
 - Design
   - [Concept](https://github.com/cprobe/cprobe/issues/1)
