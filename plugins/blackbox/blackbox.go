@@ -55,17 +55,15 @@ func (p *Blackbox) Scrape(ctx context.Context, address string, c any, ss *types.
 		return fmt.Errorf("unknown prober %q, address: %s", module.Prober, address)
 	}
 
-	start := time.Now()
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(probeSuccessGauge)
 	registry.MustRegister(probeDurationGauge)
-	success := prober(ctx, address, *module, registry)
-	duration := time.Since(start).Seconds()
-	probeDurationGauge.Set(duration)
 
-	if success {
+	start := time.Now()
+	if prober(ctx, address, *module, registry) {
 		probeSuccessGauge.Set(1)
 	}
+	probeDurationGauge.Set(time.Since(start).Seconds())
 
 	mfs, err := registry.Gather()
 	if err != nil {
