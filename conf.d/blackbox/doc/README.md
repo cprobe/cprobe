@@ -9,6 +9,16 @@
 
 可以复用 blackbox_exporter 的仪表盘，比如 [这个](https://grafana.com/grafana/dashboards/7587-prometheus-blackbox-exporter/)。
 
+## 告警规则
+
+```
+# 连通性失败
+probe_success == 0
+
+# 证书将在半个月内到期
+(probe_ssl_earliest_cert_expiry - time())/86400 < 15
+```
+
 ## 声明
 
 cprobe 是一个缝合怪，类似 grafana-agent，相当于集成了众多 exporter 为一个二进制。本插件并没有其他文档，如果上面的信息不足以帮到你，你可能需要自行阅读源码了。当然，并非所有人都有能力阅读源码，所以欢迎大家提 PR 一起完善这个文档，这才是开源的正确协作模式。
