@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'blackbox'
+
+# scrape_configs:
+# - job_name: 'xxx'
+#   static_configs:
+#   - targets:
+#     - 'http://127.0.0.1:8080/metrics'
+#   scrape_rule_files:
+#   - 'rule.toml'

@@ -22,3 +22,4 @@
   - [Redis](conf.d/redis/doc)
   - [Kafka](conf.d/kafka/doc)
   - [Blackbox](conf.d/blackbox/doc)
+  - [Prometheus](conf.d/prometheus/doc)

@@ -22,6 +22,7 @@ require (
 	github.com/kardianos/service v1.2.2
 	github.com/klauspost/compress v1.15.15
 	github.com/krallistic/kazoo-go v0.0.0-20170526135507-a15279744f4e
+	github.com/matttproud/golang_protobuf_extensions v1.0.1
 	github.com/miekg/dns v1.1.57
 	github.com/mna/redisc v1.4.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible

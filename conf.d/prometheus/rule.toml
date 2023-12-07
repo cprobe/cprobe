@@ -1,0 +1,6 @@
+[global]
+headers = []
+connect_timeout_millis = 500
+request_timeout_millis = 5000
+# for duplicate # HELP and metric name
+split_body = true

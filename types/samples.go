@@ -1,13 +1,20 @@
 package types
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
+	"io"
 	"math"
+	"mime"
+	"net/http"
 
 	"github.com/cprobe/cprobe/lib/listx"
 	"github.com/cprobe/cprobe/types/metric"
+	"github.com/matttproud/golang_protobuf_extensions/pbutil"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/common/expfmt"
 )
 
 type Samples struct {
@@ -147,6 +154,70 @@ func (s *Samples) AddMetricFamilies(mfs []*dto.MetricFamily) {
 			}
 		}
 	}
+}
+
+func (s *Samples) AddMetricsBody(buf []byte, header http.Header, splitBody bool) error {
+	// gather even if the buffer begins with a newline
+	buf = bytes.TrimPrefix(buf, []byte("\n"))
+	if len(buf) == 0 {
+		return nil
+	}
+
+	mediatype, params, err := mime.ParseMediaType(header.Get("Content-Type"))
+	if err == nil && mediatype == "application/vnd.google.protobuf" &&
+		params["encoding"] == "delimited" &&
+		params["proto"] == "io.prometheus.client.MetricFamily" {
+
+		// Read raw data
+		buffer := bytes.NewBuffer(buf)
+		reader := bufio.NewReader(buffer)
+
+		for {
+			mf := &dto.MetricFamily{}
+			if _, ierr := pbutil.ReadDelimited(reader, mf); ierr != nil {
+				if ierr == io.EOF {
+					break
+				}
+				return fmt.Errorf("reading metric family protocol buffer failed: %s", ierr)
+			}
+			s.AddMetricFamilies([]*dto.MetricFamily{mf})
+		}
+	} else {
+		if !splitBody {
+			return s.addMetricsBody(buf)
+		}
+
+		// split body via # HELP
+		metricHeaderBytes := []byte("# HELP ")
+		metrics := bytes.Split(buf, metricHeaderBytes)
+		for i := range metrics {
+			if i != 0 {
+				metrics[i] = append(append([]byte(nil), metricHeaderBytes...), metrics[i]...)
+			}
+			if err := s.addMetricsBody(metrics[i]); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *Samples) addMetricsBody(buf []byte) error {
+	var parser expfmt.TextParser
+	// Read raw data
+	buffer := bytes.NewBuffer(buf)
+	reader := bufio.NewReader(buffer)
+	metricFamilies, err := parser.TextToMetricFamilies(reader)
+	if err != nil {
+		return fmt.Errorf("reading text format failed: %s", err)
+	}
+
+	for i := range metricFamilies {
+		s.AddMetricFamilies([]*dto.MetricFamily{metricFamilies[i]})
+	}
+
+	return nil
 }
 
 func (s *Samples) AddMetric(mesurement string, fields map[string]interface{}, tagss ...map[string]string) {

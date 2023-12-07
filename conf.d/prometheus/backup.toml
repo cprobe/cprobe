@@ -1,0 +1,18 @@
+[global]
+basic_auth_user = ""
+basic_auth_pass = ""
+headers = []
+connect_timeout_millis = 500
+request_timeout_millis = 5000
+proxy_url = ""
+interface = ""
+tls_skip_verify = false
+tls_ca = "/etc/ssl/certs/ca.crt"
+tls_cert = "/etc/ssl/certs/client.crt"
+tls_key = "/etc/ssl/certs/client.key"
+tls_key_pwd = "Pa55word"
+tls_server_name = "cprobe-server"
+tls_min_version = "1.2"
+tls_max_version = "1.3"
+# for duplicate # HELP and metric name
+split_body = false

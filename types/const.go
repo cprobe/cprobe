@@ -8,4 +8,5 @@ const (
 	PluginElasticSearch = "elasticsearch"
 	PluginKafka         = "kafka"
 	PluginBlackbox      = "blackbox"
+	PluginPrometheus    = "prometheus"
 )
