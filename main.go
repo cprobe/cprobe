@@ -13,7 +13,6 @@ import (
 	"github.com/cprobe/cprobe/httpd"
 	"github.com/cprobe/cprobe/lib/buildinfo"
 	"github.com/cprobe/cprobe/lib/envflag"
-	"github.com/cprobe/cprobe/lib/fileutil"
 	"github.com/cprobe/cprobe/lib/flagutil"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/runner"
@@ -36,29 +35,13 @@ var (
 	nohttp     = flag.Bool("no-httpd", false, "Disable http server")
 )
 
-func checkFlags() error {
-	if flags.ConfigDirectory == "" {
-		return fmt.Errorf("-conf.d is empty")
-	}
-
-	if !fileutil.IsExist(flags.ConfigDirectory) {
-		return fmt.Errorf("-conf.d %s does not exist", flags.ConfigDirectory)
-	}
-
-	if !fileutil.IsDir(flags.ConfigDirectory) {
-		return fmt.Errorf("-conf.d %s is not a directory", flags.ConfigDirectory)
-	}
-
-	return nil
-}
-
 func main() {
 	flag.StringVar(&flags.ConfigDirectory, "conf.d", "conf.d", "Filepath to conf.d")
 	flag.CommandLine.SetOutput(os.Stdout)
 	flag.Usage = usage
 	envflag.Parse()
 
-	if err := checkFlags(); err != nil {
+	if err := flags.Check(); err != nil {
 		fmt.Println("error:", err)
 		os.Exit(1)
 	}
