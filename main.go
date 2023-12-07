@@ -32,39 +32,42 @@ var (
 	stop       = flag.Bool("stop", false, "Stop service")
 	status     = flag.Bool("status", false, "Show service status")
 	update     = flag.Bool("update", false, "Update binary")
-	updateFile = flag.String("updateFile", "", "new version tar.gz file or url")
+	updateFile = flag.String("update.file", "", "new version tar.gz file or url")
 	nohttp     = flag.Bool("no-httpd", false, "Disable http server")
 )
 
-func init() {
-	flag.StringVar(&flags.ConfigDirectory, "conf.d", "conf.d", "Filepath to conf.d")
-
+func checkFlags() error {
 	if flags.ConfigDirectory == "" {
-		fmt.Println("-conf.d is empty")
-		os.Exit(1)
+		return fmt.Errorf("-conf.d is empty")
 	}
 
 	if !fileutil.IsExist(flags.ConfigDirectory) {
-		fmt.Printf("-conf.d %s does not exist\n", flags.ConfigDirectory)
-		os.Exit(1)
+		return fmt.Errorf("-conf.d %s does not exist", flags.ConfigDirectory)
 	}
 
 	if !fileutil.IsDir(flags.ConfigDirectory) {
-		fmt.Printf("-conf.d %s is not a directory\n", flags.ConfigDirectory)
-		os.Exit(1)
+		return fmt.Errorf("-conf.d %s is not a directory", flags.ConfigDirectory)
 	}
+
+	return nil
 }
 
 func main() {
-	// Write flags and help message to stdout, since it is easier to grep or pipe.
+	flag.StringVar(&flags.ConfigDirectory, "conf.d", "conf.d", "Filepath to conf.d")
 	flag.CommandLine.SetOutput(os.Stdout)
 	flag.Usage = usage
 	envflag.Parse()
+
+	if err := checkFlags(); err != nil {
+		fmt.Println("error:", err)
+		os.Exit(1)
+	}
 
 	if *install || *remove || *start || *stop || *status || *update {
 		err := serviceProcess()
 		if err != nil {
 			fmt.Println("error:", err)
+			os.Exit(2)
 		}
 		return
 	}
