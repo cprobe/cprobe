@@ -19,6 +19,7 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginElasticSearch: make(map[JobID]*JobGoroutine),
 		types.PluginKafka:         make(map[JobID]*JobGoroutine),
 		types.PluginBlackbox:      make(map[JobID]*JobGoroutine),
+		types.PluginJson:          make(map[JobID]*JobGoroutine),
 		types.PluginPrometheus:    make(map[JobID]*JobGoroutine),
 	}
 }

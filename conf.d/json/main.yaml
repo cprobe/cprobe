@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'json'
+
+scrape_configs:
+- job_name: 'json_test'
+  static_configs:
+  - targets:
+    - 'http://localhost:8000/conf.d/json/test_data/data.json'
+  scrape_rule_files:
+  - 'rule.d/default_rule.yaml'
+# - job_name: 'mysql_test'
+#   http_sd_configs:
+#   - url: http://localhost:8080/get-targets
+#   scrape_rule_files:
+#   - 'rule_head.toml'
+#   - 'rule_coll.toml'
+
+# - job_name: 'mysql_abcd'
+#   file_sd_configs:
+#   - files:
+#     - 'inst.yaml'
+#   scrape_rule_files:
+#   - 'rule_head.toml'
+#   - 'rule_coll.toml'
+#   - 'rule_cust.toml'
