@@ -5,7 +5,6 @@ import (
 
 	yaml "gopkg.in/yaml.v3"
 
-	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/plugins/json/config"
 	"github.com/cprobe/cprobe/plugins/json/exporter"
@@ -21,14 +20,23 @@ func init() {
 	plugins.RegisterPlugin(types.PluginJson, &Json{})
 }
 
-func (p *Json) ParseConfig(baseDir string, bs []byte) (any, error) {
+func (p *Json) ParseConfig(_ string, bs []byte) (any, error) {
 	var moduleConfig config.Module
 	err := yaml.Unmarshal(bs, &moduleConfig)
 	if err != nil {
 		return nil, err
 	}
-	//TODO 是否有必要设置 BaseDir
-	moduleConfig.BaseDir = baseDir
+	for i := 0; i < len(moduleConfig.Metrics); i++ {
+		if moduleConfig.Metrics[i].Type == "" {
+			moduleConfig.Metrics[i].Type = config.ValueScrape
+		}
+		if moduleConfig.Metrics[i].Help == "" {
+			moduleConfig.Metrics[i].Help = moduleConfig.Metrics[i].Name
+		}
+		if moduleConfig.Metrics[i].ValueType == "" {
+			moduleConfig.Metrics[i].ValueType = config.ValueTypeUntyped
+		}
+	}
 	return &moduleConfig, nil
 }
 
@@ -38,11 +46,13 @@ func (p *Json) Scrape(ctx context.Context, address string, c any, ss *types.Samp
 	registry := prometheus.NewPedanticRegistry()
 	metrics, err := exporter.CreateMetricsList(*module)
 	if err != nil {
-		logger.Errorf("Failed to create metrics list from config, err: %s", err)
+		return errors.WithMessagef(err, "create metrics list from config failed, error: %v", err)
 	}
 
 	jsonMetricCollector := exporter.JSONMetricCollector{JSONMetrics: metrics}
-	//TODO 判断address 不为空
+	if address == "" {
+		return errors.WithMessagef(err, "address is empty")
+	}
 	fetcher := exporter.NewJSONFetcher(ctx, *module, nil)
 	data, err := fetcher.FetchJSON(address)
 	if err != nil {
