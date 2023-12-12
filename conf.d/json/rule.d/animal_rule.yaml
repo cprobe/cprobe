@@ -1,0 +1,12 @@
+---
+metrics:
+- name: animal
+  type: object
+  help: Example of top-level lists in a separate module
+  path: '{ [*] }'
+  labels:
+    name: '{ .noun }'
+    predator: '{ .predator }'
+  values:
+    population: '{ .population }'
+
