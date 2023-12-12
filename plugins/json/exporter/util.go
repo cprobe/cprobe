@@ -12,7 +12,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3" //TODO 版本问题
+	"github.com/Masterminds/sprig/v3"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins/json/config"
 
