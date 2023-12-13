@@ -5,6 +5,13 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
+	"github.com/cprobe/cprobe/flags"
+	"github.com/cprobe/cprobe/lib/flagutil"
+	"github.com/cprobe/cprobe/lib/fs"
+	"github.com/cprobe/cprobe/probe"
+	"github.com/cprobe/cprobe/writer"
+	"gopkg.in/yaml.v2"
+	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -24,6 +31,19 @@ import (
 )
 
 var connDeadlineTimeKey = interface{}("connDeadlineSecs")
+
+var (
+	indexHtlm = `<h2>cprobe</h2></br>
+See docs at <a href='https://github.com/cprobe/cprobe'>https://github.com/cprobe/cprobe</a></br>
+Useful endpoints:</br>
+{{ range $key, $value := .Endpoints }}
+   <a href='{{ $key }}'>{{ $key }}</a> - {{ $value }}<br/>
+{{ end }}
+plugins:
+    {{ range $key, $value := .Plugins }}
+       <li><a href='plugins/{{ $key }}'>{{ $key }}</a></li>
+    {{ end }}`
+)
 
 func init() {
 	flag.StringVar(&HTTPListen, "http.listen", "0.0.0.0:5858", "Address to listen for http connections.")
@@ -69,7 +89,6 @@ func Router() *HTTPRouter {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(ginx.BombRecovery())
-
 	if HTTPUsername != "" && HTTPPassword != "" {
 		r.Use(gin.BasicAuth(gin.Accounts{
 			HTTPUsername: HTTPPassword,
@@ -80,24 +99,87 @@ func Router() *HTTPRouter {
 		pprof.Register(r, "/debug/pprof")
 	}
 
+	r.GET("/", func(c *gin.Context) {
+		endpoints := map[string]string{
+			"targets": "status for discovered active targets",
+			"metrics": "available service metrics",
+			"flags":   "command-line flags",
+			"config":  "cprobe config contents",
+			"reload":  "reload configuration",
+		}
+		if HTTPPProf {
+			endpoints["/debug/pprof"] = "pprof"
+		}
+
+		temp := struct {
+			Endpoints map[string]string
+			Plugins   map[string][]*probe.Config
+		}{
+			Endpoints: endpoints,
+			Plugins:   probe.PluginCfgs,
+		}
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		parse, _ := template.New("index").Parse(indexHtlm)
+		parse.Execute(c.Writer, temp)
+	})
+	r.GET("/flags", func(c *gin.Context) {
+		flagutil.WriteFlags(c.Writer)
+	})
+	r.GET("/config", func(c *gin.Context) {
+		config := writer.WriterConfig
+		out, _ := yaml.Marshal(config)
+		fmt.Fprint(c.Writer, string(out))
+	})
+	r.GET("/plugins/:name", func(c *gin.Context) {
+		name := c.Param("name")
+		if cfg, ok := probe.PluginCfgs[name]; ok {
+			var rules string
+			for _, config := range cfg {
+				for _, scrapeConfig := range config.ScrapeConfigs {
+					jobName := fmt.Sprintf("%s-", scrapeConfig.JobName)
+					for _, ruleFile := range scrapeConfig.ScrapeRuleFiles {
+						ruleFilePath := fs.GetFilepath(scrapeConfig.ConfigRef.BaseDir, ruleFile)
+						data := probe.CacheGetBytes(ruleFilePath)
+						if data == nil {
+							data, _ = fs.ReadFileOrHTTP(ruleFilePath)
+						}
+						ruleValue := fmt.Sprintf("%s\n%s", ruleFile, data)
+						if rules == "" {
+							rules = fmt.Sprintf("%s%s", jobName, ruleValue)
+						} else {
+							rules = fmt.Sprintf("%s\n%s%s", rules, jobName, ruleValue)
+						}
+					}
+
+				}
+			}
+			out, _ := yaml.Marshal(cfg)
+			fmt.Fprint(c.Writer, string(out)+"\n"+rules)
+		}
+	})
+	r.GET("/reload", func(c *gin.Context) {
+		probe.Reload(c, flags.ConfigDirectory)
+		c.String(http.StatusOK, "OK")
+	})
+
 	r.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
+		c.String(http.StatusOK, "pong")
 	})
 
 	r.GET("/pid", func(c *gin.Context) {
-		c.String(200, fmt.Sprintf("%d", os.Getpid()))
+		c.String(http.StatusOK, fmt.Sprintf("%d", os.Getpid()))
 	})
 
 	r.GET("/ppid", func(c *gin.Context) {
-		c.String(200, fmt.Sprintf("%d", os.Getppid()))
+		c.String(http.StatusOK, fmt.Sprintf("%d", os.Getppid()))
 	})
 
 	r.GET("/remoteaddr", func(c *gin.Context) {
-		c.String(200, c.Request.RemoteAddr)
+		c.String(http.StatusOK, c.Request.RemoteAddr)
 	})
 
 	r.GET("/version", func(c *gin.Context) {
-		c.String(200, buildinfo.Version)
+		c.String(http.StatusOK, buildinfo.Version)
 	})
 
 	return &HTTPRouter{engine: r}

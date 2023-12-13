@@ -81,11 +81,14 @@ func startPlugin(ctx context.Context, configDirectory, pluginDir string) error {
 	return nil
 }
 
+var PluginCfgs = make(map[string][]*Config)
+
 func startEntry(ctx context.Context, pluginName, entryYamlFilePath string) error {
 	cfg, err := loadConfig(entryYamlFilePath)
 	if err != nil {
 		return err
 	}
+	PluginCfgs[pluginName] = append(PluginCfgs[pluginName], cfg)
 
 	pluginJobs, has := Jobs[pluginName]
 	if !has {
