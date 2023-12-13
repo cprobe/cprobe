@@ -2,8 +2,9 @@ package probe
 
 import (
 	"github.com/cprobe/cprobe/types"
-
+	
 	_ "github.com/cprobe/cprobe/plugins/blackbox"
+	_ "github.com/cprobe/cprobe/plugins/json"
 	_ "github.com/cprobe/cprobe/plugins/kafka"
 	_ "github.com/cprobe/cprobe/plugins/mysql"
 	_ "github.com/cprobe/cprobe/plugins/prometheus"
@@ -19,6 +20,7 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginElasticSearch: make(map[JobID]*JobGoroutine),
 		types.PluginKafka:         make(map[JobID]*JobGoroutine),
 		types.PluginBlackbox:      make(map[JobID]*JobGoroutine),
+		types.PluginJson:          make(map[JobID]*JobGoroutine),
 		types.PluginPrometheus:    make(map[JobID]*JobGoroutine),
 	}
 }
