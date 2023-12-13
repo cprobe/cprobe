@@ -88,6 +88,7 @@ func Router() *HTTPRouter {
 
 	r.GET("/", func(c *gin.Context) {
 		endpoints := map[string]string{
+			"targets": "status for discovered active targets",
 			"metrics": "available service metrics",
 			"flags":   "command-line flags",
 			"config":  "cprobe config contents",
