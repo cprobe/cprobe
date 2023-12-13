@@ -11,6 +11,7 @@ import (
 	"github.com/cprobe/cprobe/probe"
 	"github.com/cprobe/cprobe/writer"
 	"gopkg.in/yaml.v2"
+	"html/template"
 	"log"
 	"net"
 	"net/http"
@@ -30,6 +31,19 @@ import (
 )
 
 var connDeadlineTimeKey = interface{}("connDeadlineSecs")
+
+var (
+	indexHtlm = `<h2>cprobe</h2></br>
+See docs at <a href='https://github.com/cprobe/cprobe'>https://github.com/cprobe/cprobe</a></br>
+Useful endpoints:</br>
+{{ range $key, $value := .Endpoints }}
+   <a href='{{ $key }}'>{{ $key }}</a> - {{ $value }}<br/>
+{{ end }}
+plugins:
+    {{ range $key, $value := .Plugins }}
+       <li><a href='plugins/{{ $key }}'>{{ $key }}</a></li>
+    {{ end }}`
+)
 
 func init() {
 	flag.StringVar(&HTTPListen, "http.listen", "0.0.0.0:5858", "Address to listen for http connections.")
@@ -75,7 +89,6 @@ func Router() *HTTPRouter {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(ginx.BombRecovery())
-	r.LoadHTMLGlob("httpd/templates/*")
 	if HTTPUsername != "" && HTTPPassword != "" {
 		r.Use(gin.BasicAuth(gin.Accounts{
 			HTTPUsername: HTTPPassword,
@@ -97,10 +110,17 @@ func Router() *HTTPRouter {
 		if HTTPPProf {
 			endpoints["/debug/pprof"] = "pprof"
 		}
-		c.HTML(http.StatusOK, "index.tmpl", gin.H{
-			"endpoints": endpoints,
-			"plugins":   probe.PluginCfgs,
-		})
+
+		temp := struct {
+			Endpoints map[string]string
+			Plugins   map[string][]*probe.Config
+		}{
+			Endpoints: endpoints,
+			Plugins:   probe.PluginCfgs,
+		}
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		parse, _ := template.New("index").Parse(indexHtlm)
+		parse.Execute(c.Writer, temp)
 	})
 	r.GET("/flags", func(c *gin.Context) {
 		flagutil.WriteFlags(c.Writer)
