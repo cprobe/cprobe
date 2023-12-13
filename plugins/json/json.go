@@ -41,34 +41,36 @@ func (p *Json) ParseConfig(_ string, bs []byte) (any, error) {
 }
 
 func (p *Json) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
+	err := p.scrape(ctx, address, c, ss)
+	if err != nil {
+		ss.AddMetric("json", map[string]interface{}{"up": 0.0})
+	} else {
+		ss.AddMetric("json", map[string]interface{}{"up": 1.0})
+	}
+	return err
+}
+
+func (p *Json) scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
 	module := c.(*config.Module)
 
 	registry := prometheus.NewPedanticRegistry()
 
-	probeSuccessGauge := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "json_up",
-		Help: "Displays whether or not the probe was a success",
-	})
-	probeSuccessGauge.Set(1)
 	metrics, err := exporter.CreateMetricsList(*module)
 	if err != nil {
-		probeSuccessGauge.Set(0)
-		ss.AddPromMetric(probeSuccessGauge)
 		return errors.WithMessagef(err, "create metrics list from config failed, error: %v", err)
 	}
+
 	jsonMetricCollector := exporter.JSONMetricCollector{JSONMetrics: metrics}
 	if address == "" {
-		probeSuccessGauge.Set(0)
-		ss.AddPromMetric(probeSuccessGauge)
 		return errors.WithMessagef(err, "address is empty")
 	}
+
 	fetcher := exporter.NewJSONFetcher(ctx, *module, nil)
 	data, err := fetcher.FetchJSON(address)
 	if err != nil {
-		probeSuccessGauge.Set(0)
-		ss.AddPromMetric(probeSuccessGauge)
 		return errors.WithMessagef(err, "fetch json response failed, address: %s, error: %v", address, err)
 	}
+
 	jsonMetricCollector.Data = data
 	registry.MustRegister(jsonMetricCollector)
 
@@ -76,7 +78,7 @@ func (p *Json) Scrape(ctx context.Context, address string, c any, ss *types.Samp
 	if err != nil {
 		return errors.WithMessagef(err, "gather metrics from registry failed, address: %s, error: %v", address, err)
 	}
-	ss.AddPromMetric(probeSuccessGauge)
+
 	ss.AddMetricFamilies(mfs)
 	return nil
 }
