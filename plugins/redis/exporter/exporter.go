@@ -20,10 +20,6 @@ type Exporter struct {
 	redisAddr string
 	namespace string
 
-	totalScrapes              prometheus.Counter
-	scrapeDuration            prometheus.Summary
-	targetScrapeRequestErrors prometheus.Counter
-
 	metricDescriptions map[string]*prometheus.Desc
 
 	options Options
@@ -72,24 +68,6 @@ func NewRedisExporter(redisURI string, opts Options) (*Exporter, error) {
 		redisAddr: redisURI,
 		options:   opts,
 		namespace: opts.Namespace,
-
-		totalScrapes: prometheus.NewCounter(prometheus.CounterOpts{
-			Namespace: opts.Namespace,
-			Name:      "exporter_scrapes_total",
-			Help:      "Current total redis scrapes.",
-		}),
-
-		scrapeDuration: prometheus.NewSummary(prometheus.SummaryOpts{
-			Namespace: opts.Namespace,
-			Name:      "exporter_scrape_duration_seconds",
-			Help:      "Durations of scrapes by the exporter",
-		}),
-
-		targetScrapeRequestErrors: prometheus.NewCounter(prometheus.CounterOpts{
-			Namespace: opts.Namespace,
-			Name:      "target_scrape_request_errors_total",
-			Help:      "Errors in requests to the exporter",
-		}),
 
 		metricMapGauges: map[string]string{
 			// # Server
@@ -411,17 +389,12 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	for _, v := range e.metricMapCounters {
 		ch <- newMetricDescr(e.options.Namespace, v, v+" metric", nil)
 	}
-
-	ch <- e.totalScrapes.Desc()
-	ch <- e.scrapeDuration.Desc()
-	ch <- e.targetScrapeRequestErrors.Desc()
 }
 
 // Collect fetches new metrics from the RedisHost and updates the appropriate metrics.
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.Lock()
 	defer e.Unlock()
-	e.totalScrapes.Inc()
 
 	if e.redisAddr != "" {
 		startTime := time.Now()
@@ -436,13 +409,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		e.registerConstMetricGauge(ch, "up", up)
 
 		took := time.Since(startTime).Seconds()
-		e.scrapeDuration.Observe(took)
 		e.registerConstMetricGauge(ch, "exporter_last_scrape_duration_seconds", took)
 	}
-
-	ch <- e.totalScrapes
-	ch <- e.scrapeDuration
-	ch <- e.targetScrapeRequestErrors
 }
 
 func (e *Exporter) extractConfigMetrics(ch chan<- prometheus.Metric, config []interface{}) (dbCount int, err error) {
