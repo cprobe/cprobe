@@ -5,12 +5,6 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/cprobe/cprobe/flags"
-	"github.com/cprobe/cprobe/lib/flagutil"
-	"github.com/cprobe/cprobe/lib/fs"
-	"github.com/cprobe/cprobe/probe"
-	"github.com/cprobe/cprobe/writer"
-	"gopkg.in/yaml.v2"
 	"html/template"
 	"log"
 	"net"
@@ -19,6 +13,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cprobe/cprobe/flags"
+	"github.com/cprobe/cprobe/lib/flagutil"
+	"github.com/cprobe/cprobe/lib/fs"
+	"github.com/cprobe/cprobe/probe"
+	"github.com/cprobe/cprobe/writer"
+	"gopkg.in/yaml.v2"
 
 	"github.com/cprobe/cprobe/lib/buildinfo"
 	"github.com/cprobe/cprobe/lib/fasttime"
@@ -133,28 +134,22 @@ func Router() *HTTPRouter {
 	r.GET("/plugins/:name", func(c *gin.Context) {
 		name := c.Param("name")
 		if cfg, ok := probe.PluginCfgs[name]; ok {
-			var rules string
+			out, _ := yaml.Marshal(cfg)
+			fmt.Fprintln(c.Writer, string(out))
 			for _, config := range cfg {
 				for _, scrapeConfig := range config.ScrapeConfigs {
-					jobName := fmt.Sprintf("%s-", scrapeConfig.JobName)
+					fmt.Fprintf(c.Writer, "--- job: %s ---\n", scrapeConfig.JobName)
 					for _, ruleFile := range scrapeConfig.ScrapeRuleFiles {
+						fmt.Fprintf(c.Writer, "- %s:\n", ruleFile)
 						ruleFilePath := fs.GetFilepath(scrapeConfig.ConfigRef.BaseDir, ruleFile)
 						data := probe.CacheGetBytes(ruleFilePath)
 						if data == nil {
 							data, _ = fs.ReadFileOrHTTP(ruleFilePath)
 						}
-						ruleValue := fmt.Sprintf("%s\n%s", ruleFile, data)
-						if rules == "" {
-							rules = fmt.Sprintf("%s%s", jobName, ruleValue)
-						} else {
-							rules = fmt.Sprintf("%s\n%s%s", rules, jobName, ruleValue)
-						}
+						fmt.Fprintf(c.Writer, "%s\n", string(data))
 					}
-
 				}
 			}
-			out, _ := yaml.Marshal(cfg)
-			fmt.Fprint(c.Writer, string(out)+"\n"+rules)
 		}
 	})
 	r.GET("/reload", func(c *gin.Context) {
