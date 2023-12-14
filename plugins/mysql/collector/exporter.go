@@ -59,12 +59,6 @@ var (
 
 // metric definition
 var (
-	mysqlUp = prometheus.NewDesc(
-		prometheus.BuildFQName(namespace, "", "up"),
-		"Whether the MySQL server is up.",
-		nil,
-		nil,
-	)
 	mysqlScrapeCollectorSuccess = prometheus.NewDesc(
 		prometheus.BuildFQName(namespace, exporter, "collector_success"),
 		"mysqld_exporter: Whether a collector succeeded.",
@@ -79,7 +73,7 @@ var (
 )
 
 // Verify if Exporter implements prometheus.Collector
-var _ prometheus.Collector = (*Exporter)(nil)
+// var _ prometheus.Collector = (*Exporter)(nil)
 
 // Exporter collects MySQL metrics. It implements prometheus.Collector.
 type Exporter struct {
@@ -117,27 +111,23 @@ func New(ctx context.Context, dsn string, scrapers []Scraper, ss *types.Samples,
 
 // Describe implements prometheus.Collector.
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
-	ch <- mysqlUp
 	ch <- mysqlScrapeDurationSeconds
 	ch <- mysqlScrapeCollectorSuccess
 }
 
 // Collect implements prometheus.Collector.
-func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	up := e.scrape(e.ctx, ch)
-	ch <- prometheus.MustNewConstMetric(mysqlUp, prometheus.GaugeValue, up)
+func (e *Exporter) Collect(ch chan<- prometheus.Metric) error {
+	return e.scrape(e.ctx, ch)
 }
 
 // scrape collects metrics from the target, returns an up metric value.
-func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) float64 {
-	var err error
+func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) error {
 	scrapeTime := time.Now()
 	db, err := sql.Open("mysql", e.dsn)
 	if err != nil {
-		logger.Errorf("cannot opening connection to database: %s, error: %s", e.dsn, err)
-		// level.Error(e.logger).Log("msg", "Error opening connection to database", "err", err)
-		return 0.0
+		return fmt.Errorf("cannot opening connection to database: %s, error: %s", e.dsn, err)
 	}
+
 	defer db.Close()
 
 	// By design exporter should use maximum one connection per request.
@@ -147,12 +137,9 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) floa
 	db.SetConnMaxLifetime(1 * time.Minute)
 
 	if err := db.PingContext(ctx); err != nil {
-		logger.Errorf("cannot ping mysql %s, error: %s", e.getTargetFromDsn(), err)
-		// level.Error(e.logger).Log("msg", "Error pinging mysqld", "err", err)
-		return 0.0
+		return fmt.Errorf("cannot ping mysql %s, error: %s", e.getTargetFromDsn(), err)
 	}
 
-	ch <- prometheus.MustNewConstMetric(mysqlUp, prometheus.GaugeValue, 1)
 	ch <- prometheus.MustNewConstMetric(mysqlScrapeDurationSeconds, prometheus.GaugeValue, time.Since(scrapeTime).Seconds(), "connection")
 
 	version := getMySQLVersion(db)
@@ -182,7 +169,7 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) floa
 	// 添加自定义采集的逻辑
 	e.collectCustomQueries(ctx, db, e.ss, e.queries)
 
-	return 1.0
+	return nil
 }
 
 func (e *Exporter) getTargetFromDsn() string {

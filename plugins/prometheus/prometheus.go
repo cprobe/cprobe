@@ -26,10 +26,5 @@ func (*Prometheus) ParseConfig(baseDir string, bs []byte) (any, error) {
 
 func (*Prometheus) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
 	cfg := c.(*Config)
-	if err := cfg.Scrape(ctx, target, ss); err != nil {
-		ss.AddMetric(cfg.Global.Namespace, map[string]interface{}{"up": 0.0})
-		return err
-	}
-	ss.AddMetric(cfg.Global.Namespace, map[string]interface{}{"up": 1.0})
-	return nil
+	return cfg.Scrape(ctx, target, ss)
 }

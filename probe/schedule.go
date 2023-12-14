@@ -11,7 +11,6 @@ import (
 
 	"github.com/cprobe/cprobe/lib/conv"
 	"github.com/cprobe/cprobe/lib/envtemplate"
-	"github.com/cprobe/cprobe/lib/fasttime"
 	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/lib/prompbmarshal"
@@ -168,6 +167,10 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			}()
 
 			targetAddress := pt.Get("__address__")
+			if targetAddress == "" {
+				logger.Errorf("job(%s) target(%s) has no __address__", jobName, pt)
+				return
+			}
 
 			// 准备一个并发安全的容器，传给 Scrape 方法，Scrape 方法会把抓取到的数据放进去，外层还要做 relabel 然后最终发给 writer
 			ss := types.NewSamples()
@@ -180,24 +183,32 @@ func (j *JobGoroutine) run(ctx context.Context) {
 				return
 			}
 
+			now := time.Now()
 			if err = plugin.Scrape(ctx, targetAddress, config, ss); err != nil {
 				logger.Errorf("failed to scrape. job: %s, plugin: %s, target: %s, error: %s", jobName, j.plugin, targetAddress, err)
 			}
 
+			ss.AddMetric(j.plugin, map[string]interface{}{"scrape_duration_seconds": time.Since(now).Seconds()})
+
+			if err != nil {
+				ss.AddMetric(j.plugin, map[string]interface{}{"up": 0.0})
+				ss.AddMetric(j.plugin, map[string]interface{}{"scrape_error": 1.0}, map[string]string{"error": err.Error()})
+			} else {
+				ss.AddMetric(j.plugin, map[string]interface{}{"up": 1.0})
+				ss.AddMetric(j.plugin, map[string]interface{}{"scrape_error": 0.0}, map[string]string{"error": "null"})
+			}
+
 			// 把抓取到的数据做格式转换，转换成 []prompbmarshal.TimeSeries
 			metrics := ss.PopBackAll()
-			if len(metrics) == 0 {
-				return
-			}
 
 			// 最终转换之后的数据结果集
 			var ret []prompbmarshal.TimeSeries
 
-			now := int64(fasttime.UnixTimestamp() * 1000) // s -> ms
+			// now := int64(fasttime.UnixTimestamp() * 1000) // s -> ms
 			for i := range metrics {
 				// 统一在这里设置时间
 				if metrics[i].Time() == 0 {
-					metrics[i].SetTime(now)
+					metrics[i].SetTime(now.UnixMilli())
 				}
 
 				// 一个 telegraf metric 有多个 fields，每个 field 都是一个 prometheus metric
@@ -242,7 +253,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 
 					point := prompbmarshal.Sample{
 						Value:     float64v,
-						Timestamp: now,
+						Timestamp: now.UnixMilli(),
 					}
 
 					ts := prompbmarshal.TimeSeries{

@@ -419,9 +419,11 @@ func (*MySQL) Scrape(ctx context.Context, address string, c any, ss *types.Sampl
 	exporter := collector.New(ctx, dsn, scrapers, ss, cfg.Queries, cfg.Global.LockWaitTimeout, cfg.Global.LogSlowFilter)
 
 	ch := make(chan prometheus.Metric)
+	errCh := make(chan error, 1)
 	go func() {
-		exporter.Collect(ch)
+		errCh <- exporter.Collect(ch)
 		close(ch)
+		close(errCh)
 	}()
 
 	for m := range ch {
@@ -430,5 +432,5 @@ func (*MySQL) Scrape(ctx context.Context, address string, c any, ss *types.Sampl
 		}
 	}
 
-	return nil
+	return <-errCh
 }

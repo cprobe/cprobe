@@ -7,7 +7,7 @@
 
 ## 仪表盘
 
-可以复用 blackbox_exporter 的仪表盘，比如 [这个](https://grafana.com/grafana/dashboards/7587-prometheus-blackbox-exporter/)。
+可以复用 blackbox_exporter 的仪表盘，比如 [这个](https://grafana.com/grafana/dashboards/7587-prometheus-blackbox-exporter/)。不过，原本 Blackbox Exporter 中的 probe_success 指标 rename 成了 blackbox_up，probe_duration_seconds rename 成了 blackbox_scrape_duration_seconds，需要把仪表盘 json 中的指标名做批量修改。
 
 ## 告警规则
 

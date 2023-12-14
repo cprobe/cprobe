@@ -319,7 +319,6 @@ func NewRedisExporter(redisURI string, opts Options) (*Exporter, error) {
 		"db_keys_expiring":                             {txt: "Total number of expiring keys by DB", lbls: []string{"db"}},
 		"db_keys_cached":                               {txt: "Total number of cached keys by DB", lbls: []string{"db"}},
 		"errors_total":                                 {txt: `Total number of errors per error type`, lbls: []string{"err"}},
-		"exporter_last_scrape_error":                   {txt: "The last scrape error status.", lbls: []string{"err"}},
 		"instance_info":                                {txt: "Information about the Redis instance", lbls: []string{"role", "redis_version", "redis_build_id", "redis_mode", "os", "maxmemory_policy", "tcp_port", "run_id", "process_id"}},
 		"key_group_count":                              {txt: `Count of keys in key group`, lbls: []string{"db", "key_group"}},
 		"key_group_memory_usage_bytes":                 {txt: `Total memory usage of key group in bytes`, lbls: []string{"db", "key_group"}},
@@ -392,25 +391,8 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect fetches new metrics from the RedisHost and updates the appropriate metrics.
-func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	e.Lock()
-	defer e.Unlock()
-
-	if e.redisAddr != "" {
-		startTime := time.Now()
-		var up float64
-		if err := e.scrapeRedisHost(ch); err != nil {
-			e.registerConstMetricGauge(ch, "exporter_last_scrape_error", 1.0, fmt.Sprintf("%s", err))
-		} else {
-			up = 1
-			e.registerConstMetricGauge(ch, "exporter_last_scrape_error", 0, "")
-		}
-
-		e.registerConstMetricGauge(ch, "up", up)
-
-		took := time.Since(startTime).Seconds()
-		e.registerConstMetricGauge(ch, "exporter_last_scrape_duration_seconds", took)
-	}
+func (e *Exporter) Collect(ch chan<- prometheus.Metric) error {
+	return e.scrapeRedisHost(ch)
 }
 
 func (e *Exporter) extractConfigMetrics(ch chan<- prometheus.Metric, config []interface{}) (dbCount int, err error) {

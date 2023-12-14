@@ -41,16 +41,6 @@ func (p *Json) ParseConfig(_ string, bs []byte) (any, error) {
 }
 
 func (p *Json) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
-	err := p.scrape(ctx, address, c, ss)
-	if err != nil {
-		ss.AddMetric("json", map[string]interface{}{"up": 0.0})
-	} else {
-		ss.AddMetric("json", map[string]interface{}{"up": 1.0})
-	}
-	return err
-}
-
-func (p *Json) scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
 	module := c.(*config.Module)
 
 	registry := prometheus.NewPedanticRegistry()

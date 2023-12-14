@@ -137,10 +137,7 @@ func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 
 	exp, err := exporter.NewExporter(opts, conf.TopicFilter, conf.TopicExclude, conf.GroupFilter, conf.GroupExclude)
 	if err != nil {
-		ss.AddMetric(opts.Namespace, map[string]interface{}{"up": 0.0})
 		return errors.Wrapf(err, "failed to create kafka exporter: %s, error: %v", target, err)
-	} else {
-		ss.AddMetric(opts.Namespace, map[string]interface{}{"up": 1.0})
 	}
 
 	defer exp.CloseClient()

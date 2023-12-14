@@ -184,9 +184,11 @@ func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 	}
 
 	ch := make(chan prometheus.Metric)
+	errCh := make(chan error, 1)
 	go func() {
-		exp.Collect(ch)
+		errCh <- exp.Collect(ch)
 		close(ch)
+		close(errCh)
 	}()
 
 	for m := range ch {
@@ -195,5 +197,5 @@ func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 		}
 	}
 
-	return nil
+	return <-errCh
 }

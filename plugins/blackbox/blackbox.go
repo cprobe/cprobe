@@ -41,29 +41,14 @@ func (p *Blackbox) Scrape(ctx context.Context, address string, c any, ss *types.
 	ctx, cancel := context.WithTimeout(ctx, module.Timeout)
 	defer cancel()
 
-	probeSuccessGauge := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "probe_success",
-		Help: "Displays whether or not the probe was a success",
-	})
-	probeDurationGauge := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "probe_duration_seconds",
-		Help: "Returns how long the probe took to complete in seconds",
-	})
-
 	prober, ok := prober.Probers[module.Prober]
 	if !ok {
 		return fmt.Errorf("unknown prober %q, address: %s", module.Prober, address)
 	}
 
 	registry := prometheus.NewRegistry()
-	registry.MustRegister(probeSuccessGauge)
-	registry.MustRegister(probeDurationGauge)
 
-	start := time.Now()
-	if prober(ctx, address, *module, registry) {
-		probeSuccessGauge.Set(1)
-	}
-	probeDurationGauge.Set(time.Since(start).Seconds())
+	success := prober(ctx, address, *module, registry)
 
 	mfs, err := registry.Gather()
 	if err != nil {
@@ -71,6 +56,10 @@ func (p *Blackbox) Scrape(ctx context.Context, address string, c any, ss *types.
 	}
 
 	ss.AddMetricFamilies(mfs)
+
+	if !success {
+		return errors.Errorf("prober failed, address: %s", address)
+	}
 
 	return nil
 }
