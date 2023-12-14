@@ -167,10 +167,6 @@ func (j *JobGoroutine) run(ctx context.Context) {
 			}()
 
 			targetAddress := pt.Get("__address__")
-			if targetAddress == "" {
-				logger.Errorf("job(%s) target(%s) has no __address__", jobName, pt)
-				return
-			}
 
 			// 准备一个并发安全的容器，传给 Scrape 方法，Scrape 方法会把抓取到的数据放进去，外层还要做 relabel 然后最终发给 writer
 			ss := types.NewSamples()
