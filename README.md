@@ -22,5 +22,5 @@
   - [Redis](conf.d/redis/doc)
   - [Kafka](conf.d/kafka/doc)
   - [Blackbox](conf.d/blackbox/doc)
-  - [Json](conf.d/json/doc)
+  - [JSON](conf.d/json/doc)
   - [Prometheus](conf.d/prometheus/doc)
