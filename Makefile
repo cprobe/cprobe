@@ -15,3 +15,6 @@ goenv:
 
 build: tidy
 	$(BUILDFLAGS) go build -ldflags $(LDFLAGS) -o cprobe .
+
+nohup:
+	nohup ./cprobe > stdout.log 2>&1 &
