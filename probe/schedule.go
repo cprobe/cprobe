@@ -184,14 +184,16 @@ func (j *JobGoroutine) run(ctx context.Context) {
 				logger.Errorf("failed to scrape. job: %s, plugin: %s, target: %s, error: %s", jobName, j.plugin, targetAddress, err)
 			}
 
-			ss.AddMetric(j.plugin, map[string]interface{}{"scrape_duration_seconds": time.Since(now).Seconds()})
+			ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_duration_seconds": time.Since(now).Seconds()})
 
 			if err != nil {
-				ss.AddMetric(j.plugin, map[string]interface{}{"up": 0.0})
-				ss.AddMetric(j.plugin, map[string]interface{}{"scrape_error": 1.0}, map[string]string{"error": err.Error()})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_up": 0.0})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_error": 1.0}, map[string]string{"error": err.Error()})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_timestamp": now.Unix() * -1}) // negative timestamp means error
 			} else {
-				ss.AddMetric(j.plugin, map[string]interface{}{"up": 1.0})
-				ss.AddMetric(j.plugin, map[string]interface{}{"scrape_error": 0.0}, map[string]string{"error": "null"})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_up": 1.0})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_error": 0.0}, map[string]string{"error": "null"})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_timestamp": now.Unix()})
 			}
 
 			// 把抓取到的数据做格式转换，转换成 []prompbmarshal.TimeSeries
