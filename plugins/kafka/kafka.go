@@ -15,7 +15,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type Global struct {
+type Config struct {
+	BaseDir      string `toml:"-"`
 	KafkaVersion string `toml:"kafka_version" description:"Kafka broker version"`
 	Namespace    string `toml:"namespace"`
 
@@ -51,11 +52,6 @@ type Global struct {
 	TopicWorkers     int   `toml:"topic_workers" description:"Number of topic workers"`
 }
 
-type Config struct {
-	BaseDir string `toml:"-"`
-	Global  Global `toml:"global"`
-}
-
 type Kafka struct {
 	// 这个数据结构中未来如果有变量，千万要小心并发使用变量的问题
 }
@@ -73,31 +69,31 @@ func (*Kafka) ParseConfig(baseDir string, bs []byte) (any, error) {
 
 	c.BaseDir = baseDir
 
-	if c.Global.Namespace == "" {
-		c.Global.Namespace = "kafka"
-	} else if c.Global.Namespace == "-" {
-		c.Global.Namespace = ""
+	if c.Namespace == "" {
+		c.Namespace = "kafka"
+	} else if c.Namespace == "-" {
+		c.Namespace = ""
 	}
 
-	if c.Global.KafkaVersion == "" {
-		c.Global.KafkaVersion = sarama.V2_0_0_0.String()
+	if c.KafkaVersion == "" {
+		c.KafkaVersion = sarama.V2_0_0_0.String()
 	}
 
-	if c.Global.OffsetShowAll == nil {
+	if c.OffsetShowAll == nil {
 		b := true
-		c.Global.OffsetShowAll = &b
+		c.OffsetShowAll = &b
 	}
 
-	if c.Global.TopicWorkers == 0 {
-		c.Global.TopicWorkers = cgroup.AvailableCPUs() * 2
+	if c.TopicWorkers == 0 {
+		c.TopicWorkers = cgroup.AvailableCPUs() * 2
 	}
 
-	if c.Global.TopicFilter == "" {
-		c.Global.TopicFilter = ".*"
+	if c.TopicFilter == "" {
+		c.TopicFilter = ".*"
 	}
 
-	if c.Global.GroupFilter == "" {
-		c.Global.GroupFilter = ".*"
+	if c.GroupFilter == "" {
+		c.GroupFilter = ".*"
 	}
 
 	return &c, nil
@@ -105,9 +101,8 @@ func (*Kafka) ParseConfig(baseDir string, bs []byte) (any, error) {
 
 func (*Kafka) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
 	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
-	cfg := c.(*Config)
+	conf := c.(*Config)
 
-	conf := cfg.Global
 	opts := exporter.KafkaOpts{
 		Namespace:                conf.Namespace,
 		Uri:                      strings.Split(target, ","),

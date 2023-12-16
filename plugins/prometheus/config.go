@@ -19,11 +19,7 @@ import (
 )
 
 type Config struct {
-	BaseDir string `toml:"-"`
-	Global  Global `toml:"global"`
-}
-
-type Global struct {
+	BaseDir              string   `toml:"-"`
 	Namespace            string   `toml:"namespace"`
 	BasicAuthUser        string   `toml:"basic_auth_user"`
 	BasicAuthPass        string   `toml:"basic_auth_pass"`
@@ -44,43 +40,43 @@ type Global struct {
 }
 
 func (cfg *Config) initDefault() {
-	if cfg.Global.ConnectTimeoutMillis <= 0 {
-		cfg.Global.ConnectTimeoutMillis = 500
+	if cfg.ConnectTimeoutMillis <= 0 {
+		cfg.ConnectTimeoutMillis = 500
 	}
 
-	if cfg.Global.RequestTimeoutMillis <= 0 {
-		cfg.Global.RequestTimeoutMillis = 5000
+	if cfg.RequestTimeoutMillis <= 0 {
+		cfg.RequestTimeoutMillis = 5000
 	}
 
-	if cfg.Global.MaxIdleConnsPerHost <= 0 {
-		cfg.Global.MaxIdleConnsPerHost = 2
+	if cfg.MaxIdleConnsPerHost <= 0 {
+		cfg.MaxIdleConnsPerHost = 2
 	}
 
-	if cfg.Global.Method == "" {
-		cfg.Global.Method = "GET"
+	if cfg.Method == "" {
+		cfg.Method = "GET"
 	}
 
-	if cfg.Global.Namespace == "" {
-		cfg.Global.Namespace = "prometheus"
-	} else if cfg.Global.Namespace == "-" {
-		cfg.Global.Namespace = ""
+	if cfg.Namespace == "" {
+		cfg.Namespace = "prometheus"
+	} else if cfg.Namespace == "-" {
+		cfg.Namespace = ""
 	}
 }
 
 func (cfg *Config) newClient(isHTTPs bool) (*http.Client, error) {
 	dialer := &net.Dialer{
-		Timeout: time.Duration(cfg.Global.ConnectTimeoutMillis) * time.Millisecond,
+		Timeout: time.Duration(cfg.ConnectTimeoutMillis) * time.Millisecond,
 	}
 
 	var err error
-	if cfg.Global.Interface != "" {
-		dialer.LocalAddr, err = netutil.LocalAddressByInterfaceName(cfg.Global.Interface)
+	if cfg.Interface != "" {
+		dialer.LocalAddr, err = netutil.LocalAddressByInterfaceName(cfg.Interface)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	proxy, err := httpproxy.GetProxyFunc(cfg.Global.ProxyURL)
+	proxy, err := httpproxy.GetProxyFunc(cfg.ProxyURL)
 	if err != nil {
 		return nil, err
 	}
@@ -88,12 +84,12 @@ func (cfg *Config) newClient(isHTTPs bool) (*http.Client, error) {
 	trans := &http.Transport{
 		Proxy:               proxy,
 		DialContext:         dialer.DialContext,
-		MaxIdleConnsPerHost: cfg.Global.MaxIdleConnsPerHost,
+		MaxIdleConnsPerHost: cfg.MaxIdleConnsPerHost,
 		DisableKeepAlives:   true,
 	}
 
 	if isHTTPs {
-		tlsConfig, err := cfg.Global.ClientConfig.TLSConfig()
+		tlsConfig, err := cfg.ClientConfig.TLSConfig()
 		if err != nil {
 			return nil, err
 		}
@@ -102,10 +98,10 @@ func (cfg *Config) newClient(isHTTPs bool) (*http.Client, error) {
 
 	cli := &http.Client{
 		Transport: trans,
-		Timeout:   time.Duration(cfg.Global.RequestTimeoutMillis) * time.Millisecond,
+		Timeout:   time.Duration(cfg.RequestTimeoutMillis) * time.Millisecond,
 	}
 
-	if !cfg.Global.FollowRedirects {
+	if !cfg.FollowRedirects {
 		cli.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		}
@@ -115,7 +111,7 @@ func (cfg *Config) newClient(isHTTPs bool) (*http.Client, error) {
 }
 
 func (cfg *Config) fillHeaders(req *http.Request) error {
-	for _, h := range cfg.Global.Headers {
+	for _, h := range cfg.Headers {
 		kv := strings.SplitN(h, ":", 2)
 		if len(kv) != 2 {
 			continue
@@ -130,12 +126,12 @@ func (cfg *Config) fillHeaders(req *http.Request) error {
 		}
 	}
 
-	if cfg.Global.BasicAuthUser != "" && cfg.Global.BasicAuthPass != "" {
-		req.SetBasicAuth(cfg.Global.BasicAuthUser, cfg.Global.BasicAuthPass)
+	if cfg.BasicAuthUser != "" && cfg.BasicAuthPass != "" {
+		req.SetBasicAuth(cfg.BasicAuthUser, cfg.BasicAuthPass)
 	}
 
-	if cfg.Global.BearerToken == "" && cfg.Global.BearerTokeFile != "" {
-		tokenFilePath := cfg.Global.BearerTokeFile
+	if cfg.BearerToken == "" && cfg.BearerTokeFile != "" {
+		tokenFilePath := cfg.BearerTokeFile
 		if !filepath.IsAbs(tokenFilePath) {
 			tokenFilePath = filepath.Join(cfg.BaseDir, tokenFilePath)
 		}
@@ -143,11 +139,11 @@ func (cfg *Config) fillHeaders(req *http.Request) error {
 		if err != nil {
 			return fmt.Errorf("read bearer token file failed, path: %s", tokenFilePath)
 		}
-		cfg.Global.BearerToken = strings.TrimSpace(string(bs))
+		cfg.BearerToken = strings.TrimSpace(string(bs))
 	}
 
-	if cfg.Global.BearerToken != "" {
-		req.Header.Set("Authorization", "Bearer "+cfg.Global.BearerToken)
+	if cfg.BearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+cfg.BearerToken)
 	}
 
 	return nil
@@ -162,11 +158,11 @@ func (cfg *Config) Scrape(ctx context.Context, target string, ss *types.Samples)
 	}
 
 	var payload io.Reader
-	if cfg.Global.Payload != "" {
-		payload = strings.NewReader(cfg.Global.Payload)
+	if cfg.Payload != "" {
+		payload = strings.NewReader(cfg.Payload)
 	}
 
-	req, err := http.NewRequest(cfg.Global.Method, target, payload)
+	req, err := http.NewRequest(cfg.Method, target, payload)
 	if err != nil {
 		return errors.WithMessagef(err, "new request failed, target: %s", target)
 	}
@@ -180,7 +176,7 @@ func (cfg *Config) Scrape(ctx context.Context, target string, ss *types.Samples)
 	if err != nil {
 		return errors.WithMessagef(err, "request failed, target: %s", target)
 	}
-	ss.AddMetric(cfg.Global.Namespace, map[string]interface{}{"last_scrape_duration_seconds": time.Since(now).Seconds()})
+	ss.AddMetric(cfg.Namespace, map[string]interface{}{"last_scrape_duration_seconds": time.Since(now).Seconds()})
 
 	if resp.Body == nil {
 		return errors.WithMessagef(err, "response body is nil, target: %s", target)
@@ -193,7 +189,7 @@ func (cfg *Config) Scrape(ctx context.Context, target string, ss *types.Samples)
 		return errors.WithMessagef(err, "read response body failed, target: %s", target)
 	}
 
-	if err := ss.AddMetricsBody(body, resp.Header, cfg.Global.SplitBody); err != nil {
+	if err := ss.AddMetricsBody(body, resp.Header, cfg.SplitBody); err != nil {
 		return errors.WithMessagef(err, "parse response failed, target: %s", target)
 	}
 

@@ -53,6 +53,10 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 
 	defer httpClient.CloseIdleConnections()
 
+	if err = c.gatherClusterInfo(ctx, target, httpClient, ss); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -1,4 +1,3 @@
-[global]
 basic_auth_user = ""
 basic_auth_pass = ""
 headers = []

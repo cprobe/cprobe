@@ -17,7 +17,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-type Global struct {
+type Config struct {
+	BaseDir           string        `toml:"-"`
 	User              string        `toml:"user"`
 	Password          string        `toml:"password"`
 	Namespace         string        `toml:"namespace"`
@@ -53,11 +54,6 @@ type Global struct {
 	ExportClientsIncludePort bool `toml:"export_clients_include_port"`
 }
 
-type Config struct {
-	BaseDir string `toml:"-"`
-	Global  Global `toml:"global"`
-}
-
 type Redis struct {
 	// 这个数据结构中未来如果有变量，千万要小心并发使用变量的问题
 }
@@ -75,46 +71,46 @@ func (*Redis) ParseConfig(baseDir string, bs []byte) (any, error) {
 
 	c.BaseDir = baseDir
 
-	if c.Global.Namespace == "" {
-		c.Global.Namespace = "redis"
-	} else if c.Global.Namespace == "-" {
-		c.Global.Namespace = ""
+	if c.Namespace == "" {
+		c.Namespace = "redis"
+	} else if c.Namespace == "-" {
+		c.Namespace = ""
 	}
 
-	if c.Global.ConnectionTimeout == 0 {
-		c.Global.ConnectionTimeout = time.Second
+	if c.ConnectionTimeout == 0 {
+		c.ConnectionTimeout = time.Second
 	}
 
-	if c.Global.ConfigCommand == "" {
-		c.Global.ConfigCommand = "CONFIG"
+	if c.ConfigCommand == "" {
+		c.ConfigCommand = "CONFIG"
 	}
 
-	if c.Global.CheckKeysBatchSize == 0 {
-		c.Global.CheckKeysBatchSize = 1000
+	if c.CheckKeysBatchSize == 0 {
+		c.CheckKeysBatchSize = 1000
 	}
 
-	if c.Global.MaxDistinctKeyGroups == 0 {
-		c.Global.MaxDistinctKeyGroups = 100
+	if c.MaxDistinctKeyGroups == 0 {
+		c.MaxDistinctKeyGroups = 100
 	}
 
-	if c.Global.SetClientName == nil {
+	if c.SetClientName == nil {
 		b := true
-		c.Global.SetClientName = &b
+		c.SetClientName = &b
 	}
 
-	if c.Global.RedactConfigMetrics == nil {
+	if c.RedactConfigMetrics == nil {
 		b := true
-		c.Global.RedactConfigMetrics = &b
+		c.RedactConfigMetrics = &b
 	}
 
-	if c.Global.IncludeConfigMetrics == nil {
+	if c.IncludeConfigMetrics == nil {
 		b := true
-		c.Global.IncludeConfigMetrics = &b
+		c.IncludeConfigMetrics = &b
 	}
 
-	if c.Global.IncludeSystemMetrics == nil {
+	if c.IncludeSystemMetrics == nil {
 		b := true
-		c.Global.IncludeSystemMetrics = &b
+		c.IncludeSystemMetrics = &b
 	}
 
 	return &c, nil
@@ -122,7 +118,7 @@ func (*Redis) ParseConfig(baseDir string, bs []byte) (any, error) {
 
 func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Samples) error {
 	// 这个方法中如果要对配置 c 变量做修改，一定要 clone 一份之后再修改，因为并发的多个 target 共享了一个 c 变量
-	cfg := c.(*Config)
+	conf := c.(*Config)
 	if !strings.Contains(target, "://") {
 		target = "redis://" + target
 	}
@@ -136,13 +132,12 @@ func (*Redis) Scrape(ctx context.Context, target string, c any, ss *types.Sample
 	target = u.String()
 
 	ls := make(map[string][]byte)
-	for _, script := range cfg.Global.LuaScriptFiles {
+	for _, script := range conf.LuaScriptFiles {
 		if ls[script], err = os.ReadFile(script); err != nil {
 			return fmt.Errorf("failed to read redis lua script file %s: %s", script, err)
 		}
 	}
 
-	conf := cfg.Global
 	opts := exporter.Options{
 		User:                      conf.User,
 		Password:                  conf.Password,
