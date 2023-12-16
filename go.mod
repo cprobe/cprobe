@@ -3,6 +3,7 @@ module github.com/cprobe/cprobe
 go 1.19
 
 require (
+	dario.cat/mergo v1.0.0
 	github.com/BurntSushi/toml v1.3.2
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/Shopify/sarama v1.38.1

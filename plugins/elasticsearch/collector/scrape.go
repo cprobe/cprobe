@@ -46,15 +46,22 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 	if c.AwsRegion != "" {
 		httpClient.Transport, err = roundtripper.NewAWSSigningTransport(httpTransport, c.AwsRegion, c.AwsRoleArn)
 		if err != nil {
-			logger.Errorf("failed to create AWS transport: %v", err)
-			return err
+			return errors.WithMessage(err, "failed to create AWS transport")
 		}
 	}
 
 	defer httpClient.CloseIdleConnections()
 
 	if err = c.gatherClusterInfo(ctx, target, httpClient, ss); err != nil {
-		return err
+		return errors.WithMessage(err, "failed to gather cluster info")
+	}
+
+	if err = c.gatherClusterSettings(ctx, target, httpClient, ss); err != nil {
+		logger.Errorf("failed to gather cluster settings: %s", err)
+	}
+
+	if err = c.gatherSnapshots(ctx, target, httpClient, ss); err != nil {
+		logger.Errorf("failed to gather snapshots: %s", err)
 	}
 
 	return nil
