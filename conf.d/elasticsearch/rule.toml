@@ -1,0 +1,61 @@
+[global]
+username = ""
+password = ""
+apikey = ""
+timeout = "5s"
+
+# set to "*"      -> /_nodes/stats
+# set to "_local" -> /_nodes/_local/stats
+gather_node = "*"
+
+# e.g. cluster cluster_uuid version build_date build_hash
+gather_cluster_info = true
+
+# _cluster/settings
+gather_cluster_settings = true
+
+# /_snapshot and /_snapshot/*/_all
+gather_snapshots = false
+
+# /_all/_stats
+# querystring: ignore_unavailable=true
+gather_indices = false
+
+# querystring: ignore_unavailable=true&level=shards
+gather_indices_shards = false
+
+# /_all/_settings
+gather_indices_settings = false
+
+# /_all/_mappings
+gather_indices_mappings = false
+
+# /_alias
+gather_indices_use_alias = true
+
+# /_ilm/status and /_all/_ilm/explain
+gather_ilm = false
+
+# /_slm/stats and /_slm/status
+gather_slm = false
+
+# /_data_stream/*/_stats
+gather_data_stream = false
+
+# Path to PEM file that contains trusted Certificate Authorities for the Elasticsearch connection.
+tls_ca = ""
+
+# Path to PEM file that contains the private key for client auth when connecting to Elasticsearch.
+tls_client_private_key = ""
+
+# Path to PEM file that contains the corresponding cert for the private key to connect to Elasticsearch.
+tls_client_cert = ""
+
+# Skip SSL verification when connecting to Elasticsearch.
+tls_skip_verify = false
+
+# Region for AWS elasticsearch
+aws_region = ""
+
+# Role ARN of an IAM role to assume.
+aws_role_arn = ""
