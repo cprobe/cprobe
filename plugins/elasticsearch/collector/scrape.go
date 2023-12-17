@@ -107,6 +107,88 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 		}
 	}
 
+	if c.GatherSlm {
+		slm := NewSLM(httpClient, target)
+		slmCh := make(chan prometheus.Metric)
+		go func() {
+			slm.Collect(slmCh)
+			close(slmCh)
+		}()
+		for m := range slmCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform slm metric: %s", err)
+			}
+		}
+	}
+
+	if c.GatherDataStream {
+		dataStream := NewDataStream(httpClient, target)
+		dataStreamCh := make(chan prometheus.Metric)
+		go func() {
+			dataStream.Collect(dataStreamCh)
+			close(dataStreamCh)
+		}()
+		for m := range dataStreamCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform data stream metric: %s", err)
+			}
+		}
+	}
+
+	if c.GatherIndicesSettings {
+		indicesSettings := NewIndicesSettings(httpClient, target)
+		indicesSettingsCh := make(chan prometheus.Metric)
+		go func() {
+			indicesSettings.Collect(indicesSettingsCh)
+			close(indicesSettingsCh)
+		}()
+		for m := range indicesSettingsCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform indices settings metric: %s", err)
+			}
+		}
+	}
+
+	if c.GatherIndicesMappings {
+		indicesMappings := NewIndicesMappings(httpClient, target)
+		indicesMappingsCh := make(chan prometheus.Metric)
+		go func() {
+			indicesMappings.Collect(indicesMappingsCh)
+			close(indicesMappingsCh)
+		}()
+		for m := range indicesMappingsCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform indices mappings metric: %s", err)
+			}
+		}
+	}
+
+	if c.GatherIlm {
+		ilmStatus := NewIlmStatus(httpClient, target)
+		ilmStatusCh := make(chan prometheus.Metric)
+		go func() {
+			ilmStatus.Collect(ilmStatusCh)
+			close(ilmStatusCh)
+		}()
+		for m := range ilmStatusCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform ilm status metric: %s", err)
+			}
+		}
+
+		ilmIndicies := NewIlmIndicies(httpClient, target)
+		ilmIndiciesCh := make(chan prometheus.Metric)
+		go func() {
+			ilmIndicies.Collect(ilmIndiciesCh)
+			close(ilmIndiciesCh)
+		}()
+		for m := range ilmIndiciesCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform ilm indicies metric: %s", err)
+			}
+		}
+	}
+
 	return nil
 }
 
