@@ -52,8 +52,14 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 
 	defer httpClient.CloseIdleConnections()
 
-	if err = c.gatherClusterInfo(ctx, target, httpClient, ss); err != nil {
+	var clusterName string
+
+	if clusterName, err = c.gatherClusterInfo(ctx, target, httpClient, ss); err != nil {
 		return errors.WithMessage(err, "failed to gather cluster info")
+	}
+
+	if err = c.gatherClusterHealth(ctx, target, httpClient, ss, clusterName); err != nil {
+		return errors.WithMessage(err, "failed to gather cluster health")
 	}
 
 	if err = c.gatherClusterSettings(ctx, target, httpClient, ss); err != nil {

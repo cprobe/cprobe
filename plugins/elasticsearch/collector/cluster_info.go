@@ -30,31 +30,31 @@ type VersionInfo struct {
 	LuceneVersion semver.Version `json:"lucene_version"`
 }
 
-func (c *Config) gatherClusterInfo(ctx context.Context, u *url.URL, hc *http.Client, ss *types.Samples) error {
+func (c *Config) gatherClusterInfo(ctx context.Context, u *url.URL, hc *http.Client, ss *types.Samples) (string, error) {
 	if !c.GatherClusterInfo {
-		return nil
+		return "", nil
 	}
 
 	resp, err := hc.Get(u.String())
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if resp.Body == nil {
-		return fmt.Errorf("empty response body")
+		return "", fmt.Errorf("empty response body")
 	}
 
 	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	var info ClusterInfoResponse
 	err = json.Unmarshal(b, &info)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	fields := map[string]interface{}{
@@ -72,5 +72,5 @@ func (c *Config) gatherClusterInfo(ctx context.Context, u *url.URL, hc *http.Cli
 
 	ss.AddMetric(namespace, fields, tags)
 
-	return nil
+	return info.ClusterName, nil
 }
