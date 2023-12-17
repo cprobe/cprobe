@@ -10,6 +10,7 @@ import (
 	"github.com/cprobe/cprobe/plugins/elasticsearch/pkg/roundtripper"
 	"github.com/cprobe/cprobe/types"
 	"github.com/pkg/errors"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) error {
@@ -54,6 +55,9 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 
 	var clusterName string
 
+	// 下面的几个 gather 方法是魔改了 exporter，不过指标名称尽量保持一致
+	// 这个改动比原来更清晰，原来的 exporter 考虑了把 cluster 信息周期性更新，引入了复杂度，实在没必要
+	// cprobe 这个场景只需要每次采集的一开始获取一次 cluster 信息即可
 	if clusterName, err = c.gatherClusterInfo(ctx, target, httpClient, ss); err != nil {
 		return errors.WithMessage(err, "failed to gather cluster info")
 	}
@@ -68,6 +72,21 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 
 	if err = c.gatherSnapshots(ctx, target, httpClient, ss); err != nil {
 		logger.Errorf("failed to gather snapshots: %s", err)
+	}
+
+	// 换成另一个写法，尽量不改动原本的 exporter 的逻辑，传递 channel 收集数据，主要是这部分指标太多了，改起来费劲
+	nodes := NewNodes(httpClient, target, c.GatherNode == "*", c.GatherNode)
+
+	nodesCh := make(chan prometheus.Metric)
+	go func() {
+		nodes.Collect(nodesCh)
+		close(nodesCh)
+	}()
+
+	for m := range nodesCh {
+		if err := ss.AddPromMetric(m); err != nil {
+			logger.Warnf("failed to transform prometheus metric: %s", err)
+		}
 	}
 
 	return nil
