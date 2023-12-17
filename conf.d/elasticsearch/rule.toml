@@ -11,7 +11,7 @@ gather_node = "*"
 gather_cluster_info = true
 
 # _cluster/settings
-gather_cluster_settings = true
+gather_cluster_settings = false
 
 # /_snapshot and /_snapshot/*/_all
 gather_snapshots = false
@@ -21,6 +21,7 @@ gather_snapshots = false
 gather_indices = false
 
 # querystring: ignore_unavailable=true&level=shards
+# only gahter node_shards_total by node
 gather_indices_shards = false
 
 # /_all/_settings
