@@ -21,6 +21,9 @@ ElasticSearch 这个插件 fork 自 [elasticsearch_exporter](https://github.com/
 ## 告警规则
 
 ```
+# 采集失败
+elasticsearch_cprobe_up == 0
+
 # 集群状态是 red 了，主分片都有问题了
 elasticsearch_cluster_health_status{status="red"} == 1
 
