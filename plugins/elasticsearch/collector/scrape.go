@@ -85,7 +85,25 @@ func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) 
 
 	for m := range nodesCh {
 		if err := ss.AddPromMetric(m); err != nil {
-			logger.Warnf("failed to transform prometheus metric: %s", err)
+			logger.Warnf("failed to transform nodes metric: %s", err)
+		}
+	}
+
+	if c.GatherIndices || c.GatherIndicesShards {
+		indices := NewIndices(httpClient, target, c.GatherIndicesShards, c.GatherIndicesUseAlias, clusterName)
+		indicesCh := make(chan prometheus.Metric)
+		go func() {
+			indices.Collect(indicesCh)
+			close(indicesCh)
+		}()
+		for m := range indicesCh {
+			if err := ss.AddPromMetric(m); err != nil {
+				logger.Warnf("failed to transform indices metric: %s", err)
+			}
+		}
+
+		if err = c.gatherShardsTotal(ctx, target, httpClient, ss, clusterName); err != nil {
+			logger.Errorf("failed to gather shards total: %s", err)
 		}
 	}
 

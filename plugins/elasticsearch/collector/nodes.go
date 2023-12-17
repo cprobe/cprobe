@@ -177,8 +177,7 @@ type Nodes struct {
 	all    bool
 	node   string
 
-	up                              prometheus.Gauge
-	totalScrapes, jsonParseFailures prometheus.Counter
+	up prometheus.Gauge
 
 	nodeMetrics               []*nodeMetric
 	gcCollectionMetrics       []*gcCollectionMetric
@@ -199,14 +198,6 @@ func NewNodes(client *http.Client, url *url.URL, all bool, node string) *Nodes {
 		up: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: prometheus.BuildFQName(namespace, "node_stats", "up"),
 			Help: "Was the last scrape of the Elasticsearch nodes endpoint successful.",
-		}),
-		totalScrapes: prometheus.NewCounter(prometheus.CounterOpts{
-			Name: prometheus.BuildFQName(namespace, "node_stats", "total_scrapes"),
-			Help: "Current total Elasticsearch node scrapes.",
-		}),
-		jsonParseFailures: prometheus.NewCounter(prometheus.CounterOpts{
-			Name: prometheus.BuildFQName(namespace, "node_stats", "json_parse_failures"),
-			Help: "Number of errors while parsing JSON.",
 		}),
 
 		nodeMetrics: []*nodeMetric{
@@ -1799,8 +1790,6 @@ func (c *Nodes) Describe(ch chan<- *prometheus.Desc) {
 		ch <- metric.Desc
 	}
 	ch <- c.up.Desc()
-	ch <- c.totalScrapes.Desc()
-	ch <- c.jsonParseFailures.Desc()
 }
 
 func (c *Nodes) fetchAndDecodeNodeStats() (nodeStatsResponse, error) {
@@ -1832,24 +1821,20 @@ func (c *Nodes) fetchAndDecodeNodeStats() (nodeStatsResponse, error) {
 
 	bts, err := io.ReadAll(res.Body)
 	if err != nil {
-		c.jsonParseFailures.Inc()
 		return nsr, err
 	}
 
 	if err := json.Unmarshal(bts, &nsr); err != nil {
-		c.jsonParseFailures.Inc()
 		return nsr, err
 	}
+
 	return nsr, nil
 }
 
 // Collect gets nodes metric values
 func (c *Nodes) Collect(ch chan<- prometheus.Metric) {
-	c.totalScrapes.Inc()
 	defer func() {
 		ch <- c.up
-		ch <- c.totalScrapes
-		ch <- c.jsonParseFailures
 	}()
 
 	nodeStatsResp, err := c.fetchAndDecodeNodeStats()
