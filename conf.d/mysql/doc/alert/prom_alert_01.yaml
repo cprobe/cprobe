@@ -10,7 +10,7 @@ groups:
 - name: MySQLRules
   rules:
   - alert: MySQLDown
-    expr: mysql_up == 0
+    expr: mysql_cprobe_up == 0
     for: 1m
     labels:
       severity: critical
@@ -18,7 +18,7 @@ groups:
       description: "MySQL instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
 
   - alert: MySQLTooManyConnections
-    expr: avg (mysql_global_status_threads_connected) / avg (mysql_global_variables_max_connections) * 100 > 80
+    expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections * 100 > 80
     for: 1m
     labels:
       severity: warning
