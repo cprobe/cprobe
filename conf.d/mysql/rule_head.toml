@@ -1,5 +1,5 @@
 [global]
-user = 'root'
+user = 'cprobe'
 password = 'cProbePa55'
 # ssl_ca = '/etc/mysql/ssl/ca.pem'
 # ssl_cert = '/etc/mysql/ssl/client-cert.pem'
