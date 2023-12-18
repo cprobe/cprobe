@@ -2,7 +2,7 @@ groups:
 - name: RedisRules
   rules:
   - alert: RedisDown
-    expr: redis_up == 0
+    expr: redis_cprobe_up == 0
     for: 1m
     labels:
       severity: critical
