@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/cprobe/cprobe/lib/conv"
@@ -26,16 +25,21 @@ func CollectCustomQueries(ctx context.Context, db *sql.DB, ss *types.Samples, qu
 		return
 	}
 
-	wg := new(sync.WaitGroup)
-	defer wg.Wait()
-
+	// 做成顺序执行，避免并发导致的连接数过多
 	for i := 0; i < len(queries); i++ {
-		wg.Add(1)
-		go func(query CustomQuery) {
-			defer wg.Done()
-			collectCustomQuery(ctx, db, ss, query)
-		}(queries[i])
+		collectCustomQuery(ctx, db, ss, queries[i])
 	}
+
+	// wg := new(sync.WaitGroup)
+	// defer wg.Wait()
+
+	// for i := 0; i < len(queries); i++ {
+	// 	wg.Add(1)
+	// 	go func(query CustomQuery) {
+	// 		defer wg.Done()
+	// 		collectCustomQuery(ctx, db, ss, query)
+	// 	}(queries[i])
+	// }
 }
 
 func collectCustomQuery(ctx context.Context, db *sql.DB, ss *types.Samples, query CustomQuery) {
