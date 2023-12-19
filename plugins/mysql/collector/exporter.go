@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/cprobe/cprobe/lib/logger"
+	"github.com/cprobe/cprobe/plugins/sqlc"
 	"github.com/cprobe/cprobe/types"
 	"github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
@@ -81,11 +82,11 @@ type Exporter struct {
 	dsn      string
 	scrapers []Scraper
 	ss       *types.Samples
-	queries  []CustomQuery
+	queries  []sqlc.CustomQuery
 }
 
 // New returns a new MySQL exporter for the provided DSN.
-func New(ctx context.Context, dsn string, scrapers []Scraper, ss *types.Samples, queries []CustomQuery, lockWaitTimeout int, logSlowFilter bool) *Exporter {
+func New(ctx context.Context, dsn string, scrapers []Scraper, ss *types.Samples, queries []sqlc.CustomQuery, lockWaitTimeout int, logSlowFilter bool) *Exporter {
 	// Setup extra params for the DSN, default to having a lock timeout.
 	dsnParams := []string{fmt.Sprintf(timeoutParam, lockWaitTimeout)}
 
@@ -167,7 +168,7 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) erro
 	}
 
 	// 添加自定义采集的逻辑
-	e.collectCustomQueries(ctx, db, e.ss, e.queries)
+	sqlc.CollectCustomQueries(ctx, db, e.ss, e.queries)
 
 	return nil
 }

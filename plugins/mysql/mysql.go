@@ -13,6 +13,7 @@ import (
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/plugins/mysql/collector"
+	"github.com/cprobe/cprobe/plugins/sqlc"
 	"github.com/cprobe/cprobe/types"
 	"github.com/go-sql-driver/mysql"
 	"github.com/prometheus/client_golang/prometheus"
@@ -93,9 +94,9 @@ func (g Global) CustomizeTLS() error {
 }
 
 type Config struct {
-	BaseDir string                  `toml:"-"`
-	Global  *Global                 `toml:"global"`
-	Queries []collector.CustomQuery `toml:"queries"`
+	BaseDir string             `toml:"-"`
+	Global  *Global            `toml:"global"`
+	Queries []sqlc.CustomQuery `toml:"queries"`
 
 	CollectGlobalStatus struct {
 		Enabled bool `toml:"enabled"`

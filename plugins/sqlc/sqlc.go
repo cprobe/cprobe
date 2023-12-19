@@ -1,4 +1,4 @@
-package collector
+package sqlc
 
 import (
 	"context"
@@ -21,7 +21,7 @@ type CustomQuery struct {
 	Request       string        `toml:"request"`
 }
 
-func (e *Exporter) collectCustomQueries(ctx context.Context, db *sql.DB, ss *types.Samples, queries []CustomQuery) {
+func CollectCustomQueries(ctx context.Context, db *sql.DB, ss *types.Samples, queries []CustomQuery) {
 	if len(queries) == 0 {
 		return
 	}
@@ -33,12 +33,12 @@ func (e *Exporter) collectCustomQueries(ctx context.Context, db *sql.DB, ss *typ
 		wg.Add(1)
 		go func(query CustomQuery) {
 			defer wg.Done()
-			e.collectCustomQuery(ctx, db, ss, query)
+			collectCustomQuery(ctx, db, ss, query)
 		}(queries[i])
 	}
 }
 
-func (e *Exporter) collectCustomQuery(ctx context.Context, db *sql.DB, ss *types.Samples, query CustomQuery) {
+func collectCustomQuery(ctx context.Context, db *sql.DB, ss *types.Samples, query CustomQuery) {
 	ctx, cancel := context.WithTimeout(ctx, query.Timeout)
 	defer cancel()
 
@@ -80,13 +80,13 @@ func (e *Exporter) collectCustomQuery(ctx context.Context, db *sql.DB, ss *types
 			row[strings.ToLower(colName)] = string(*val)
 		}
 
-		if err = e.parseRow(row, query, ss); err != nil {
+		if err = parseRow(row, query, ss); err != nil {
 			logger.Errorf("failed to parse row: %s, sql: %s", err, query.Request)
 		}
 	}
 }
 
-func (e *Exporter) parseRow(row map[string]string, query CustomQuery, ss *types.Samples) error {
+func parseRow(row map[string]string, query CustomQuery, ss *types.Samples) error {
 	labels := make(map[string]string)
 
 	for _, label := range query.LabelFields {
