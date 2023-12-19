@@ -25,3 +25,4 @@
   - [JSON](conf.d/json/doc)
   - [Prometheus](conf.d/prometheus/doc)
   - [ElasticSearch](conf.d/elasticsearch/doc)
+  - [Oracle](conf.d/oracledb/doc)
