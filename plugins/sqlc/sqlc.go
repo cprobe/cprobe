@@ -43,6 +43,10 @@ func CollectCustomQueries(ctx context.Context, db *sql.DB, ss *types.Samples, qu
 }
 
 func collectCustomQuery(ctx context.Context, db *sql.DB, ss *types.Samples, query CustomQuery) {
+	if query.Timeout == 0 {
+		query.Timeout = 5 * time.Second
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, query.Timeout)
 	defer cancel()
 
@@ -113,8 +117,8 @@ func parseRow(row map[string]string, query CustomQuery, ss *types.Samples) error
 			}, labels)
 		} else {
 			suffix := cleanName(row[query.FieldToAppend])
-			ss.AddMetric(query.Mesurement+"_"+suffix, map[string]interface{}{
-				column: value,
+			ss.AddMetric(query.Mesurement, map[string]interface{}{
+				suffix: value,
 			}, labels)
 		}
 	}

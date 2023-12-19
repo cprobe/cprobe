@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'oracle'
+
+# scrape_configs:
+# - job_name: 'oracle'
+#   static_configs:
+#   - targets:
+#     - 10.99.1.107:1521/xe # ip:port/service
+#   scrape_rule_files:
+#   - 'link.toml'
+#   - 'comm.toml'

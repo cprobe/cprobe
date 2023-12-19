@@ -8,6 +8,7 @@ import (
 	_ "github.com/cprobe/cprobe/plugins/json"
 	_ "github.com/cprobe/cprobe/plugins/kafka"
 	_ "github.com/cprobe/cprobe/plugins/mysql"
+	_ "github.com/cprobe/cprobe/plugins/oracledb"
 	_ "github.com/cprobe/cprobe/plugins/prometheus"
 	_ "github.com/cprobe/cprobe/plugins/redis"
 )
@@ -23,5 +24,6 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginBlackbox:      make(map[JobID]*JobGoroutine),
 		types.PluginJson:          make(map[JobID]*JobGoroutine),
 		types.PluginPrometheus:    make(map[JobID]*JobGoroutine),
+		types.PluginOracleDB:      make(map[JobID]*JobGoroutine),
 	}
 }

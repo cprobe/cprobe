@@ -10,4 +10,5 @@ const (
 	PluginBlackbox      = "blackbox"
 	PluginJson          = "json"
 	PluginPrometheus    = "prometheus"
+	PluginOracleDB      = "oracledb"
 )
