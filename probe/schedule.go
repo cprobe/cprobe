@@ -192,7 +192,7 @@ func (j *JobGoroutine) run(ctx context.Context) {
 				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_timestamp": now.Unix() * -1}) // negative timestamp means error
 			} else {
 				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_up": 1.0})
-				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_error": 0.0}, map[string]string{"error": "null"})
+				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_error": 0.0}, map[string]string{"error": ""})
 				ss.AddMetric(j.plugin, map[string]interface{}{"cprobe_timestamp": now.Unix()})
 			}
 

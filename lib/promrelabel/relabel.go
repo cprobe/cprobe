@@ -123,7 +123,8 @@ func removeEmptyLabels(labels []prompbmarshal.Label, labelsOffset int) []prompbm
 	needsRemoval := false
 	for i := range src {
 		label := &src[i]
-		if label.Name == "" || label.Value == "" {
+		// if label.Name == "" || label.Value == "" {
+		if label.Name == "" {
 			needsRemoval = true
 			break
 		}
@@ -134,7 +135,8 @@ func removeEmptyLabels(labels []prompbmarshal.Label, labelsOffset int) []prompbm
 	dst := labels[:labelsOffset]
 	for i := range src {
 		label := &src[i]
-		if label.Name != "" && label.Value != "" {
+		// if label.Name != "" && label.Value != "" {
+		if label.Name != "" {
 			dst = append(dst, *label)
 		}
 	}
