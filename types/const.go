@@ -11,4 +11,5 @@ const (
 	PluginJson          = "json"
 	PluginPrometheus    = "prometheus"
 	PluginOracleDB      = "oracledb"
+	PluginWhois         = "whois"
 )
