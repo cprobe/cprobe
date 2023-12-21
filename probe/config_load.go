@@ -76,11 +76,11 @@ func (cfg *Config) parseData(data []byte, path string) error {
 			continue
 		}
 
-		if len(sc.ScrapeRuleFiles) == 0 {
-			logger.Errorf("skipping `scrape_config` without `scrape_rule_files` at %q", path)
-			cfg.ScrapeConfigs[i] = nil
-			continue
-		}
+		// if len(sc.ScrapeRuleFiles) == 0 {
+		// 	logger.Errorf("skipping `scrape_config` without `scrape_rule_files` at %q", path)
+		// 	cfg.ScrapeConfigs[i] = nil
+		// 	continue
+		// }
 
 		sc.ParsedRelabelConfigs, err = promrelabel.ParseRelabelConfigs(sc.RelabelConfigs)
 		if err != nil {

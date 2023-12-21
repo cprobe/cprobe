@@ -102,10 +102,10 @@ func (j *JobGoroutine) run(ctx context.Context) {
 	// rule 文件都是 toml 格式，可以直接拼在一起，用户要自己保证正确性
 	// json 和 yaml 格式的文件，很难直接拼在一起，所以 rule 选择 toml 格式
 	ruleFiles := j.GetRuleFiles()
-	if len(ruleFiles) == 0 {
-		logger.Errorf("job(%s) has no rule files", jobName)
-		return
-	}
+	// if len(ruleFiles) == 0 {
+	// 	logger.Errorf("job(%s) has no rule files", jobName)
+	// 	return
+	// }
 
 	var bytesBuffer bytes.Buffer
 	var err error
