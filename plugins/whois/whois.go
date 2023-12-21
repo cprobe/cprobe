@@ -8,9 +8,7 @@ import (
 
 	"github.com/araddon/dateparse"
 	"github.com/domainr/whois"
-	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins"
 	"github.com/cprobe/cprobe/types"
 )
@@ -45,18 +43,9 @@ func (wh *Whois) Scrape(ctx context.Context, target string, cfg any, ss *types.S
 	if err != nil {
 		return err
 	}
-	metric := prometheus.MustNewConstMetric(
-		prometheus.NewDesc(
-			"domain_expiration",
-			"Number of the domain expiration timestamp",
-			nil, nil,
-		),
-		prometheus.GaugeValue,
-		date)
-	if err := ss.AddPromMetric(metric); err != nil {
-		logger.Warnf("failed to transform whois metric: %s", err)
-		return err
-	}
+
+	ss.AddMetric("whois", map[string]interface{}{
+		"domain_expiration": date})
 	return nil
 }
 

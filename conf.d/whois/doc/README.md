@@ -9,7 +9,7 @@
 
 ```
 # 域名将在半个月内到期
-(domain_expiration - time())/86400 < 15
+(whois_domain_expiration - time())/86400 < 15
 ```
 
 ## 声明
