@@ -23,8 +23,8 @@ type Whois struct {
 func init() {
 	plugins.RegisterPlugin(types.PluginWhois, &Whois{})
 }
-func (wh *Whois) ParseConfig(baseDir string, bs []byte) (any, error) {
 
+func (wh *Whois) ParseConfig(baseDir string, bs []byte) (any, error) {
 	return nil, nil
 }
 
@@ -44,20 +44,19 @@ func (wh *Whois) Scrape(ctx context.Context, target string, cfg any, ss *types.S
 		return err
 	}
 
-	ss.AddMetric("whois", map[string]interface{}{
-		"domain_expiration": date})
+	ss.AddMetric("whois", map[string]interface{}{"domain_expiration": date})
 	return nil
 }
 
 func parse(host string, res []byte) (float64, error) {
 	results := expiryRegex.FindStringSubmatch(string(res))
-	if len(results) < 1 {
-		return -2, fmt.Errorf("parse domain: %s err", host)
+	if len(results) < 3 {
+		return 0, fmt.Errorf("failed to parse domain(%s): unexpected regexp results", host)
 	}
 
 	if parsedTime, err := dateparse.ParseAny(strings.TrimSpace(results[2])); err == nil {
 		return float64(parsedTime.Unix()), nil
+	} else {
+		return 0, fmt.Errorf("failed to parse domain(%s) date: %s, error: %v", host, strings.TrimSpace(results[2]), err)
 	}
-
-	return -1, fmt.Errorf("Unable to parse date: %s, for %s\n", strings.TrimSpace(results[2]), host)
 }

@@ -1,11 +1,11 @@
 global:
-  scrape_interval: 15s
+  scrape_interval: 60s
   external_labels:
     cplugin: 'whois'
 
-scrape_configs:
-- job_name: 'domain'
-  static_configs:
-  - targets:
-    - baidu.com
-    - flashcat.cloud
+# scrape_configs:
+# - job_name: 'domain'
+#   static_configs:
+#   - targets:
+#     - baidu.com
+#     - flashcat.cloud
