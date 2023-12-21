@@ -11,6 +11,7 @@ import (
 	_ "github.com/cprobe/cprobe/plugins/oracledb"
 	_ "github.com/cprobe/cprobe/plugins/prometheus"
 	_ "github.com/cprobe/cprobe/plugins/redis"
+	_ "github.com/cprobe/cprobe/plugins/whois"
 )
 
 func makeJobs() map[string]map[JobID]*JobGoroutine {
@@ -25,5 +26,6 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginJson:          make(map[JobID]*JobGoroutine),
 		types.PluginPrometheus:    make(map[JobID]*JobGoroutine),
 		types.PluginOracleDB:      make(map[JobID]*JobGoroutine),
+		types.PluginWhois:         make(map[JobID]*JobGoroutine),
 	}
 }
