@@ -7,6 +7,7 @@ import (
 	_ "github.com/cprobe/cprobe/plugins/elasticsearch"
 	_ "github.com/cprobe/cprobe/plugins/json"
 	_ "github.com/cprobe/cprobe/plugins/kafka"
+	_ "github.com/cprobe/cprobe/plugins/mongodb"
 	_ "github.com/cprobe/cprobe/plugins/mysql"
 	_ "github.com/cprobe/cprobe/plugins/oracledb"
 	_ "github.com/cprobe/cprobe/plugins/prometheus"
