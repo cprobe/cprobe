@@ -61,7 +61,6 @@ func (c *Config) Scrape(ctx context.Context, target string, ss *types.Samples) e
 		EnableOverrideDescendingIndex: c.MetricsOverrideDescendingIndex,
 
 		CollStatsLimit: c.DisableCollstatsIfCollcountMoreThan,
-		CollectAll:     false,
 		ProfileTimeTS:  c.CollectProfileSlowqueriesTimeWindowSeconds,
 	}
 

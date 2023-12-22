@@ -53,7 +53,6 @@ type Opts struct {
 	ProfileTimeTS          int
 	TimeoutOffset          int
 
-	CollectAll               bool
 	EnableDBStats            bool
 	EnableDBStatsFreeStorage bool
 	EnableDiagnosticData     bool
@@ -121,21 +120,6 @@ func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topol
 	if e.opts.CollStatsLimit <= 0 || // Unlimited
 		e.getTotalCollectionsCount() <= e.opts.CollStatsLimit {
 		limitsOk = true
-	}
-
-	if e.opts.CollectAll {
-		if len(e.opts.CollStatsNamespaces) == 0 {
-			e.opts.DiscoveringMode = true
-		}
-		e.opts.EnableDiagnosticData = true
-		e.opts.EnableDBStats = true
-		e.opts.EnableDBStatsFreeStorage = true
-		e.opts.EnableCollStats = true
-		e.opts.EnableTopMetrics = true
-		e.opts.EnableReplicasetStatus = true
-		e.opts.EnableIndexStats = true
-		e.opts.EnableCurrentopMetrics = true
-		e.opts.EnableProfile = true
 	}
 
 	// arbiter only have isMaster privileges
