@@ -1,6 +1,6 @@
 ## 授权
 
-```json
+```
 # Authenticate as the admin user.
 use admin
 db.auth("admin", "<YOUR_MONGODB_ADMIN_PASSWORD>")
