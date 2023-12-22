@@ -27,3 +27,4 @@
   - [ElasticSearch](conf.d/elasticsearch/doc)
   - [Oracle](conf.d/oracledb/doc)
   - [Whois](conf.d/whois/doc)
+  - [MongoDB](conf.d/mongodb/doc)
