@@ -31,8 +31,6 @@ import (
 
 // Exporter holds Exporter methods and attributes.
 type Exporter struct {
-	client                *mongo.Client
-	clientMu              sync.Mutex
 	opts                  *Opts
 	lock                  *sync.Mutex
 	totalCollectionsCount int
