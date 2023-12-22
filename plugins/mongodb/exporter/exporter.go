@@ -49,9 +49,7 @@ type Opts struct {
 	ConnectTimeout         time.Duration
 	DisableDefaultRegistry bool
 	DiscoveringMode        bool
-	GlobalConnPool         bool
 	ProfileTimeTS          int
-	TimeoutOffset          int
 
 	EnableDBStats            bool
 	EnableDBStatsFreeStorage bool
@@ -191,27 +189,6 @@ func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topol
 }
 
 func (e *Exporter) GetClient(ctx context.Context) (*mongo.Client, error) {
-	if e.opts.GlobalConnPool {
-		// Get global client. Maybe it must be initialized first.
-		// Initialization is retried with every scrape until it succeeds once.
-		e.clientMu.Lock()
-		defer e.clientMu.Unlock()
-
-		// If client is already initialized, return it.
-		if e.client != nil {
-			return e.client, nil
-		}
-
-		client, err := connect(context.Background(), e.opts)
-		if err != nil {
-			return nil, err
-		}
-		e.client = client
-
-		return client, nil
-	}
-
-	// !e.opts.GlobalConnPool: create new client for every scrape.
 	client, err := connect(ctx, e.opts)
 	if err != nil {
 		return nil, err
@@ -227,7 +204,7 @@ func connect(ctx context.Context, opts *Opts) (*mongo.Client, error) {
 	}
 
 	clientOpts.SetDirect(opts.DirectConnect)
-	clientOpts.SetAppName("mongodb_exporter")
+	clientOpts.SetAppName("cprobe")
 
 	connectTimeout := opts.ConnectTimeout
 	if opts.ConnectTimeout == 0 {
@@ -245,7 +222,6 @@ func connect(ctx context.Context, opts *Opts) (*mongo.Client, error) {
 	if err = client.Ping(ctx, nil); err != nil {
 		// Ping failed. Close background connections. Error is ignored since the ping error is more relevant.
 		_ = client.Disconnect(ctx)
-
 		return nil, fmt.Errorf("cannot connect to MongoDB: %w", err)
 	}
 

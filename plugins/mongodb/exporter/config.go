@@ -43,10 +43,8 @@ func (c *Config) Scrape(ctx context.Context, target string, ss *types.Samples) e
 		DiscoveringMode:       c.DiscoveringMode,
 		IndexStatsCollections: c.IndexstatsColls,
 		URI:                   uri,
-		GlobalConnPool:        false,
 		DirectConnect:         c.DirectConnect,
 		ConnectTimeout:        c.ConnectTimeout,
-		TimeoutOffset:         0,
 
 		EnableDiagnosticData:     c.CollectDiagnosticdata,
 		EnableReplicasetStatus:   c.CollectReplicasetstatus,
