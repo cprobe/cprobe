@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'mongodb'
+
+# scrape_configs:
+# - job_name: 'standalone'
+#   static_configs:
+#   - targets:
+#     - 10.99.1.110:27017
+#   scrape_rule_files:
+#   - 'rule.toml'
