@@ -1,0 +1,1575 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": {
+            "type": "datasource",
+            "uid": "grafana"
+          },
+          "enable": true,
+          "hide": false,
+          "iconColor": "#e0752d",
+          "limit": 100,
+          "name": "PMM Annotations",
+          "showIn": 0,
+          "tags": [
+            "pmm_annotation"
+          ],
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [
+              "pmm_annotation"
+            ],
+            "type": "tags"
+          },
+          "type": "tags"
+        }
+      ]
+    },
+    "description": "Dashboard from Percona Monitoring and Management project. https://github.com/percona/grafana-dashboards",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "gnetId": 7353,
+    "graphTooltip": 1,
+    "id": 12,
+    "iteration": 1703332594830,
+    "links": [
+      {
+        "icon": "dashboard",
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "QAN"
+        ],
+        "targetBlank": false,
+        "title": "Query Analytics",
+        "type": "link",
+        "url": "/graph/dashboard/db/_pmm-query-analytics"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "OS"
+        ],
+        "targetBlank": false,
+        "title": "OS",
+        "type": "dashboards"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "MySQL"
+        ],
+        "targetBlank": false,
+        "title": "MySQL",
+        "type": "dashboards"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "MongoDB"
+        ],
+        "targetBlank": false,
+        "title": "MongoDB",
+        "type": "dashboards"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "HA"
+        ],
+        "targetBlank": false,
+        "title": "HA",
+        "type": "dashboards"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "Cloud"
+        ],
+        "targetBlank": false,
+        "title": "Cloud",
+        "type": "dashboards"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "Insight"
+        ],
+        "targetBlank": false,
+        "title": "Insight",
+        "type": "dashboards"
+      },
+      {
+        "asDropdown": true,
+        "includeVars": true,
+        "keepTime": true,
+        "tags": [
+          "PMM"
+        ],
+        "targetBlank": false,
+        "title": "PMM",
+        "type": "dashboards"
+      }
+    ],
+    "liveNow": false,
+    "panels": [
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "decimals": 1,
+        "description": "Shows how many times a command is executed per second on average during the selected interval.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "hiddenSeries": false,
+        "id": 15,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": true,
+          "max": true,
+          "min": true,
+          "rightSide": true,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "expr": "rate(mongodb_op_counters_total{instance=\"$host\", type!=\"command\"}[$interval]) or \nirate(mongodb_op_counters_total{instance=\"$host\", type!=\"command\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "{{type}}",
+            "refId": "J",
+            "step": 300
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "expr": "rate(mongodb_mongod_op_counters_repl_total{instance=\"$host\", type!~\"(command|query|getmore)\"}[$interval]) or \nirate(mongodb_mongod_op_counters_repl_total{instance=\"$host\", type!~\"(command|query|getmore)\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "repl_{{type}}",
+            "refId": "A",
+            "step": 300
+          },
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "expr": "rate(mongodb_mongod_metrics_ttl_deleted_documents_total{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_ttl_deleted_documents_total{instance=\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_ttl_deleted_documents_total{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongos_metrics_ttl_deleted_documents_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "ttl_delete",
+            "refId": "B",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Command Operations",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:88",
+            "format": "ops",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:89",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "Keep in mind the hard limit on the maximum number of connections set by your distribution.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 0,
+          "y": 7
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 38,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "max": true,
+          "min": true,
+          "rightSide": false,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "expr": "mongodb_ss_connections{instance=\"$host\", conn_type=~\"current|available|active\"}",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Connections",
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Connections",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:148",
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:149",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "Helps identify why connections are increasing. Shows active cursors compared to cursors being automatically killed after 10 minutes due to an application not closing the connection.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 7
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 25,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": true,
+          "max": true,
+          "min": true,
+          "rightSide": false,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "editorMode": "code",
+            "expr": "mongodb_ss_metrics_cursor_open{instance=\"$host\"} or\nmongodb_ss_cursors{instance=\"$host\"}",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "{{job}} - {{instance}} - {{csr_type}}",
+            "range": true,
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Cursors",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:448",
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:449",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "When used in combination with 'Command Operations', this graph can help identify write amplification. For example, when one insert or update command actually inserts or updates hundreds, thousands, or even millions of documents.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 0,
+          "y": 14
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 36,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": true,
+          "max": true,
+          "min": true,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "rate(mongodb_mongod_metrics_document_total{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_document_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "{{state}}",
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Document Operations",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:799",
+            "format": "ops",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:800",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "Any number of queued operations for long periods of time is an indication of possible issues. Find the cause and fix it before requests get stuck in the queue.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 14
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 40,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": false,
+          "max": true,
+          "min": true,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "editorMode": "code",
+            "expr": "mongodb_ss_globalLock_currentQueue{instance=\"$host\"}",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "{{job}} - {{instance}} - {{count_type}}",
+            "range": true,
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Queued Operations",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:268",
+            "format": "ops",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:269",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "decimals": 2,
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 0,
+          "y": 21
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 63,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "max": true,
+          "min": true,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": true,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "sum(increase(mongodb_mongod_metrics_query_executor_total{instance=\"$host\", state=\"scanned_objects\"}[5m]))/sum(increase(mongodb_mongod_metrics_document_total{instance=\"$host\", state=\"returned\"}[5m]))",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Document",
+            "refId": "J",
+            "step": 300
+          },
+          {
+            "expr": "sum(increase(mongodb_mongod_metrics_query_executor_total{instance=\"$host\", state=\"scanned\"}[5m]))/sum(increase(mongodb_mongod_metrics_document_total{instance=\"$host\", state=\"returned\"}[5m]))",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Index",
+            "refId": "A",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Query Efficiency",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "format": "percentunit",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "format": "none",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {},
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 21
+        },
+        "hiddenSeries": false,
+        "id": 64,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": true,
+          "max": true,
+          "min": true,
+          "rightSide": false,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "rate(mongodb_mongod_metrics_query_executor_total{instance=\"$host\"}[$interval]) or irate(mongodb_mongod_metrics_query_executor_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "{{state}}",
+            "metric": "",
+            "refId": "A",
+            "step": 300
+          },
+          {
+            "expr": "rate(mongodb_mongod_metrics_record_moves_total{instance=\"$host\"}[$interval]) or irate(mongodb_mongod_metrics_record_moves_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "moved",
+            "refId": "B",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Scanned and Moved Objects",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "This is useful for write-heavy workloads to understand how long it takes to verify writes and how many concurrent writes are occurring.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 0,
+          "y": 28
+        },
+        "hiddenSeries": false,
+        "id": 41,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "max": true,
+          "min": true,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "rate(mongodb_mongod_metrics_get_last_error_wtime_total_milliseconds{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_get_last_error_wtime_total_milliseconds{instance=\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_get_last_error_wtime_total_milliseconds{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongos_metrics_get_last_error_wtime_total_milliseconds{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Write Wait Time",
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "getLastError Write Time",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:1041",
+            "format": "ms",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:1042",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "This is useful for write-heavy workloads to understand how long it takes to verify writes and how many concurrent writes are occurring.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 28
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 62,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": true,
+          "max": true,
+          "min": true,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "expr": "rate(mongodb_mongod_metrics_get_last_error_wtime_num_total{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongod_metrics_get_last_error_wtime_num_total{instance=\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_get_last_error_wtime_num_total{instance=\"$host\"}[$interval]) or \nirate(mongodb_mongos_metrics_get_last_error_wtime_num_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Total",
+            "refId": "J",
+            "step": 300
+          },
+          {
+            "expr": "rate(mongodb_mongod_metrics_get_last_error_wtimeouts_total{instance=\"$host\"}[$interval]) or\nirate(mongodb_mongod_metrics_get_last_error_wtimeouts_total{instance=\"$host\"}[5m]) or\nrate(mongodb_mongos_metrics_get_last_error_wtimeouts_total{instance=\"$host\"}[$interval]) or\nirate(mongodb_mongos_metrics_get_last_error_wtimeouts_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Timeouts",
+            "refId": "A",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "getLastError Write Operations",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "Asserts are not important by themselves, but you can correlate spikes with other graphs.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 0,
+          "y": 35
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 37,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "hideZero": true,
+          "max": true,
+          "min": true,
+          "rightSide": false,
+          "show": true,
+          "sort": "avg",
+          "sortDesc": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "editorMode": "code",
+            "expr": "rate(mongodb_ss_asserts{instance=\"$host\"}[$interval]) or \nirate(mongodb_ss_asserts{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "{{job}} - {{instance}} - {{assert_type}}",
+            "range": true,
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Assert Events",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:328",
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:329",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      },
+      {
+        "aliasColors": {},
+        "bars": false,
+        "dashLength": 10,
+        "dashes": false,
+        "datasource": {
+          "type": "prometheus",
+          "uid": "APTwNqDSz"
+        },
+        "description": "Page faults indicate that requests are processed from disk either because an index is missing or there is not enough memory for the data set. Consider increasing memory or sharding out.",
+        "editable": true,
+        "error": false,
+        "fill": 2,
+        "fillGradient": 0,
+        "grid": {
+          "leftLogBase": 1,
+          "leftMin": 0,
+          "rightLogBase": 1
+        },
+        "gridPos": {
+          "h": 7,
+          "w": 12,
+          "x": 12,
+          "y": 35
+        },
+        "height": "250px",
+        "hiddenSeries": false,
+        "id": 39,
+        "legend": {
+          "alignAsTable": true,
+          "avg": true,
+          "current": false,
+          "max": true,
+          "min": true,
+          "show": true,
+          "total": false,
+          "values": true
+        },
+        "lines": true,
+        "linewidth": 2,
+        "links": [],
+        "nullPointMode": "null",
+        "options": {
+          "alertThreshold": true
+        },
+        "percentage": false,
+        "pluginVersion": "8.5.27",
+        "pointradius": 5,
+        "points": false,
+        "renderer": "flot",
+        "seriesOverrides": [],
+        "spaceLength": 10,
+        "stack": false,
+        "steppedLine": false,
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "APTwNqDSz"
+            },
+            "expr": "rate(mongodb_extra_info_page_faults_total{instance=\"$host\"}[$interval]) or \nirate(mongodb_extra_info_page_faults_total{instance=\"$host\"}[5m])",
+            "format": "time_series",
+            "hide": false,
+            "interval": "$interval",
+            "intervalFactor": 1,
+            "legendFormat": "Faults",
+            "refId": "J",
+            "step": 300
+          }
+        ],
+        "thresholds": [],
+        "timeRegions": [],
+        "title": "Page Faults",
+        "tooltip": {
+          "msResolution": false,
+          "shared": true,
+          "sort": 0,
+          "value_type": "cumulative"
+        },
+        "type": "graph",
+        "x-axis": true,
+        "xaxis": {
+          "mode": "time",
+          "show": true,
+          "values": []
+        },
+        "y-axis": true,
+        "y_formats": [
+          "short",
+          "short"
+        ],
+        "yaxes": [
+          {
+            "$$hashKey": "object:388",
+            "format": "short",
+            "label": "",
+            "logBase": 1,
+            "min": 0,
+            "show": true
+          },
+          {
+            "$$hashKey": "object:389",
+            "format": "short",
+            "logBase": 1,
+            "show": true
+          }
+        ],
+        "yaxis": {
+          "align": false
+        }
+      }
+    ],
+    "refresh": "1m",
+    "schemaVersion": 36,
+    "style": "dark",
+    "tags": [
+      "MongoDB",
+      "Percona"
+    ],
+    "templating": {
+      "list": [
+        {
+          "allFormat": "glob",
+          "auto": true,
+          "auto_count": 200,
+          "auto_min": "1s",
+          "current": {
+            "selected": false,
+            "text": "auto",
+            "value": "$__auto_interval_interval"
+          },
+          "datasource": "APTwNqDSz",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Interval",
+          "multi": false,
+          "multiFormat": "glob",
+          "name": "interval",
+          "options": [
+            {
+              "selected": true,
+              "text": "auto",
+              "value": "$__auto_interval_interval"
+            },
+            {
+              "selected": false,
+              "text": "1s",
+              "value": "1s"
+            },
+            {
+              "selected": false,
+              "text": "5s",
+              "value": "5s"
+            },
+            {
+              "selected": false,
+              "text": "1m",
+              "value": "1m"
+            },
+            {
+              "selected": false,
+              "text": "5m",
+              "value": "5m"
+            },
+            {
+              "selected": false,
+              "text": "1h",
+              "value": "1h"
+            },
+            {
+              "selected": false,
+              "text": "6h",
+              "value": "6h"
+            },
+            {
+              "selected": false,
+              "text": "1d",
+              "value": "1d"
+            }
+          ],
+          "query": "1s,5s,1m,5m,1h,6h,1d",
+          "refresh": 2,
+          "skipUrlSync": false,
+          "type": "interval"
+        },
+        {
+          "allFormat": "blob",
+          "current": {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "APTwNqDSz"
+          },
+          "definition": "",
+          "hide": 0,
+          "includeAll": true,
+          "label": "Cluster",
+          "multi": false,
+          "multiFormat": "glob",
+          "name": "cluster",
+          "options": [],
+          "query": {
+            "query": "label_values(cluster)",
+            "refId": "Prometheus-cluster-Variable-Query"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "type": "query",
+          "useTags": false
+        },
+        {
+          "allFormat": "glob",
+          "current": {
+            "selected": false,
+            "text": "10.99.1.107:13001",
+            "value": "10.99.1.107:13001"
+          },
+          "datasource": {
+            "type": "prometheus",
+            "uid": "APTwNqDSz"
+          },
+          "definition": "",
+          "hide": 0,
+          "includeAll": false,
+          "label": "Instance",
+          "multi": false,
+          "multiFormat": "glob",
+          "name": "host",
+          "options": [],
+          "query": {
+            "query": "label_values({__name__=~\"mongodb_mongod_connections{cluster=~\\\"$cluster\\\"}|mongodb_up\"}, instance)",
+            "refId": "Prometheus-host-Variable-Query"
+          },
+          "refresh": 1,
+          "regex": "",
+          "skipUrlSync": false,
+          "sort": 1,
+          "tagsQuery": "",
+          "type": "query",
+          "useTags": false
+        }
+      ]
+    },
+    "time": {
+      "from": "now-5m",
+      "to": "now"
+    },
+    "timepicker": {
+      "hidden": false,
+      "now": true,
+      "refresh_intervals": [
+        "5s",
+        "10s",
+        "30s",
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "1h",
+        "2h",
+        "1d"
+      ],
+      "time_options": [
+        "5m",
+        "15m",
+        "1h",
+        "6h",
+        "12h",
+        "24h",
+        "2d",
+        "7d",
+        "30d"
+      ]
+    },
+    "timezone": "browser",
+    "title": "MongoDB Overview by Cprobe",
+    "uid": "7Lk9wMHik",
+    "version": 10,
+    "weekStart": ""
+  }
