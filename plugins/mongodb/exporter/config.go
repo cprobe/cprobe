@@ -79,12 +79,6 @@ func (c *Config) Scrape(ctx context.Context, target string, ss *types.Samples) e
 		return errors.WithMessage(err, "cannot ping mongodb")
 	}
 
-	count, err := NonSystemCollectionsCount(ctx, client, nil, nil)
-	if err != nil {
-		return errors.Wrap(err, "cannot get collections count")
-	}
-
-	e.totalCollectionsCount = count
 	ti := newTopologyInfo(ctx, client)
 	registry := e.makeRegistry(ctx, client, ti)
 

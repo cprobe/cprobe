@@ -31,9 +31,8 @@ import (
 
 // Exporter holds Exporter methods and attributes.
 type Exporter struct {
-	opts                  *Opts
-	lock                  *sync.Mutex
-	totalCollectionsCount int
+	opts *Opts
+	lock *sync.Mutex
 }
 
 // Opts holds new exporter options.
@@ -82,19 +81,11 @@ func New(opts *Opts) *Exporter {
 	}
 
 	exp := &Exporter{
-		opts:                  opts,
-		lock:                  &sync.Mutex{},
-		totalCollectionsCount: -1, // Not calculated yet. waiting the db connection.
+		opts: opts,
+		lock: &sync.Mutex{},
 	}
 
 	return exp
-}
-
-func (e *Exporter) getTotalCollectionsCount() int {
-	e.lock.Lock()
-	defer e.lock.Unlock()
-
-	return e.totalCollectionsCount
 }
 
 func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topologyInfo labelsGetter) *prometheus.Registry {
@@ -113,10 +104,6 @@ func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topol
 	// Enable collectors like collstats and indexstats depending on the number of collections
 	// present in the database.
 	limitsOk := false
-	if e.opts.CollStatsLimit <= 0 || // Unlimited
-		e.getTotalCollectionsCount() <= e.opts.CollStatsLimit {
-		limitsOk = true
-	}
 
 	// arbiter only have isMaster privileges
 	if isArbiter {
@@ -128,21 +115,30 @@ func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topol
 		e.opts.EnableIndexStats = false
 		e.opts.EnableCurrentopMetrics = false
 		e.opts.EnableProfile = false
+	} else {
+		if e.opts.CollStatsLimit <= 0 {
+			limitsOk = true
+		} else {
+			count, err := nonSystemCollectionsCount(ctx, client, nil, nil)
+			if err != nil {
+				logger.Errorf("Registry - Cannot get collections count : %s", err)
+			} else {
+				if count <= e.opts.CollStatsLimit {
+					limitsOk = true
+				}
+			}
+		}
 	}
 
 	// If we manually set the collection names we want or auto discovery is set.
 	if (len(e.opts.CollStatsNamespaces) > 0 || e.opts.DiscoveringMode) && e.opts.EnableCollStats && limitsOk {
-		cc := newCollectionStatsCollector(ctx, client,
-			e.opts.CompatibleMode, e.opts.DiscoveringMode,
-			topologyInfo, e.opts.CollStatsNamespaces)
+		cc := newCollectionStatsCollector(ctx, client, topologyInfo, e.opts)
 		registry.MustRegister(cc)
 	}
 
 	// If we manually set the collection names we want or auto discovery is set.
 	if (len(e.opts.IndexStatsCollections) > 0 || e.opts.DiscoveringMode) && e.opts.EnableIndexStats && limitsOk {
-		ic := newIndexStatsCollector(ctx, client,
-			e.opts.DiscoveringMode, e.opts.EnableOverrideDescendingIndex,
-			topologyInfo, e.opts.IndexStatsCollections)
+		ic := newIndexStatsCollector(ctx, client, topologyInfo, e.opts)
 		registry.MustRegister(ic)
 	}
 
@@ -154,7 +150,7 @@ func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topol
 
 	if e.opts.EnableDBStats && limitsOk {
 		cc := newDBStatsCollector(ctx, client,
-			e.opts.CompatibleMode, topologyInfo, nil, e.opts.EnableDBStatsFreeStorage)
+			e.opts.CompatibleMode, topologyInfo, nil, e.opts.EnableDBStatsFreeStorage, e.opts)
 		registry.MustRegister(cc)
 	}
 

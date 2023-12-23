@@ -34,10 +34,12 @@ type dbstatsCollector struct {
 	databaseFilter []string
 
 	freeStorage bool
+
+	opts *Opts
 }
 
 // newDBStatsCollector creates a collector for statistics on database storage.
-func newDBStatsCollector(ctx context.Context, client *mongo.Client, compatible bool, topology labelsGetter, databaseRegex []string, freeStorage bool) *dbstatsCollector {
+func newDBStatsCollector(ctx context.Context, client *mongo.Client, compatible bool, topology labelsGetter, databaseRegex []string, freeStorage bool, opts *Opts) *dbstatsCollector {
 	return &dbstatsCollector{
 		ctx:  ctx,
 		base: newBaseCollector(client),
@@ -48,6 +50,8 @@ func newDBStatsCollector(ctx context.Context, client *mongo.Client, compatible b
 		databaseFilter: databaseRegex,
 
 		freeStorage: freeStorage,
+
+		opts: opts,
 	}
 }
 
@@ -66,8 +70,7 @@ func (d *dbstatsCollector) collect(ch chan<- prometheus.Metric) {
 
 	dbNames, err := databases(d.ctx, client, d.databaseFilter, nil)
 	if err != nil {
-		logger.Errorf("Failed to get database names: %s", err)
-
+		logger.Errorf("Failed to get database names: %s uri: %v", err, d.opts.URI)
 		return
 	}
 

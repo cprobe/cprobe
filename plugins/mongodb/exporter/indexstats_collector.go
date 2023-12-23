@@ -35,19 +35,23 @@ type indexstatsCollector struct {
 	topologyInfo            labelsGetter
 
 	collections []string
+
+	opts *Opts
 }
 
 // newIndexStatsCollector creates a collector for statistics on index usage.
-func newIndexStatsCollector(ctx context.Context, client *mongo.Client, discovery, overrideDescendingIndex bool, topology labelsGetter, collections []string) *indexstatsCollector {
+func newIndexStatsCollector(ctx context.Context, client *mongo.Client, topology labelsGetter, opts *Opts) *indexstatsCollector {
 	return &indexstatsCollector{
 		ctx:  ctx,
 		base: newBaseCollector(client),
 
-		discoveringMode:         discovery,
+		discoveringMode:         opts.DiscoveringMode,
 		topologyInfo:            topology,
-		overrideDescendingIndex: overrideDescendingIndex,
+		overrideDescendingIndex: opts.EnableOverrideDescendingIndex,
 
-		collections: collections,
+		collections: opts.IndexStatsCollections,
+
+		opts: opts,
 	}
 }
 
@@ -69,8 +73,7 @@ func (d *indexstatsCollector) collect(ch chan<- prometheus.Metric) {
 	if d.discoveringMode {
 		namespaces, err := listAllCollections(d.ctx, client, d.collections, systemDBs)
 		if err != nil {
-			logger.Errorf("cannot auto discover databases and collections")
-
+			logger.Errorf("cannot auto discover databases and collections, uri: %v, err: %s", d.opts.URI, err)
 			return
 		}
 

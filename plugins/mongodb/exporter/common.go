@@ -200,7 +200,7 @@ func listAllCollections(ctx context.Context, client *mongo.Client, filterInNames
 	return namespaces, nil
 }
 
-func NonSystemCollectionsCount(ctx context.Context, client *mongo.Client, includeNamespaces []string, filterInCollections []string) (int, error) {
+func nonSystemCollectionsCount(ctx context.Context, client *mongo.Client, includeNamespaces []string, filterInCollections []string) (int, error) {
 	databases, err := databases(ctx, client, includeNamespaces, systemDBs)
 	if err != nil {
 		return 0, errors.Wrap(err, "cannot retrieve the collection names for count collections")
