@@ -37,16 +37,19 @@ type diagnosticDataCollector struct {
 
 	compatibleMode bool
 	topologyInfo   labelsGetter
+	opts           *Opts
 }
 
 // newDiagnosticDataCollector creates a collector for diagnostic information.
-func newDiagnosticDataCollector(ctx context.Context, client *mongo.Client, compatible bool, topology labelsGetter) *diagnosticDataCollector {
+func newDiagnosticDataCollector(ctx context.Context, client *mongo.Client, opts *Opts, topology labelsGetter) *diagnosticDataCollector {
 	return &diagnosticDataCollector{
 		ctx:  ctx,
 		base: newBaseCollector(client),
 
-		compatibleMode: compatible,
+		compatibleMode: opts.CompatibleMode,
 		topologyInfo:   topology,
+
+		opts: opts,
 	}
 }
 
@@ -98,7 +101,7 @@ func (d *diagnosticDataCollector) collect(ch chan<- prometheus.Metric) {
 	}
 
 	if d.compatibleMode {
-		metrics = append(metrics, specialMetrics(d.ctx, client, m)...)
+		metrics = append(metrics, specialMetrics(d.ctx, client, m, d.opts.URI)...)
 
 		if cem, err := cacheEvictedTotalMetric(m); err == nil {
 			metrics = append(metrics, cem)

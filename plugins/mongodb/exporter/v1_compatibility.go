@@ -772,7 +772,7 @@ func specialMetricDefinitions() []specialMetric {
 	}
 }
 
-func specialMetrics(ctx context.Context, client *mongo.Client, m bson.M) []prometheus.Metric {
+func specialMetrics(ctx context.Context, client *mongo.Client, m bson.M, uri string) []prometheus.Metric {
 	metrics := make([]prometheus.Metric, 0)
 
 	for _, def := range specialMetricDefinitions() {
@@ -797,9 +797,9 @@ func specialMetrics(ctx context.Context, client *mongo.Client, m bson.M) []prome
 		logger.Errorf("cannot retrieve MongoDB buildInfo: %s", err)
 	}
 
-	if engine, err := storageEngine(m); err != nil {
-		logger.Errorf("cannot retrieve engine type: %s", err)
-	} else {
+	if engine, err := storageEngine(m); err == nil {
+		// 	logger.Errorf("cannot retrieve engine type: %s, uri: %s", err, uri)
+		// } else {
 		metrics = append(metrics, engine)
 	}
 	metrics = append(metrics, serverVersion(buildInfo))

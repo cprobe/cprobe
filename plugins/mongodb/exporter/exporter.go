@@ -143,8 +143,7 @@ func (e *Exporter) makeRegistry(ctx context.Context, client *mongo.Client, topol
 	}
 
 	if e.opts.EnableDiagnosticData {
-		ddc := newDiagnosticDataCollector(ctx, client,
-			e.opts.CompatibleMode, topologyInfo)
+		ddc := newDiagnosticDataCollector(ctx, client, e.opts, topologyInfo)
 		registry.MustRegister(ddc)
 	}
 
