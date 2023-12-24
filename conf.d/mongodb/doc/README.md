@@ -45,7 +45,40 @@ targets 下面配置的就是原本 mongodb_exporter 里的 `mongodb.uri` 参数
 
 ## 告警规则
 
-TODO
+```
+# 连接 mongodb 实例失败
+mongodb_cprobe_up == 0
+
+# 可用连接小于 1000
+mongodb_ss_connections{conn_type="available"} < 1000
+
+# 延迟超过 100 毫秒
+avg by (job, instance, type) (rate(mongodb_mongod_op_latencies_latency_total[5m]) / (rate(mongodb_mongod_op_latencies_ops_total[5m]) > 0)) / 1000 > 100
+
+# 有些集群成员的健康状态不正常
+mongodb_members_health < 1
+
+# secondary 落后 primary 太多
+mongodb_mongod_replset_member_replication_lag{state="SECONDARY"} > 30
+
+# 读请求队列堆积
+mongodb_mongod_global_lock_current_queue{type="reader"} > 100
+
+# 写请求队列堆积
+mongodb_mongod_global_lock_current_queue{type="writer"} > 100
+
+# page fault 太多
+rate(mongodb_extra_info_page_faults_total[1m]) > 30
+
+# 未设置超时的游标数量
+mongodb_mongod_metrics_cursor_open{state="noTimeout"} > 0
+
+# 出现 Message asserts
+rate(mongodb_asserts_total{type="msg"}[1m]) > 0
+
+# 出现 Regular asserts
+rate(mongodb_asserts_total{type="warning"}[1m]) > 0
+```
 
 ## 声明
 
