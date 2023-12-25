@@ -76,8 +76,11 @@ mongodb_mongod_metrics_cursor_open{state="noTimeout"} > 0
 # 出现 Message asserts
 rate(mongodb_asserts_total{type="msg"}[1m]) > 0
 
-# 出现 Regular asserts
+# 出现 Warning asserts
 rate(mongodb_asserts_total{type="warning"}[1m]) > 0
+
+# 出现 Regular asserts
+rate(mongodb_asserts_total{type="regular"}[1m]) > 0
 ```
 
 ## 声明
