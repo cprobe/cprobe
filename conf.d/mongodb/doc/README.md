@@ -47,7 +47,7 @@ targets 下面配置的就是原本 mongodb_exporter 里的 `mongodb.uri` 参数
 
 ```
 # 连接 mongodb 实例失败
-mongodb_cprobe_up == 0
+mongodb_up == 0
 
 # 可用连接小于 1000
 mongodb_ss_connections{conn_type="available"} < 1000
