@@ -30,11 +30,11 @@ func (*MongoDB) Scrape(ctx context.Context, target string, c any, ss *types.Samp
 	err := cfg.Scrape(ctx, target, ss)
 
 	// 其实框架层面是提供了 mongodb_cprobe_up 指标的，但是很多仪表盘都是依赖 mongodb_up 指标
-	// 所以这里也重复上报了 mongodb_up 指标，冗余一下，用户改造成本就小了
+	// 所以这里也重复上报了 mongodb_up 指标，冗余一下，用户改造成本小一些，答疑成本小一些
 	if err != nil {
 		ss.AddMetric("mongodb", map[string]interface{}{"up": 0.0})
 	} else {
-		ss.AddMetric("mongodb", map[string]interface{}{"up": 0.0})
+		ss.AddMetric("mongodb", map[string]interface{}{"up": 1.0})
 	}
 
 	return err
