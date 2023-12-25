@@ -41,7 +41,7 @@ targets 下面配置的就是原本 mongodb_exporter 里的 `mongodb.uri` 参数
 
 ## 仪表盘
 
-- [Grafana Dashboard](./dash/grafana_mongodb_01.json)
+- [MongoDB Instance Summary](./dash/grafana_mongodb_01.json)
 
 ## 告警规则
 
