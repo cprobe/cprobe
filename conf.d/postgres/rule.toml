@@ -1,0 +1,31 @@
+# Authentication credentials
+username = "postgres"
+password = "password"
+options = { sslmode = "disable" }
+
+# Do not include default metrics
+disable_default_metrics = false
+
+# Do not include pg_settings metrics
+disable_settings_metrics = false
+
+enabled_collectors = [
+    "database",
+    "stat_database",
+    "locks",
+    "replication_slot",
+    "replication",
+    "stat_bgwriter",
+    "stat_user_tables",
+    "statio_user_tables",
+    "wal",
+    # "long_running_transactions",
+    # "database_wraparound",
+    # "postmaster",
+    # "process_idle",
+    # "stat_activity_autovacuum",
+    # "stat_statements",
+    # "stat_wal_receiver",
+    # "statio_user_indexes",
+    # "xlog_location",
+]

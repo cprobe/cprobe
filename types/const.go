@@ -4,7 +4,7 @@ const (
 	PluginMySQL         = "mysql"
 	PluginRedis         = "redis"
 	PluginMongoDB       = "mongodb"
-	PluginPostgreSQL    = "postgresql"
+	PluginPostgres      = "postgres"
 	PluginElasticSearch = "elasticsearch"
 	PluginKafka         = "kafka"
 	PluginBlackbox      = "blackbox"

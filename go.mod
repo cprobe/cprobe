@@ -31,6 +31,7 @@ require (
 	github.com/kardianos/service v1.2.2
 	github.com/klauspost/compress v1.15.15
 	github.com/krallistic/kazoo-go v0.0.0-20170526135507-a15279744f4e
+	github.com/lib/pq v1.10.9
 	github.com/matttproud/golang_protobuf_extensions v1.0.4
 	github.com/miekg/dns v1.1.57
 	github.com/mna/redisc v1.4.0
@@ -74,6 +75,7 @@ require (
 	github.com/aws/smithy-go v1.19.0 // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
