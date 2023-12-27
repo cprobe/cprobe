@@ -28,3 +28,4 @@
   - [Oracle](conf.d/oracledb/doc)
   - [Whois](conf.d/whois/doc)
   - [MongoDB](conf.d/mongodb/doc)
+  - [Postgres](conf.d/postgres/doc)
