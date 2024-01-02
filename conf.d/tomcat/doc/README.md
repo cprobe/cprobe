@@ -38,7 +38,19 @@ TODO
 
 ## 告警规则
 
-TODO
+```
+# Tomcat 挂了
+tomcat_cprobe_up == 0
+
+# 延迟较高
+rate(tomcat_connector_processing_time[1m]) / rate(tomcat_connector_request_count[1m]) > 500
+
+# 失败请求比例较高
+rate(tomcat_connector_error_count[1m]) * 100 / rate(tomcat_connector_request_count[1m]) > 10
+
+# 繁忙线程较多，占线程总数的百分比较高
+tomcat_connector_current_threads_busy * 100 / tomcat_connector_max_threads > 80
+```
 
 ## 声明
 
