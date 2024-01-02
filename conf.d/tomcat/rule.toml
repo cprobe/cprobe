@@ -1,0 +1,2 @@
+basic_auth_user = "tomcat"
+basic_auth_pass = "s3cret"

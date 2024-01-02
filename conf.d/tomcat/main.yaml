@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'tomcat'
+
+# scrape_configs:
+# - job_name: 'tomcat'
+#   static_configs:
+#   - targets:
+#     - '10.211.55.3:8080'
+#   scrape_rule_files:
+#   - 'rule.toml'
