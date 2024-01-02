@@ -132,5 +132,24 @@ func (c *Config) Scrape(ctx context.Context, target string, ss *types.Samples) e
 		ss.AddMetric(types.PluginTomcat, tccFields, tccTags)
 	}
 
+	for _, x := range resStruct.Tomcat.TomcatContexts {
+		sessionTags := map[string]string{
+			"context_name": x.Name,
+		}
+
+		sessionFields := map[string]interface{}{
+			"session_active":             x.Manager.ActiveSessions,
+			"session_session_counter":    x.Manager.SessionCounter,
+			"session_max_active":         x.Manager.MaxActive,
+			"session_rejected":           x.Manager.RejectedSessions,
+			"session_expired":            x.Manager.ExpiredSessions,
+			"session_max_alive_time":     x.Manager.SessionMaxAliveTime,
+			"session_average_alive_time": x.Manager.SessionAverageAliveTime,
+			"session_processing_time":    x.Manager.ProcessingTime,
+		}
+
+		ss.AddMetric(types.PluginTomcat, sessionFields, sessionTags)
+	}
+
 	return nil
 }

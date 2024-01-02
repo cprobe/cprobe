@@ -45,16 +45,16 @@ type Connector struct {
 	RequestInfo RequestInfo `json:"requestInfo"`
 }
 
-// type Manager struct {
-// 	ActiveSessions          string `json:"activeSessions"`
-// 	SessionCounter          string `json:"sessionCounter"`
-// 	MaxActive               string `json:"maxActive"`
-// 	RejectedSessions        string `json:"rejectedSessions"`
-// 	ExpiredSessions         string `json:"expiredSessions"`
-// 	SessionMaxAliveTime     string `json:"sessionMaxAliveTime"`
-// 	SessionAverageAliveTime string `json:"sessionAverageAliveTime"`
-// 	ProcessingTime          string `json:"processingTime"`
-// }
+type Manager struct {
+	ActiveSessions          string `json:"activeSessions"`
+	SessionCounter          string `json:"sessionCounter"`
+	MaxActive               string `json:"maxActive"`
+	RejectedSessions        string `json:"rejectedSessions"`
+	ExpiredSessions         string `json:"expiredSessions"`
+	SessionMaxAliveTime     string `json:"sessionMaxAliveTime"`
+	SessionAverageAliveTime string `json:"sessionAverageAliveTime"`
+	ProcessingTime          string `json:"processingTime"`
+}
 
 // type Jsp struct {
 // 	JspCount       string `json:"jspCount"`
@@ -71,18 +71,18 @@ type Connector struct {
 // 	ClassLoadTime  string `json:"classLoadTime"`
 // }
 
-// type Context struct {
-// 	Name        string    `json:"name"`
-// 	StartTime   string    `json:"startTime"`
-// 	StartupTime string    `json:"startupTime"`
-// 	TldScanTime string    `json:"tldScanTime"`
-// 	Manager     Manager   `json:"manager"`
-// 	Jsp         Jsp       `json:"jsp"`
-// 	Wrapper     []Wrapper `json:"wrapper"`
-// }
+type Context struct {
+	Name        string  `json:"name"`
+	StartTime   string  `json:"startTime"`
+	StartupTime string  `json:"startupTime"`
+	TldScanTime string  `json:"tldScanTime"`
+	Manager     Manager `json:"manager"`
+	// Jsp         Jsp       `json:"jsp"`
+	// Wrapper     []Wrapper `json:"wrapper"`
+}
 
 type TomcatStruct struct {
 	TomcatJvm        TomcatJvm   `json:"jvm"`
 	TomcatConnectors []Connector `json:"connector"`
-	// Context          []Context   `json:"context"`
+	TomcatContexts   []Context   `json:"context"`
 }
