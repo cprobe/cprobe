@@ -29,3 +29,4 @@
   - [Whois](conf.d/whois/doc)
   - [MongoDB](conf.d/mongodb/doc)
   - [Postgres](conf.d/postgres/doc)
+  - [Tomcat](conf.d/tomcat/doc)
