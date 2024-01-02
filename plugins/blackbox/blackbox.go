@@ -32,6 +32,17 @@ func (p *Blackbox) ParseConfig(baseDir string, bs []byte) (any, error) {
 }
 
 func (p *Blackbox) Scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
+	err := p.scrape(ctx, address, c, ss)
+	// 冗余一份 probe_success 的指标，方便仪表盘展示，避免用户再去修改仪表盘了
+	if err != nil {
+		ss.AddMetric("probe", map[string]interface{}{"success": 0})
+	} else {
+		ss.AddMetric("probe", map[string]interface{}{"success": 1})
+	}
+	return err
+}
+
+func (p *Blackbox) scrape(ctx context.Context, address string, c any, ss *types.Samples) error {
 	module := c.(*prober.Module)
 
 	if module.Timeout == 0 {
