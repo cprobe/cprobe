@@ -48,9 +48,7 @@ func (cfg *Config) initDefault() {
 		cfg.RequestTimeoutMillis = 5000
 	}
 
-	if cfg.MaxIdleConnsPerHost <= 0 {
-		cfg.MaxIdleConnsPerHost = 2
-	}
+	cfg.MaxIdleConnsPerHost = 0
 
 	if cfg.Method == "" {
 		cfg.Method = "GET"
