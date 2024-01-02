@@ -16,8 +16,9 @@ import (
 )
 
 type Config struct {
-	BaseDir string `toml:"-"`
-	Suffix  string `toml:"suffix"`
+	BaseDir        string `toml:"-"`
+	Suffix         string `toml:"suffix"`
+	GatherServlets bool   `toml:"gather_servlets"`
 
 	httpreq.RequestOptions
 	clienttls.ClientConfig
@@ -133,22 +134,41 @@ func (c *Config) Scrape(ctx context.Context, target string, ss *types.Samples) e
 	}
 
 	for _, x := range resStruct.Tomcat.TomcatContexts {
-		sessionTags := map[string]string{
+		contextTags := map[string]string{
 			"context_name": x.Name,
 		}
 
-		sessionFields := map[string]interface{}{
-			"session_active":             x.Manager.ActiveSessions,
-			"session_session_counter":    x.Manager.SessionCounter,
-			"session_max_active":         x.Manager.MaxActive,
-			"session_rejected":           x.Manager.RejectedSessions,
-			"session_expired":            x.Manager.ExpiredSessions,
-			"session_max_alive_time":     x.Manager.SessionMaxAliveTime,
-			"session_average_alive_time": x.Manager.SessionAverageAliveTime,
-			"session_processing_time":    x.Manager.ProcessingTime,
+		contextFields := map[string]interface{}{
+			"manager_active_sessions":            x.Manager.ActiveSessions,
+			"manager_session_counter":            x.Manager.SessionCounter,
+			"manager_max_active":                 x.Manager.MaxActive,
+			"manager_rejected_sessions":          x.Manager.RejectedSessions,
+			"manager_expired_sessions":           x.Manager.ExpiredSessions,
+			"manager_session_max_alive_time":     x.Manager.SessionMaxAliveTime,
+			"manager_session_average_alive_time": x.Manager.SessionAverageAliveTime,
+			"manager_processing_time":            x.Manager.ProcessingTime,
+			"jsp_count":                          x.Jsp.JspCount,
+			"jsp_reload_count":                   x.Jsp.JspReloadCount,
 		}
 
-		ss.AddMetric(types.PluginTomcat, sessionFields, sessionTags)
+		ss.AddMetric(types.PluginTomcat, contextFields, contextTags)
+
+		if c.GatherServlets {
+			for _, s := range x.Wrapper {
+				servletTags := map[string]string{
+					"servlet_name": s.ServletName,
+				}
+
+				servletFields := map[string]interface{}{
+					"wrapper_processing_time": s.ProcessingTime,
+					"wrapper_max_time":        s.MaxTime,
+					"wrapper_error_count":     s.ErrorCount,
+					"wrapper_request_count":   s.RequestCount,
+				}
+
+				ss.AddMetric(types.PluginTomcat, servletFields, servletTags, contextTags)
+			}
+		}
 	}
 
 	return nil

@@ -56,29 +56,29 @@ type Manager struct {
 	ProcessingTime          string `json:"processingTime"`
 }
 
-// type Jsp struct {
-// 	JspCount       string `json:"jspCount"`
-// 	JspReloadCount string `json:"jspReloadCount"`
-// }
+type Jsp struct {
+	JspCount       string `json:"jspCount"`
+	JspReloadCount string `json:"jspReloadCount"`
+}
 
-// type Wrapper struct {
-// 	ServletName    string `json:"servletName"`
-// 	ProcessingTime string `json:"processingTime"`
-// 	MaxTime        string `json:"maxTime"`
-// 	RequestCount   string `json:"requestCount"`
-// 	ErrorCount     string `json:"errorCount"`
-// 	LoadTime       string `json:"loadTime"`
-// 	ClassLoadTime  string `json:"classLoadTime"`
-// }
+type Wrapper struct {
+	ServletName    string `json:"servletName"`
+	ProcessingTime string `json:"processingTime"`
+	MaxTime        string `json:"maxTime"`
+	RequestCount   string `json:"requestCount"`
+	ErrorCount     string `json:"errorCount"`
+	LoadTime       string `json:"loadTime"`
+	ClassLoadTime  string `json:"classLoadTime"`
+}
 
 type Context struct {
-	Name        string  `json:"name"`
-	StartTime   string  `json:"startTime"`
-	StartupTime string  `json:"startupTime"`
-	TldScanTime string  `json:"tldScanTime"`
-	Manager     Manager `json:"manager"`
-	// Jsp         Jsp       `json:"jsp"`
-	// Wrapper     []Wrapper `json:"wrapper"`
+	Name        string    `json:"name"`
+	StartTime   string    `json:"startTime"`
+	StartupTime string    `json:"startupTime"`
+	TldScanTime string    `json:"tldScanTime"`
+	Manager     Manager   `json:"manager"`
+	Jsp         Jsp       `json:"jsp"`
+	Wrapper     []Wrapper `json:"wrapper"`
 }
 
 type TomcatStruct struct {
