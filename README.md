@@ -16,8 +16,7 @@
   - [Remote write](https://github.com/cprobe/cprobe/issues/2)
   - [Plugin](https://github.com/cprobe/cprobe/issues/3)
 - [Install](https://github.com/cprobe/cprobe/issues/5)
-- Plugins
-  - [README](https://github.com/cprobe/cprobe/issues/12)
+- [Plugins](https://github.com/cprobe/cprobe/issues/12)
   - [MySQL](conf.d/mysql/doc)
   - [Redis](conf.d/redis/doc)
   - [Kafka](conf.d/kafka/doc)
