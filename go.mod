@@ -28,6 +28,7 @@ require (
 	github.com/golang/snappy v0.0.4
 	github.com/gomodule/redigo v1.8.9
 	github.com/google/uuid v1.4.0
+	github.com/grobie/gomemcache v0.0.0-20230213081705-239240bbc445
 	github.com/kardianos/service v1.2.2
 	github.com/klauspost/compress v1.15.15
 	github.com/krallistic/kazoo-go v0.0.0-20170526135507-a15279744f4e

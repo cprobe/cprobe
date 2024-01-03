@@ -13,4 +13,5 @@ const (
 	PluginOracleDB      = "oracledb"
 	PluginWhois         = "whois"
 	PluginTomcat        = "tomcat"
+	PluginMemcached     = "memcached"
 )

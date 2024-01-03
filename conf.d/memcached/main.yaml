@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'memcached'
+
+# scrape_configs:
+# - job_name: 'memcached'
+#   static_configs:
+#   - targets:
+#     - '10.211.55.3:11211'
+#   scrape_rule_files:
+#   - 'rule.toml'
