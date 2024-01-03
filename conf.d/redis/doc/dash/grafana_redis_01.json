@@ -1317,13 +1317,13 @@
         "datasource": {
           "uid": "${datasource}"
         },
-        "definition": "label_values(redis_up, instance)",
+        "definition": "label_values(redis_cprobe_up, instance)",
         "hide": 0,
         "includeAll": false,
         "multi": true,
         "name": "instance",
         "options": [],
-        "query": "label_values(redis_up, instance)",
+        "query": "label_values(redis_cprobe_up, instance)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,

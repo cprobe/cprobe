@@ -1367,7 +1367,7 @@
             "type": "prometheus",
             "uid": "d578c437-44ff-4a2b-b0e6-6241e1e56a57"
           },
-          "definition": "label_values(redis_up,cluster_name)",
+          "definition": "label_values(redis_cprobe_up,cluster_name)",
           "hide": 0,
           "includeAll": false,
           "label": "cluster_name",
@@ -1375,7 +1375,7 @@
           "name": "cluster_name",
           "options": [],
           "query": {
-            "query": "label_values(redis_up,cluster_name)",
+            "query": "label_values(redis_cprobe_up,cluster_name)",
             "refId": "PrometheusVariableQueryEditor-VariableQuery"
           },
           "refresh": 1,
@@ -1401,14 +1401,14 @@
           "datasource": {
             "uid": "${datasource}"
           },
-          "definition": "label_values(redis_up{cluster_name=\"$cluster_name\"},instance)",
+          "definition": "label_values(redis_cprobe_up{cluster_name=\"$cluster_name\"},instance)",
           "hide": 0,
           "includeAll": false,
           "multi": true,
           "name": "instance",
           "options": [],
           "query": {
-            "query": "label_values(redis_up{cluster_name=\"$cluster_name\"},instance)",
+            "query": "label_values(redis_cprobe_up{cluster_name=\"$cluster_name\"},instance)",
             "refId": "PrometheusVariableQueryEditor-VariableQuery"
           },
           "refresh": 2,
