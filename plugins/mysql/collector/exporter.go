@@ -132,7 +132,7 @@ func (e *Exporter) scrape(ctx context.Context, ch chan<- prometheus.Metric) erro
 	defer db.Close()
 
 	// By design exporter should use maximum one connection per request.
-	db.SetMaxOpenConns(16)
+	db.SetMaxOpenConns(1)
 	db.SetMaxIdleConns(1)
 	// Set max lifetime for a connection.
 	db.SetConnMaxLifetime(1 * time.Minute)
