@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins/elasticsearch/pkg/roundtripper"
@@ -14,6 +15,10 @@ import (
 )
 
 func (c *Config) Scrape(ctx context.Context, _target string, ss *types.Samples) error {
+	if !strings.HasPrefix(_target, "http") {
+		_target = "http://" + _target
+	}
+
 	target, err := url.Parse(_target)
 	if err != nil {
 		return errors.WithMessagef(err, "invalid target: %s", _target)
