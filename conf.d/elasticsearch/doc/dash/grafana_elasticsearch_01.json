@@ -147,13 +147,16 @@
             {
               "options": {
                 "1": {
-                  "text": "Red"
+                  "index": 3,
+                  "text": "Green"
                 },
                 "3": {
+                  "index": 2,
                   "text": "Yellow"
                 },
                 "5": {
-                  "text": "Green"
+                  "index": 1,
+                  "text": "Red"
                 }
               },
               "type": "value"
@@ -162,6 +165,7 @@
               "options": {
                 "match": "null",
                 "result": {
+                  "index": 0,
                   "text": "N/A"
                 }
               },
@@ -207,7 +211,7 @@
           "calcs": [
             "mean"
           ],
-          "fields": "/^__name__$/",
+          "fields": "",
           "values": false
         },
         "textMode": "auto"
@@ -219,7 +223,8 @@
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
           },
-          "expr": "elasticsearch_cluster_health_status{cluster=\"$cluster\",color=\"red\"}==1 or (elasticsearch_cluster_health_status{cluster=\"$cluster\",color=\"green\"}==1)+4 or (elasticsearch_cluster_health_status{cluster=\"$cluster\",color=\"yellow\"}==1)+22",
+          "editorMode": "code",
+          "expr": "elasticsearch_cluster_health_status{cluster=\"$cluster\",status=\"green\"}==1 or (elasticsearch_cluster_health_status{cluster=\"$cluster\",status=\"yellow\"}==1)+2 or (elasticsearch_cluster_health_status{cluster=\"$cluster\",status=\"red\"}==1)+4",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 2,
@@ -7398,6 +7403,6 @@
   "timezone": "browser",
   "title": "ElasticSearch Cprobe",
   "uid": "c93c091c-1798-4309-9d0c-54d64602c28c",
-  "version": 1,
+  "version": 4,
   "weekStart": ""
 }
