@@ -150,6 +150,10 @@ func dsnFromKeyValue(in string) (DSN, error) {
 			d.username = v
 		case "password":
 			d.password = v
+		case "path":
+			d.path = v
+		case "dbname":
+			d.path = fmt.Sprintf("/%s", v)
 		default:
 			query.Set(k, v)
 		}
