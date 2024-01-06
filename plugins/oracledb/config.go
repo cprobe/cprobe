@@ -53,7 +53,7 @@ func (c *Config) Scrape(ctx context.Context, target string, ss *types.Samples) e
 
 	defer conn.Close()
 
-	conn.SetMaxOpenConns(16)
+	conn.SetMaxOpenConns(1)
 	conn.SetMaxIdleConns(1)
 	conn.SetConnMaxLifetime(time.Minute)
 
