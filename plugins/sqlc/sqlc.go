@@ -104,6 +104,8 @@ func parseRow(row map[string]string, query CustomQuery, ss *types.Samples) error
 		}
 	}
 
+	metricFieldsLength := len(query.MetricFields)
+
 	for _, column := range query.MetricFields {
 		value, err := conv.ToFloat64(row[column])
 		if err != nil {
@@ -116,10 +118,17 @@ func parseRow(row map[string]string, query CustomQuery, ss *types.Samples) error
 				column: value,
 			}, labels)
 		} else {
-			suffix := cleanName(row[query.FieldToAppend])
-			ss.AddMetric(query.Mesurement, map[string]interface{}{
-				suffix: value,
-			}, labels)
+			if metricFieldsLength == 1 {
+				suffix := cleanName(row[query.FieldToAppend])
+				ss.AddMetric(query.Mesurement, map[string]interface{}{
+					suffix: value,
+				}, labels)
+			} else {
+				suffix := cleanName(row[query.FieldToAppend])
+				ss.AddMetric(query.Mesurement+"_"+suffix, map[string]interface{}{
+					column: value,
+				}, labels)
+			}
 		}
 	}
 
