@@ -41,6 +41,7 @@ func (w *Writer) send(req *http.Request) {
 		}
 
 		if strings.Contains(err.Error(), "onnection") {
+			logger.Errorf("error sending request to %q: %s, retry #%d", req.URL, err, i+1)
 			time.Sleep(time.Duration(w.RequestTimeoutMillis) * time.Millisecond)
 			continue
 		}
