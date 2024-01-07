@@ -12,12 +12,12 @@ import (
 )
 
 type CustomQuery struct {
-	Mesurement    string        `toml:"mesurement"`
-	MetricFields  []string      `toml:"metric_fields"`
-	LabelFields   []string      `toml:"label_fields"`
-	FieldToAppend string        `toml:"field_to_append"`
-	Timeout       time.Duration `toml:"timeout"`
-	Request       string        `toml:"request"`
+	Mesurement      string        `toml:"mesurement"`
+	ValueFields     []string      `toml:"value_fields"`
+	LabelFields     []string      `toml:"label_fields"`
+	MetricNameField string        `toml:"metric_name_field"`
+	Timeout         time.Duration `toml:"timeout"`
+	Request         string        `toml:"request"`
 }
 
 func CollectCustomQueries(ctx context.Context, db *sql.DB, ss *types.Samples, queries []CustomQuery) {
@@ -104,28 +104,28 @@ func parseRow(row map[string]string, query CustomQuery, ss *types.Samples) error
 		}
 	}
 
-	metricFieldsLength := len(query.MetricFields)
+	valueFieldsLength := len(query.ValueFields)
 
-	for _, column := range query.MetricFields {
+	for _, column := range query.ValueFields {
 		value, err := conv.ToFloat64(row[column])
 		if err != nil {
 			logger.Errorf("failed to convert field: %s, value: %v, error: %s", column, row[column], err)
 			return err
 		}
 
-		if query.FieldToAppend == "" {
+		if query.MetricNameField == "" {
 			ss.AddMetric(query.Mesurement, map[string]interface{}{
 				column: value,
 			}, labels)
 		} else {
-			if metricFieldsLength == 1 {
-				suffix := cleanName(row[query.FieldToAppend])
+			if valueFieldsLength == 1 {
+				metricNameField := cleanName(row[query.MetricNameField])
 				ss.AddMetric(query.Mesurement, map[string]interface{}{
-					suffix: value,
+					metricNameField: value,
 				}, labels)
 			} else {
-				suffix := cleanName(row[query.FieldToAppend])
-				ss.AddMetric(query.Mesurement+"_"+suffix, map[string]interface{}{
+				metricNameField := cleanName(row[query.MetricNameField])
+				ss.AddMetric(query.Mesurement+"_"+metricNameField, map[string]interface{}{
 					column: value,
 				}, labels)
 			}

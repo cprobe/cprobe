@@ -29,16 +29,16 @@ GRANT SELECT ON SYS.GLOBAL_NAME to cprobe;
 [[queries]]
 mesurement = "sessions"
 label_fields = [ "status", "type" ]
-metric_fields = [ "value" ]
+value_fields = [ "value" ]
 request = "SELECT status, type, COUNT(*) as value FROM v$session GROUP BY status, type"
 ```
 
 每个 `[[queries]]` 配置段包含以下几个属性：
 
 - `mesurement`：指标名称前缀
-- `metric_fields`：SQL 会查到多个字段，这里指定哪些字段作为指标输出，对应的字段的字段名作为指标后缀，字段值作为指标值
+- `value_fields`：SQL 会查到多个字段，这里指定哪些字段作为指标输出，对应的字段的字段名作为指标名称后缀，字段值作为指标值
 - `label_fields`：SQL 会查到多个字段，这里指定哪些字段作为标签输出
-- `field_to_append`：SQL 会查到多个字段，这里指定哪个字段作为指标名称后缀，如果这个字段不为空，metric_fields 的字段名后缀会被覆盖
+- `metric_name_field`：SQL 会查到多个字段，这里指定哪个字段作为指标名称
 - `timeout`：SQL 执行超时时间
 - `request`：SQL 语句
 

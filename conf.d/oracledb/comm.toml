@@ -2,7 +2,7 @@
 mesurement = "sessions"
 label_fields = [ "status", "type" ]
 # value= "Gauge metric with count of sessions by status and type."
-metric_fields = [ "value" ]
+value_fields = [ "value" ]
 request = "SELECT status, type, COUNT(*) as value FROM v$session GROUP BY status, type"
 
 [[queries]]
@@ -10,7 +10,7 @@ mesurement = "resource"
 label_fields = [ "resource_name" ]
 # current_utilization= "Generic counter metric from v$resource_limit view in Oracle (current value)."
 # limit_value="Generic counter metric from v$resource_limit view in Oracle (UNLIMITED: -1)."
-metric_fields = [ "current_utilization", "limit_value" ]
+value_fields = [ "current_utilization", "limit_value" ]
 request="SELECT resource_name,current_utilization,CASE WHEN TRIM(limit_value) LIKE 'UNLIMITED' THEN '-1' ELSE TRIM(limit_value) END as limit_value FROM v$resource_limit"
 
 [[queries]]
@@ -18,27 +18,27 @@ mesurement = "asm_diskgroup"
 label_fields = [ "name" ]
 # total = "Total size of ASM disk group."
 # free = "Free space available on ASM disk group."
-metric_fields = [ "total", "free" ]
+value_fields = [ "total", "free" ]
 request = "SELECT name,total_mb*1024*1024 as total,free_mb*1024*1024 as free FROM v$asm_diskgroup_stat where exists (select 1 from v$datafile where name like '+%')"
 
 [[queries]]
 mesurement = "activity"
 # value="Generic counter metric from v$sysstat view in Oracle."
-metric_fields = [ "value" ]
-field_to_append = "name"
+value_fields = [ "value" ]
+metric_name_field = "name"
 request = "SELECT name, value FROM v$sysstat WHERE name IN ('parse count (total)', 'execute count', 'user commits', 'user rollbacks')"
 
 [[queries]]
 mesurement = "process"
 # count="Gauge metric with count of processes." 
-metric_fields = [ "count" ]
+value_fields = [ "count" ]
 request = "SELECT COUNT(*) as count FROM v$process"
 
 [[queries]]
 mesurement = "wait_time"
 # value="Generic counter metric from v$waitclassmetric view in Oracle."
-metric_fields = [ "value" ]
-field_to_append= "wait_class"
+value_fields = [ "value" ]
+metric_name_field= "wait_class"
 request = '''
 SELECT
   n.wait_class as wait_class,
@@ -56,7 +56,7 @@ label_fields = [ "tablespace", "type" ]
 # max_bytes = "Generic counter metric of tablespaces max bytes in Oracle."
 # free = "Generic counter metric of tablespaces free bytes in Oracle."
 # used_percent = "Gauge metric showing as a percentage of how much of the tablespace has been used."
-metric_fields = [ "bytes", "max_bytes", "free", "used_percent" ]
+value_fields = [ "bytes", "max_bytes", "free", "used_percent" ]
 request = '''
 SELECT
     dt.tablespace_name as tablespace,
@@ -73,7 +73,7 @@ ORDER by tablespace
 [[queries]]
 mesurement = "slow_queries"
 # p95_time_usecs= "Gauge metric with percentile 95 of elapsed time.", p99_time_usecs= "Gauge metric with percentile 99 of elapsed time."
-metric_fields = [ "p95_time_usecs", "p99_time_usecs" ]
+value_fields = [ "p95_time_usecs", "p99_time_usecs" ]
 request = '''
 select percentile_disc(0.95) within group (order by elapsed_time) as p95_time_usecs,
   percentile_disc(0.99) within group (order by elapsed_time) as p99_time_usecs
@@ -82,8 +82,8 @@ from v$sql where last_active_time >= sysdate - 5/(24*60)
 
 [[metrics]]
 mesurement = "sysmetric"
-metric_fields = [ "value" ]
-field_to_append = "metric_name"
+value_fields = [ "value" ]
+metric_name_field = "metric_name"
 timeout = "3s"
 request = '''
 select METRIC_NAME,VALUE from v$sysmetric where group_id=2
@@ -91,7 +91,7 @@ select METRIC_NAME,VALUE from v$sysmetric where group_id=2
 
 [[metrics]]
 mesurement = "archivelog"
-metric_fields = [ "count" ]
+value_fields = [ "count" ]
 timeout = "3s"
 request = '''
 select count(*) as count from v$log_history where first_time>=to_date(sysdate)

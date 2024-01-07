@@ -26,9 +26,9 @@ FLUSH PRIVILEGES;
 作为普通用户上面的前 3 点不太理解也没关系，这 3 点说明主要是面向开发者的。自定义 SQL 的功能，这里做一下说明：每一个自定义 SQL 就是一个 `[[queries]]` 配置段，多个自定义 SQL 就是多个 `[[queries]]` 配置段。每个 `[[queries]]` 配置段包含以下几个属性：
 
 - `mesurement`：指标名称前缀
-- `metric_fields`：SQL 会查到多个字段，这里指定哪些字段作为指标输出，对应的字段的字段名作为指标后缀，字段值作为指标值
+- `value_fields`：SQL 会查到多个字段，这里指定哪些字段作为指标输出，对应的字段的字段名作为指标后缀，字段值作为指标值
 - `label_fields`：SQL 会查到多个字段，这里指定哪些字段作为标签输出
-- `field_to_append`：SQL 会查到多个字段，这里指定哪个字段作为指标名称后缀，如果这个字段不为空，metric_fields 的字段名后缀会被覆盖
+- `metric_name_field`：SQL 会查到多个字段，这里指定哪个字段作为指标名称
 - `timeout`：SQL 执行超时时间
 - `request`：SQL 语句
 
@@ -37,7 +37,7 @@ FLUSH PRIVILEGES;
 ```toml
 [[queries]]
 mesurement = "lock_wait"
-metric_fields = [ "total" ]
+value_fields = [ "total" ]
 timeout = "3s"
 request = '''
 SELECT count(*) as total FROM information_schema.innodb_trx WHERE trx_state='LOCK WAIT'

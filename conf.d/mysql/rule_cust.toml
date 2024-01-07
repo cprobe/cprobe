@@ -1,8 +1,8 @@
 # [[queries]]
 # mesurement = "biz_users"
-# metric_fields = [ "total" ]
+# value_fields = [ "total" ]
 # label_fields = [ "service" ]
-# field_to_append = "x"
+# metric_name_field = "x"
 # timeout = "3s"
 # request = '''
 # select 'n9e' as service, 'test' as x, count(*) as total from n9e_v6.users
