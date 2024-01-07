@@ -3,7 +3,7 @@
 要监控 MySQL，实际就是连上去执行一些命令，比如 `show global status`，`show global variables` 等等。所以，需要一个用户，这个用户需要有足够的权限。下面是创建用户并授权的 SQL 语句：
 
 ```sql
-CREATE USER 'cprobe' IDENTIFIED BY 'cProbePa55' WITH MAX_USER_CONNECTIONS 3;
+CREATE USER 'cprobe'@'cprobe-server-ip' IDENTIFIED BY 'cProbePa55' WITH MAX_USER_CONNECTIONS 3;
 GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'cprobe'@'cprobe-server-ip';
 FLUSH PRIVILEGES;
 ```
