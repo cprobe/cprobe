@@ -1,0 +1,650 @@
+{
+    "name": "Redis Dashboard for Prometheus Redis Exporter 1.x",
+    "tags": "",
+    "ident": "",
+    "configs": {
+        "version": "3.0.0",
+        "links": [],
+        "var": [
+            {
+                "type": "datasource",
+                "name": "datasource",
+                "definition": "prometheus",
+                "hide": false
+            },
+            {
+                "type": "query",
+                "name": "instance",
+                "definition": "label_values(redis_cprobe_up, instance)",
+                "allOption": false,
+                "multi": true,
+                "reg": "",
+                "hide": false,
+                "datasource": {
+                    "cate": "prometheus",
+                    "value": "${datasource}"
+                }
+            }
+        ],
+        "panels": [
+            {
+                "version": "3.0.0",
+                "id": "13554d73-0845-4d30-9627-a5b61c6a3223",
+                "type": "row",
+                "name": "Performance",
+                "collapsed": true,
+                "layout": {
+                    "h": 1,
+                    "w": 24,
+                    "x": 0,
+                    "y": 0,
+                    "i": "13554d73-0845-4d30-9627-a5b61c6a3223"
+                },
+                "panels": []
+            },
+            {
+                "version": "3.0.0",
+                "id": "30fe933b-42ef-40ac-9e4b-f5ea90330479",
+                "type": "timeseries",
+                "name": "Commands per second",
+                "description": "Average taken across instances",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 0,
+                    "y": 1,
+                    "i": "30fe933b-42ef-40ac-9e4b-f5ea90330479"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "avg(irate(redis_commands_total{instance=~\"$instance\"} [$__rate_interval])) by (cmd)",
+                        "legend": "{{cmd}}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "6282eb4f-30cc-41d4-abf4-3289d4b1b79d",
+                "type": "timeseries",
+                "name": "Command latency per second",
+                "description": "Average taken across instances",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 8,
+                    "y": 1,
+                    "i": "6282eb4f-30cc-41d4-abf4-3289d4b1b79d"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "avg(irate(redis_commands_duration_seconds_total{instance=~\"$instance\"}[$__rate_interval])) by (cmd)\n  /\navg(irate(redis_commands_total{instance=~\"$instance\"}[$__rate_interval])) by (cmd)\n",
+                        "legend": "{{ cmd }}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "e296b03e-1ccd-433b-b2c9-6b317b4719c8",
+                "type": "timeseries",
+                "name": "Hit ratio per instance",
+                "description": "Hit rate shows the percentage of key space lookups that hit a key.",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 16,
+                    "y": 1,
+                    "i": "e296b03e-1ccd-433b-b2c9-6b317b4719c8"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "avg(irate(redis_keyspace_hits_total{instance=~\"$instance\"}[$__rate_interval]) / (irate(redis_keyspace_misses_total{instance=~\"$instance\"}[$__rate_interval]) + irate(redis_keyspace_hits_total{instance=~\"$instance\"}[$__rate_interval]))) by (instance)",
+                        "legend": "{{instance}}"
+                    },
+                    {
+                        "refId": "B",
+                        "expr": "1",
+                        "legend": "Target hit ratio for cache"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "34f17743-8256-452a-8f62-14864b7c9b96",
+                "type": "row",
+                "name": "Memory",
+                "collapsed": true,
+                "layout": {
+                    "h": 1,
+                    "w": 24,
+                    "x": 0,
+                    "y": 8,
+                    "i": "34f17743-8256-452a-8f62-14864b7c9b96"
+                },
+                "panels": []
+            },
+            {
+                "version": "3.0.0",
+                "id": "4bd64163-7c4a-4f85-bce8-3bfb8c5a7c0e",
+                "type": "timeseries",
+                "name": "Total Memory Usage",
+                "description": "Total taken across instances",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 0,
+                    "y": 9,
+                    "i": "4bd64163-7c4a-4f85-bce8-3bfb8c5a7c0e"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "sum(redis_memory_used_bytes{instance=~\"$instance\"})",
+                        "legend": "Used Memory"
+                    },
+                    {
+                        "refId": "B",
+                        "expr": "sum(redis_memory_max_bytes{instance=~\"$instance\"})",
+                        "legend": "Configured max memory"
+                    },
+                    {
+                        "refId": "C",
+                        "expr": "sum(redis_memory_used_rss_bytes{instance=~\"$instance\"})",
+                        "legend": "Used RSS memory"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "44d337ef-24b2-411e-8af2-89fa3ae6b117",
+                "type": "timeseries",
+                "name": "Memory fragmentation ratio per instance",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 8,
+                    "y": 9,
+                    "i": "44d337ef-24b2-411e-8af2-89fa3ae6b117"
+                },
+                "targets": [
+                    {
+                        "refId": "C",
+                        "expr": "redis_memory_used_rss_bytes{instance=~\"$instance\"}/redis_memory_used_bytes{instance=~\"$instance\"}",
+                        "legend": "{{instance}}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "19a7233e-aaf2-437d-b9ac-3bc660a97c0a",
+                "type": "timeseries",
+                "name": "Key evictions per second per instance",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 16,
+                    "y": 9,
+                    "i": "19a7233e-aaf2-437d-b9ac-3bc660a97c0a"
+                },
+                "targets": [
+                    {
+                        "refId": "B",
+                        "expr": "irate(redis_evicted_keys_total{instance=~\"$instance\"}[$__rate_interval])",
+                        "legend": "{{instance}}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "f626026e-24d1-47ef-a74d-395014884b36",
+                "type": "row",
+                "name": "Basic activity",
+                "collapsed": true,
+                "layout": {
+                    "h": 1,
+                    "w": 24,
+                    "x": 0,
+                    "y": 16,
+                    "i": "f626026e-24d1-47ef-a74d-395014884b36"
+                },
+                "panels": []
+            },
+            {
+                "version": "3.0.0",
+                "id": "452e6ccb-567b-47c6-a703-6e73eabe6a8c",
+                "type": "timeseries",
+                "name": "Connected/Blocked Clients",
+                "description": "Sum taken across instances",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 0,
+                    "y": 17,
+                    "i": "452e6ccb-567b-47c6-a703-6e73eabe6a8c"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "sum(redis_connected_clients{instance=~\"$instance\"})",
+                        "legend": "Connected"
+                    },
+                    {
+                        "refId": "B",
+                        "expr": "sum(redis_blocked_clients{instance=~\"$instance\"})",
+                        "legend": "Blocked"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "f75a56e4-3b20-4c8e-8158-f74c09f87286",
+                "type": "timeseries",
+                "name": "Total Items per DB",
+                "description": "Sum taken across instances",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 8,
+                    "y": 17,
+                    "i": "f75a56e4-3b20-4c8e-8158-f74c09f87286"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "sum (redis_db_keys{instance=~\"$instance\"}) by (db)",
+                        "legend": "{{ db }}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "20a0a20d-4e13-4b2b-858a-61f4fc066d27",
+                "type": "timeseries",
+                "name": "Expiring vs Not-Expiring Keys",
+                "description": "Sum taken across instances",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 16,
+                    "y": 17,
+                    "i": "20a0a20d-4e13-4b2b-858a-61f4fc066d27"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "sum (redis_db_keys{instance=~\"$instance\"}) - sum (redis_db_keys_expiring{instance=~\"$instance\"})",
+                        "legend": "Not expiring"
+                    },
+                    {
+                        "refId": "B",
+                        "expr": "sum(redis_db_keys_expiring{instance=~\"$instance\"})",
+                        "legend": "Expiring"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "4d494f2e-6a13-40dd-9d04-cbd5bd6cb4ec",
+                "type": "timeseries",
+                "name": "Connected slaves by instance",
+                "description": "This metric will only be non-zero if the instance is a master",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 0,
+                    "y": 24,
+                    "i": "4d494f2e-6a13-40dd-9d04-cbd5bd6cb4ec"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "sum(redis_connected_slaves{instance=~\"$instance\"}) by (instance)",
+                        "legend": "{{instance}}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            },
+            {
+                "version": "3.0.0",
+                "id": "de57d970-987f-4e3c-b380-fb5c8858a717",
+                "type": "timeseries",
+                "name": "Time since last master connection",
+                "description": "This metric is only exported if the instance is a slave.",
+                "links": [],
+                "layout": {
+                    "h": 7,
+                    "w": 8,
+                    "x": 8,
+                    "y": 24,
+                    "i": "de57d970-987f-4e3c-b380-fb5c8858a717"
+                },
+                "targets": [
+                    {
+                        "refId": "A",
+                        "expr": "redis_master_last_io_seconds_ago{instance=~\"$instance\"}",
+                        "legend": "{{instance}}"
+                    }
+                ],
+                "options": {
+                    "tooltip": {
+                        "mode": "all",
+                        "sort": "none"
+                    },
+                    "legend": {
+                        "displayMode": "hidden"
+                    },
+                    "thresholds": {
+                        "steps": [
+                            {
+                                "color": "#634CD9",
+                                "value": null,
+                                "type": "base"
+                            }
+                        ]
+                    }
+                },
+                "custom": {
+                    "version": "3.0.0",
+                    "drawStyle": "lines",
+                    "lineInterpolation": "linear",
+                    "fillOpacity": 0,
+                    "stack": "off"
+                },
+                "maxPerRow": 4,
+                "datasourceCate": "prometheus",
+                "datasourceValue": "${datasource}"
+            }
+        ]
+    }
+}
