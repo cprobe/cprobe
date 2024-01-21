@@ -14,4 +14,5 @@ const (
 	PluginWhois         = "whois"
 	PluginTomcat        = "tomcat"
 	PluginMemcached     = "memcached"
+	PluginConsul        = "consul"
 )
