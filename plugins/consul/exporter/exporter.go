@@ -2,16 +2,17 @@ package exporter
 
 import (
 	"fmt"
-	"github.com/cprobe/cprobe/lib/logger"
-	consul_api "github.com/hashicorp/consul/api"
-	"github.com/hashicorp/go-cleanhttp"
-	"github.com/prometheus/client_golang/prometheus"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/cprobe/cprobe/lib/logger"
+	consul_api "github.com/hashicorp/consul/api"
+	"github.com/hashicorp/go-cleanhttp"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 var (

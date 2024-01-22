@@ -2,6 +2,8 @@ package consul
 
 import (
 	"context"
+	"time"
+
 	"github.com/BurntSushi/toml"
 	"github.com/cprobe/cprobe/lib/logger"
 	"github.com/cprobe/cprobe/plugins"
@@ -10,23 +12,22 @@ import (
 	consul_api "github.com/hashicorp/consul/api"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
-	"time"
 )
 
 type Config struct {
 	AllowStale        bool          `toml:"allow_stale"`
-	CAFile            string        `toml:"ca-file"`
-	CertFile          string        `toml:"cert-file"`
-	HealthSummary     bool          `toml:"health-summary"`
-	KeyFile           string        `toml:"key-file"`
+	CAFile            string        `toml:"ca_file"`
+	CertFile          string        `toml:"cert_file"`
+	HealthSummary     bool          `toml:"health_summary"`
+	KeyFile           string        `toml:"key_file"`
 	Insecure          bool          `toml:"insecure"`
 	RequireConsistent bool          `toml:"require_consistent"`
-	ServerName        string        `toml:"server-name"`
+	ServerName        string        `toml:"server_name"`
 	Timeout           time.Duration `toml:"timeout"`
-	RequestLimit      int           `toml:"request-limit"`
+	RequestLimit      int           `toml:"request_limit"`
 	KV                KVConfig      `toml:"kv"`
 	Meta              MetaConfig    `toml:"meta"`
-	AgentOnly         bool          `toml:"agent-only"`
+	AgentOnly         bool          `toml:"agent_only"`
 }
 type KVConfig struct {
 	Prefix string `toml:"prefix"`

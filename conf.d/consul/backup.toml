@@ -3,16 +3,16 @@ allow_stale = true
 
 # === CA
 # File path to a PEM-encoded certificate authority used to validate the authenticity of a server certificate.
-ca-file = "/etc/consul.d/consul-agent-ca.pem"
+ca_file = "/etc/consul.d/consul-agent-ca.pem"
 
 # File path to a PEM-encoded certificate used with the private key to verify the exporter's authenticity.
-cert-file = "/etc/consul.d/consul-agent.pem"
+cert_file = "/etc/consul.d/consul-agent.pem"
 
 # Generate a health summary for each service instance. Needs n+1 queries to collect all information.
-health-summary = true
+health_summary = true
 
 # File path to a PEM-encoded private key used with the certificate to verify the exporter's authenticity
-key-file = "/etc/consul.d/consul-agent-key.pem"
+key_file = "/etc/consul.d/consul-agent-key.pem"
 
 # Disable TLS host verification.
 insecure = false
@@ -21,16 +21,16 @@ insecure = false
 require_consistent = false
 
 # When provided, this overrides the hostname for the TLS certificate. It can be used to ensure that the certificate name matches the hostname we declare.
-server-name = ""
+server_name = ""
 
 # Timeout on HTTP requests to the Consul API.
 timeout = "500ms"
 
 # Limit the maximum number of concurrent requests to consul, 0 means no limit.
-request-limit = 0
+request_limit = 0
 
 # Only export metrics about services registered on local agent
-agent-only = false
+agent_only = false
 
 # Prefix from which to expose key/value pairs.
 kv.prefix=""
