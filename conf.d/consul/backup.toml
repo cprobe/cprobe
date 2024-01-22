@@ -1,0 +1,42 @@
+# Allows any Consul server (non-leader) to service a read.
+allow_stale = true
+
+# === CA
+# File path to a PEM-encoded certificate authority used to validate the authenticity of a server certificate.
+ca_file = "/etc/consul.d/consul-agent-ca.pem"
+
+# File path to a PEM-encoded certificate used with the private key to verify the exporter's authenticity.
+cert_file = "/etc/consul.d/consul-agent.pem"
+
+# Generate a health summary for each service instance. Needs n+1 queries to collect all information.
+health_summary = true
+
+# File path to a PEM-encoded private key used with the certificate to verify the exporter's authenticity
+key_file = "/etc/consul.d/consul-agent-key.pem"
+
+# Disable TLS host verification.
+insecure = false
+
+# Forces the read to be fully consistent.
+require_consistent = false
+
+# When provided, this overrides the hostname for the TLS certificate. It can be used to ensure that the certificate name matches the hostname we declare.
+server_name = ""
+
+# Timeout on HTTP requests to the Consul API.
+timeout = "500ms"
+
+# Limit the maximum number of concurrent requests to consul, 0 means no limit.
+request_limit = 0
+
+# Only export metrics about services registered on local agent
+agent_only = false
+
+# Prefix from which to expose key/value pairs.
+kv.prefix=""
+
+# Regex that determines which keys to expose.
+kv.filter=".*"
+
+# Regex that determines which meta keys to expose.
+meta.filter="^$"

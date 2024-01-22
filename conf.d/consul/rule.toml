@@ -1,0 +1,3 @@
+# Allows any Consul server (non-leader) to service a read.
+allow_stale = true
+

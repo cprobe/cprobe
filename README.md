@@ -30,3 +30,4 @@
   - [Postgres](conf.d/postgres/doc)
   - [Tomcat](conf.d/tomcat/doc)
   - [Memcached](conf.d/memcached/doc)
+  - [Consul](conf.d/consul/doc)
