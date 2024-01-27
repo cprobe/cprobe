@@ -15,4 +15,5 @@ const (
 	PluginTomcat        = "tomcat"
 	PluginMemcached     = "memcached"
 	PluginConsul        = "consul"
+	PluginFilebeat      = "filebeat"
 )
