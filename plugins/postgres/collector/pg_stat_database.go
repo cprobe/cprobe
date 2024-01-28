@@ -17,6 +17,7 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/blang/semver/v4"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -233,7 +234,31 @@ var (
 			,deadlocks
 			,blk_read_time
 			,blk_write_time
+			,stats_reset
 		    ,active_time
+		FROM pg_stat_database;
+	`
+
+	statDatabaseQueryLTVersion14 = `
+		SELECT
+			datid
+			,datname
+			,numbackends
+			,xact_commit
+			,xact_rollback
+			,blks_read
+			,blks_hit
+			,tup_returned
+			,tup_fetched
+			,tup_inserted
+			,tup_updated
+			,tup_deleted
+			,conflicts
+			,temp_files
+			,temp_bytes
+			,deadlocks
+			,blk_read_time
+			,blk_write_time
 			,stats_reset
 		FROM pg_stat_database;
 	`
@@ -241,9 +266,12 @@ var (
 
 func (c *PGStatDatabaseCollector) Update(ctx context.Context, instance *instance, ch chan<- prometheus.Metric) error {
 	db := instance.getDB()
-	rows, err := db.QueryContext(ctx,
-		statDatabaseQuery,
-	)
+	query := statDatabaseQuery
+	versionIsLT14 := instance.version.LT(semver.MustParse("14.0.0"))
+	if versionIsLT14 {
+		query = statDatabaseQueryLTVersion14
+	}
+	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -253,8 +281,7 @@ func (c *PGStatDatabaseCollector) Update(ctx context.Context, instance *instance
 		var datid, datname sql.NullString
 		var numBackends, xactCommit, xactRollback, blksRead, blksHit, tupReturned, tupFetched, tupInserted, tupUpdated, tupDeleted, conflicts, tempFiles, tempBytes, deadlocks, blkReadTime, blkWriteTime, activeTime sql.NullFloat64
 		var statsReset sql.NullTime
-
-		err := rows.Scan(
+		scanArgs := []interface{}{
 			&datid,
 			&datname,
 			&numBackends,
@@ -273,8 +300,13 @@ func (c *PGStatDatabaseCollector) Update(ctx context.Context, instance *instance
 			&deadlocks,
 			&blkReadTime,
 			&blkWriteTime,
-			&activeTime,
 			&statsReset,
+		}
+		if !versionIsLT14 {
+			scanArgs = append(scanArgs, &activeTime)
+		}
+		err := rows.Scan(
+			scanArgs...,
 		)
 		if err != nil {
 			return err
@@ -334,7 +366,7 @@ func (c *PGStatDatabaseCollector) Update(ctx context.Context, instance *instance
 		if !blkWriteTime.Valid {
 			continue
 		}
-		if !activeTime.Valid {
+		if !versionIsLT14 && !activeTime.Valid {
 			continue
 		}
 
@@ -457,12 +489,14 @@ func (c *PGStatDatabaseCollector) Update(ctx context.Context, instance *instance
 			labels...,
 		)
 
-		ch <- prometheus.MustNewConstMetric(
-			statDatabaseActiveTime,
-			prometheus.CounterValue,
-			activeTime.Float64/1000.0,
-			labels...,
-		)
+		if !versionIsLT14 {
+			ch <- prometheus.MustNewConstMetric(
+				statDatabaseActiveTime,
+				prometheus.CounterValue,
+				activeTime.Float64/1000.0,
+				labels...,
+			)
+		}
 
 		ch <- prometheus.MustNewConstMetric(
 			statDatabaseStatsReset,
