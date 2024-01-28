@@ -6,6 +6,7 @@ import (
 	_ "github.com/cprobe/cprobe/plugins/blackbox"
 	_ "github.com/cprobe/cprobe/plugins/consul"
 	_ "github.com/cprobe/cprobe/plugins/elasticsearch"
+	_ "github.com/cprobe/cprobe/plugins/filebeat"
 	_ "github.com/cprobe/cprobe/plugins/json"
 	_ "github.com/cprobe/cprobe/plugins/kafka"
 	_ "github.com/cprobe/cprobe/plugins/memcached"
@@ -35,5 +36,6 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginTomcat:        make(map[JobID]*JobGoroutine),
 		types.PluginMemcached:     make(map[JobID]*JobGoroutine),
 		types.PluginConsul:        make(map[JobID]*JobGoroutine),
+		types.PluginFilebeat:      make(map[JobID]*JobGoroutine),
 	}
 }

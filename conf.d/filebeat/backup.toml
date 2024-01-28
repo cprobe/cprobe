@@ -1,0 +1,6 @@
+# Expose system stats
+beat_system = false
+
+# Timeout for trying to get stats from beat. (default 10s)
+beat_timeout = "10s"
+
