@@ -31,3 +31,4 @@
   - [Tomcat](conf.d/tomcat/doc)
   - [Memcached](conf.d/memcached/doc)
   - [Consul](conf.d/consul/doc)
+  - [Filebeat](conf.d/filebeat/doc)
