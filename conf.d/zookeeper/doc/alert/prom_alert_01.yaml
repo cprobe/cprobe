@@ -1,0 +1,101 @@
+groups:
+- name: ZookeeperRules
+  rules:
+  - alert: ZookeeperDown
+    expr: zookeeper_cprobe_up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} ZooKeeper server is down"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
+  - alert: ZooKeeper server is down
+    expr:  zk_up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} ZooKeeper server is down"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} ZooKeeper server is down: [{{ $value }}]."
+
+  - alert: create too many znodes
+    expr: zk_znode_count > 1000000
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} create too many znodes"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} create too many znodes: [{{ $value }}]."
+
+  - alert: create too many connections
+    expr: zk_num_alive_connections > 50 # suppose we use the default maxClientCnxns: 60
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} create too many connections"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} create too many connections: [{{ $value }}]."
+
+  - alert: znode total occupied memory is too big
+    expr: zk_approximate_data_size /1024 /1024 > 1 * 1024 # more than 1024 MB(1 GB)
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} znode total occupied memory is too big"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} znode total occupied memory is too big: [{{ $value }}] MB."
+
+  - alert: set too many watch
+    expr: zk_watch_count > 10000
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} set too many watch"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} set too many watch: [{{ $value }}]."
+
+  - alert: open too many files
+    expr: zk_open_file_descriptor_count > 300
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} open too many files"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} open too many files: [{{ $value }}]."
+
+  - alert: avg latency is too high
+    expr: zk_avg_latency > 100
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} avg latency is too high"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} avg latency is too high: [{{ $value }}]."
+
+  - alert: a leader election happens
+    expr: increase(election_time_count[5m]) > 0
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} a leader election happens"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} a leader election happens: [{{ $value }}]."
+
+  - alert: fsync time is too long
+    expr: rate(zk_sum_fsynctime[1m]) > 100
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} fsync time is too long"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} fsync time is too long: [{{ $value }}]."
+
+  - alert: take snapshot time is too long
+    expr: rate(zk_sum_snapshottime[5m]) > 100
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Instance {{ $labels.instance }} take snapshot time is too long"
+      description: "Zookeeper instance {{ $labels.instance }} of job {{ $labels.job }} take snapshot time is too long: [{{ $value }}]."

@@ -1,0 +1,5 @@
+timeout="10s"
+enableTLS=false
+tlsCert=""
+tlsKey=""
+resetOnScrape=false

@@ -16,4 +16,5 @@ const (
 	PluginMemcached     = "memcached"
 	PluginConsul        = "consul"
 	PluginFilebeat      = "filebeat"
+	PluginZookeeper     = "zookeeper"
 )
