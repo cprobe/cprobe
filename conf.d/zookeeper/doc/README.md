@@ -1,6 +1,6 @@
 ## 改造
 
-cprobe 对 zookeeper 的监控是把 [zookeeper_exporter] 集成了进来，然后进行了一些改造，改造的点主要有：
+cprobe 对 zookeeper 的监控是把 [zookeeper_exporter](https://github.com/carlpett/zookeeper_exporter) 集成了进来，然后进行了一些改造，改造的点主要有：
 
 - 统一化日志打印库，和 cprobe 主程序使用同一个日志库，方便日志的统一化
 - 把命令行参数、环境变量参数、配置文件参数统一化，支持了配置文件切分管理
@@ -8,13 +8,12 @@ cprobe 对 zookeeper 的监控是把 [zookeeper_exporter] 集成了进来，然�
 ### 参考文档
 - [zookeeper指标采集服务1](https://github.com/carlpett/zookeeper_exporter)
 - [zookeeper指标采集服务2](https://github.com/dln/zookeeper_exporter)
-- [zookeeper指标采集服务](https://github.com/carlpett/zookeeper_exporter/blob/master/zookeeper.go)
 - [zookeeper告警配置](https://zookeeper.apache.org/doc/current/zookeeperMonitor.html#Metrics)
 - [指标列表](https://docs.datadoghq.com/integrations/zk/?tab=host)
 
 ## 集群监控
 
-zookeeper 的集群监控，就是把集群里的每个组件（leader、follower、observer）当做一个普通的 redis 实例来对待。所以，只要把集群里的每个组件的 target 地址都配置到 cprobe 的抓取列表里即可。当然了，不同的集群，最好使用标签做区分，建议附加一个 cluster_name 的标签，比如：
+zookeeper 的集群监控，就是把集群里的每个组件（leader、follower、observer）当做一个普通的 Zookeeper 实例来对待。所以，只要把集群里的每个组件的 target 地址都配置到 cprobe 的抓取列表里即可。当然了，不同的集群，最好使用标签做区分，建议附加一个 cluster_name 的标签，比如：
 
 ```yaml
 global:
