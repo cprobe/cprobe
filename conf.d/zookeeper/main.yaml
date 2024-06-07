@@ -1,0 +1,15 @@
+global:
+  scrape_concurrency: 2
+  scrape_interval: 10s
+
+scrape_configs:
+- job_name: 'zookeeper_cluster'
+  static_configs:
+  - targets:
+      - 192.168.31.177:2181
+      - 192.168.31.177:2182
+      - 192.168.31.177:2183
+    labels:
+      cluster_name: 'zk_cluster'
+  scrape_rule_files:
+    - 'zoo.toml'

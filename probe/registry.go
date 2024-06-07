@@ -18,6 +18,7 @@ import (
 	_ "github.com/cprobe/cprobe/plugins/redis"
 	_ "github.com/cprobe/cprobe/plugins/tomcat"
 	_ "github.com/cprobe/cprobe/plugins/whois"
+	_ "github.com/cprobe/cprobe/plugins/zookeeper"
 )
 
 func makeJobs() map[string]map[JobID]*JobGoroutine {
@@ -37,5 +38,6 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginMemcached:     make(map[JobID]*JobGoroutine),
 		types.PluginConsul:        make(map[JobID]*JobGoroutine),
 		types.PluginFilebeat:      make(map[JobID]*JobGoroutine),
+		types.PluginZookeeper:     make(map[JobID]*JobGoroutine),
 	}
 }
