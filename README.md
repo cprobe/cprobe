@@ -32,3 +32,5 @@
   - [Memcached](conf.d/memcached/doc)
   - [Consul](conf.d/consul/doc)
   - [Filebeat](conf.d/filebeat/doc)
+  - [Zookeeper](conf.d/zookeeper/doc)
+  - [Nginx](conf.d/nginx/doc)
