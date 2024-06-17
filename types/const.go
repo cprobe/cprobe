@@ -17,4 +17,5 @@ const (
 	PluginConsul        = "consul"
 	PluginFilebeat      = "filebeat"
 	PluginZookeeper     = "zookeeper"
+	PluginNginx         = "nginx"
 )

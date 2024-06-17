@@ -30,6 +30,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/grobie/gomemcache v0.0.0-20230213081705-239240bbc445
 	github.com/hashicorp/consul/api v1.26.1
+	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/kardianos/service v1.2.2
 	github.com/klauspost/compress v1.15.15
 	github.com/krallistic/kazoo-go v0.0.0-20170526135507-a15279744f4e
@@ -37,6 +38,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4
 	github.com/miekg/dns v1.1.57
 	github.com/mna/redisc v1.4.0
+	github.com/nginxinc/nginx-plus-go-client v1.2.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.17.0
@@ -77,7 +79,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.21.5 // indirect
 	github.com/aws/smithy-go v1.19.0 // indirect
 	github.com/fatih/color v1.14.1 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
 	github.com/hashicorp/go-rootcerts v1.0.2 // indirect

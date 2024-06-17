@@ -1,0 +1,16 @@
+nginx_plus = false
+
+# Path to the PEM encoded CA certificate file used to validate the servers SSL certificate.
+ssl_ca_cert = ''
+
+# Path to the PEM encoded client certificate file to use when connecting to the server.
+ssl_client_cert = ''
+
+# Path to the PEM encoded client certificate key file to use when connecting to the server.
+ssl_client_key = ''
+
+# Perform SSL certificate verification.
+ssl_verify = false
+
+timeout = '5s'
+

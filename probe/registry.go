@@ -12,6 +12,7 @@ import (
 	_ "github.com/cprobe/cprobe/plugins/memcached"
 	_ "github.com/cprobe/cprobe/plugins/mongodb"
 	_ "github.com/cprobe/cprobe/plugins/mysql"
+	_ "github.com/cprobe/cprobe/plugins/nginx"
 	_ "github.com/cprobe/cprobe/plugins/oracledb"
 	_ "github.com/cprobe/cprobe/plugins/postgres"
 	_ "github.com/cprobe/cprobe/plugins/prometheus"
@@ -39,5 +40,6 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginConsul:        make(map[JobID]*JobGoroutine),
 		types.PluginFilebeat:      make(map[JobID]*JobGoroutine),
 		types.PluginZookeeper:     make(map[JobID]*JobGoroutine),
+		types.PluginNginx:         make(map[JobID]*JobGoroutine),
 	}
 }
