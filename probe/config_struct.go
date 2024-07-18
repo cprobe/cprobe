@@ -56,6 +56,7 @@ type ScrapeConfig struct {
 	ConfigRef *Config `yaml:"-"`
 
 	JobName           string              `yaml:"job_name"`
+	ExternalLabels    *promutils.Labels   `yaml:"external_labels,omitempty"`
 	ScrapeConcurrency int                 `yaml:"scrape_concurrency,omitempty"`
 	ScrapeInterval    *promutils.Duration `yaml:"scrape_interval,omitempty"`
 	// ScrapeTimeout     *promutils.Duration `yaml:"scrape_timeout,omitempty"`
