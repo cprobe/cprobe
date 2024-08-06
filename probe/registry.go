@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/cprobe/cprobe/plugins/blackbox"
 	_ "github.com/cprobe/cprobe/plugins/consul"
+	_ "github.com/cprobe/cprobe/plugins/dm8"
 	_ "github.com/cprobe/cprobe/plugins/elasticsearch"
 	_ "github.com/cprobe/cprobe/plugins/filebeat"
 	_ "github.com/cprobe/cprobe/plugins/json"
@@ -41,5 +42,6 @@ func makeJobs() map[string]map[JobID]*JobGoroutine {
 		types.PluginFilebeat:      make(map[JobID]*JobGoroutine),
 		types.PluginZookeeper:     make(map[JobID]*JobGoroutine),
 		types.PluginNginx:         make(map[JobID]*JobGoroutine),
+		types.PluginDm:            make(map[JobID]*JobGoroutine),
 	}
 }

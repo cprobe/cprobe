@@ -1,0 +1,17 @@
+query_timeout = '30s'
+max_idle_conns = 10
+max_open_conns = 100
+conn_max_lifetime = 3600
+db_user = "SYSDBA"
+db_pwd = "SYSDBA001"
+
+
+big_key_data_cache_time = '1h'
+alarm_key_cache_time = '2h'
+
+register_host_metrics = true
+register_database_metrics = true
+register_dmhs_metrics = true
+check_slow_sql = true
+slow_sql_time = 100
+slow_sql_max_rows = 500

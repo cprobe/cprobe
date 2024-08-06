@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 15s
+  external_labels:
+    cplugin: 'dm8'
+
+scrape_configs:
+ - job_name: 'dm8'
+   static_configs:
+   - targets:
+     - '172.19.19.130:30236?autoCommit=true'
+   scrape_rule_files:
+   - 'rule.toml'
