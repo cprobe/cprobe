@@ -11,7 +11,6 @@ import (
 )
 
 var (
-	collectors  []prometheus.Collector
 	registerMux sync.Mutex
 	//timeout     = 5 * time.Second
 )
@@ -72,6 +71,7 @@ func RegisterCollectors(config *Config) *prometheus.Registry {
 	reg := prometheus.NewRegistry()
 	logger.Infof("exporter running system is %v", GetOS())
 
+	collectors := make([]prometheus.Collector, 0)
 	collectors = append(collectors, NewSystemInfoCollector())
 
 	if config.RegisterHostMetrics && strings.Compare(GetOS(), OS_LINUX) == 0 {
@@ -107,17 +107,6 @@ func RegisterCollectors(config *Config) *prometheus.Registry {
 		reg.MustRegister(collector)
 	}
 	return reg
-}
-
-// UnregisterCollectors unregisters all collectors
-func UnregisterCollectors(reg *prometheus.Registry) {
-	registerMux.Lock()
-	defer registerMux.Unlock()
-
-	for _, collector := range collectors {
-		reg.Unregister(collector)
-	}
-	collectors = nil
 }
 
 func checkDBConnection(db *sql.DB) error {
