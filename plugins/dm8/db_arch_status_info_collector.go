@@ -9,21 +9,18 @@ import (
 	"time"
 )
 
-// 定义常量
 const (
 	DB_ARCH_NO_ENABLE = -1
 	DB_ARCH_VALID     = 1
 	DB_ARCH_INVALID   = 2
 )
 
-// 定义收集器结构体
 type DbArchStatusCollector struct {
 	db             *sql.DB
 	archStatusDesc *prometheus.Desc
 	config         *Config
 }
 
-// 初始化收集器
 func NewDbArchStatusCollector(db *sql.DB, config *Config) MetricCollector {
 	return &DbArchStatusCollector{
 		db:     db,

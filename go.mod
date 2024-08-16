@@ -1,8 +1,6 @@
 module github.com/cprobe/cprobe
 
-go 1.21.2
-
-toolchain go1.22.5
+go 1.19
 
 require (
 	dario.cat/mergo v1.0.0

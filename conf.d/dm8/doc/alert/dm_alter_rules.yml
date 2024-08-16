@@ -1,0 +1,140 @@
+groups:
+- name: 主机状态-监控告警
+  rules:
+  - alert: 主机失联
+    expr: up == 0
+    for: 15s
+    labels:
+      severity: 严重
+    annotations:  
+      description: "主机：{{ $labels.instance }} 服务宕机"
+      summary: "主机：{{ $labels.instance }}:服务器超过1m无法连接"
+  - alert: 集群发生切换
+    expr: dmdbms_switching_occurs == 0
+    for: 15s
+    labels:
+      severity: 严重
+    annotations:
+      description: "主机：{{ $labels.instance }} 数据库模式切换"
+      summary: "主机：{{ $labels.instance }}:数据库发生模式切换，疑似发生集群切换请核实"
+  - alert: 数据库状态转换
+    expr: dmdbms_db_status_occurs == 0
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 数据库状态转换"
+      summary: "主机：{{ $labels.instance }}:数据库OPEN状态变化，疑似发生状态转换请核实"
+  - alert: 数据库连接数过高
+    expr: dmdbms_session_percentage*100 > 80
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 数据库连接数过高"
+      summary: "主机：{{ $labels.instance }}:数据库的连接数超过80%，请确认是否正常"
+  - alert: 数据库存在锁等待
+    expr: dmdbms_dead_lock_num_info >0
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 数据库存在锁等待"
+      summary: "主机：{{ $labels.instance }}:数据库存在锁等待，请确认是否正常"    
+  - alert: cpu使用率过高
+    expr: 100 * (1 - avg(irate(node_cpu_seconds_total{mode="idle"}[2m])) by(instance)) > 80
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} cpu使用率过高"
+      summary: "主机：{{ $labels.instance }}:cpu使用率过高，超过80%"
+  - alert: 内存使用率过高
+    expr: (1 - (node_memory_MemAvailable_bytes / (node_memory_MemTotal_bytes)))* 100 > 80
+    for: 15s
+    labels:
+      severity: 警告                        
+    annotations:
+      description: "主机：{{ $labels.instance }} 内存使用率过高"
+      summary: "主机：{{ $labels.instance }}:内存使用率过高，超过80%"
+  - alert: 数据库内存池过高
+    expr: dmdbms_memory_curr_pool_info/dmdbms_memory_total_pool_info*100 > 80
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 内存池使用率过高"
+      summary: "主机：{{ $labels.instance }}:内存池使用率过高，超过80%"
+  - alert: 磁盘分区使用率超过80%
+    expr: (node_filesystem_size_bytes{fstype=~"ext.*|xfs|nfs",mountpoint !~".*(pod|docker).*"}-node_filesystem_free_bytes{fstype=~"ext.*|xfs|nfs",mountpoint !~".*(pod|docker).*"}) *100/(node_filesystem_avail_bytes {fstype=~"ext.*|xfs|nfs",mountpoint !~".*(pod|docker).*"}+(node_filesystem_size_bytes{fstype=~"ext.*|xfs|nfs",mountpoint !~".*(pod|docker).*"}-node_filesystem_free_bytes{fstype=~"ext.*|xfs|nfs",mountpoint !~".*(pod|docker).*"})) >90
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 磁盘分区使用率超过90%"
+      summary: "主机：{{ $labels.instance }}: 磁盘分区使用率超过90%，请核实"
+  - alert: 会话超时数
+    expr: dmdbms_waiting_session >= 20
+    for: 15s
+    labels:
+      severity: 警告        
+    annotations:
+      description: "主机：{{ $labels.instance }} 数据库会话超时数"
+      summary: "主机：{{ $labels.instance }}:数据库会话超时数，请确认是否正常"   
+  - alert: HS延时时间异常
+    expr: dmdbms_dmhs_delay >= 600000 
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} HS延时时间异常"
+      summary: "主机：{{ $labels.instance }}:HS延时时间异常，请确认是否正常"
+  - alert: 备库重做日志内存堆积过高
+    expr: dmdbms_rapply_sys_task_mem_used >= 1536000000
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 备库重做日志内存堆积过高"
+      summary: "主机：{{ $labels.instance }}:备库重做日志内存堆积过高，请确认是否正常"
+  - alert: 备库重做日志线程数
+    expr: dmdbms_rapply_sys_task_num >= 4200
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 备库重做日志线程数过高"
+      summary: "主机：{{ $labels.instance }}:备库重做日志线程数过高，请确认是否正常"
+  - alert: 表空间使用率超过95%
+    expr: dmdbms_tablespace_file_total_info{tablespace_name!="SYSTEM"} and dmdbms_tablespace_file_total_info{tablespace_name!="TEMP"} and dmdbms_tablespace_file_total_info{tablespace_name!="ROLL"} and (((dmdbms_tablespace_size_total_info - dmdbms_tablespace_size_free_info)/dmdbms_tablespace_size_total_info)* 100 > 95)
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} 存在表空间使用率超过95%"
+      summary: "主机：{{ $labels.instance }}: 存在表空间使用率超过95%，请核实"
+  - alert: HS的进程连接异常
+    expr: dmdbms_dmhs_process_is_exit == 0
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} HS的进程连接异常"
+      summary: "主机：{{ $labels.instance }}:HS的进程连接异常，请确认是否正常"
+  - alert: HS的checkPointTime超过8h
+    expr: dmdbms_dmhs_script_info{dmhs_lable="check_point_time"}==-2 or dmdbms_dmhs_script_info{dmhs_lable="check_point_time"}> 60*60*8
+#    expr: dmdbms_dmhs_check_point_delay >=0 and dmdbms_dmhs_check_point_delay > 60*60*8
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} HS的checkPointTime超过8h"
+      summary: "主机：{{ $labels.instance }}:HS的checkPointTime超过8h,请确认是否正常"
+  - alert: HS的currentLogTime超过5m
+    expr: dmdbms_dmhs_script_info{dmhs_lable="current_log_time"}==-2 or dmdbms_dmhs_script_info{dmhs_lable="current_log_time"}> 60*5*1
+    for: 15s
+    labels:
+      severity: 警告
+    annotations:
+      description: "主机：{{ $labels.instance }} HS的currentLogTime超过5m"
+      summary: "主机：{{ $labels.instance }}:HS的currentLogTime超过5m,请确认是否正常"

@@ -12,7 +12,6 @@ import (
 
 var (
 	registerMux sync.Mutex
-	//timeout     = 5 * time.Second
 )
 
 const (
