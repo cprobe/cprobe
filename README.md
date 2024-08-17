@@ -34,3 +34,4 @@
   - [Filebeat](conf.d/filebeat/doc)
   - [Zookeeper](conf.d/zookeeper/doc)
   - [Nginx](conf.d/nginx/doc)
+  - [Dm8](conf.d/dm8/doc)
