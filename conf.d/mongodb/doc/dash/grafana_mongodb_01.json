@@ -1,4 +1,41 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_LOCALPROM",
+      "label": "LocalProm",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "__elements": [],
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "8.5.1"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -24,7 +61,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3,
+  "id": null,
+  "iteration": 1731569697325,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -43,7 +81,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -94,12 +132,12 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.5.14",
+      "pluginVersion": "8.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "mongodb_instance_uptime_seconds{job=\"$job\", instance=\"$instance\"}",
@@ -114,7 +152,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -172,12 +210,12 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.5.14",
+      "pluginVersion": "8.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "sum(irate(mongodb_op_counters_total{job=\"$job\", instance=\"$instance\", type!=\"command\"}[5m]))",
@@ -192,7 +230,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -250,12 +288,12 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.5.14",
+      "pluginVersion": "8.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_op_latencies_latency_total{job=\"$job\", instance=\"$instance\", type=\"command\"}[5m]) / irate(mongodb_mongod_op_latencies_ops_total{job=\"$job\", instance=\"$instance\", type=\"command\"}[5m])",
@@ -270,7 +308,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "This shows the role of the selected service. Normally this should be one of ``PRIMARY``, ``SECONDARY`` and ``ARBITER``, but if the system is newly added it could show ``STARTUP2`` during its initial sync.",
       "fieldConfig": {
@@ -364,12 +402,12 @@
         },
         "textMode": "auto"
       },
-      "pluginVersion": "9.5.14",
+      "pluginVersion": "8.5.1",
       "targets": [
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "max by (instance) (mongodb_mongod_replset_my_state{job=\"$job\", instance=\"$instance\"})",
@@ -396,7 +434,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -404,8 +442,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -479,7 +515,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_op_counters_total{job=\"$job\", instance=\"$instance\", type!=\"command\"}[5m])",
@@ -490,7 +526,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_op_counters_repl_total{job=\"$job\", instance=\"$instance\", type!~\"(command|query|getmore)\"}[5m])",
@@ -502,7 +538,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_metrics_ttl_deleted_documents_total{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -518,7 +554,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -526,8 +562,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -602,7 +636,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_op_latencies_latency_total{job=\"$job\", instance=\"$instance\"}[5m]) / irate(mongodb_mongod_op_latencies_ops_total{job=\"$job\", instance=\"$instance\"}[5m]) > 0",
@@ -617,7 +651,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -625,8 +659,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -694,7 +726,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "mongodb_connections{job=\"$job\", instance=\"$instance\", state=\"current\"}",
@@ -709,7 +741,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "fieldConfig": {
         "defaults": {
@@ -717,8 +749,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -786,7 +816,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "mongodb_mongod_metrics_cursor_open{job=\"$job\", instance=\"$instance\"}",
@@ -801,7 +831,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "Docs per second inserted, updated, deleted or returned. (N.b. not 1-to-1 with operation counts.)",
       "fieldConfig": {
@@ -810,8 +840,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -885,7 +913,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_metrics_document_total{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -900,7 +928,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "Operations queued due to a lock.",
       "fieldConfig": {
@@ -909,8 +937,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -984,7 +1010,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "mongodb_mongod_global_lock_current_queue{job=\"$job\", instance=\"$instance\"}",
@@ -999,7 +1025,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "Ratio of Documents returned or Index entries scanned / full documents scanned",
       "fieldConfig": {
@@ -1008,8 +1034,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1083,7 +1107,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "sum(irate(mongodb_mongod_metrics_document_total{job=\"$job\", instance=\"$instance\", state=\"returned\"}[5m]))/\nsum(irate(mongodb_mongod_metrics_query_executor_total{job=\"$job\", instance=\"$instance\", state=\"scanned_objects\"}[5m]))",
@@ -1094,7 +1118,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "sum(irate(mongodb_mongod_metrics_query_executor_total{job=\"$job\", instance=\"$instance\", state=\"scanned\"}[5m]))/\nsum(irate(mongodb_mongod_metrics_query_executor_total{job=\"$job\", instance=\"$instance\", state=\"scanned_objects\"}[5m]))",
@@ -1110,7 +1134,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "This panel shows the number of objects (both data (scanned_objects) and index (scanned)) as well as the number of documents that were moved to a new location due to the size of the document growing. Moved documents only apply to the MMAPv1 storage engine.",
       "fieldConfig": {
@@ -1119,8 +1143,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1194,7 +1216,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_metrics_query_executor_total{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -1205,7 +1227,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_metrics_record_moves_total{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -1221,7 +1243,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "Legacy driver operation: Number of, and Sum of time spent, per second executing getLastError commands to confirm write concern.",
       "fieldConfig": {
@@ -1230,8 +1252,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1297,7 +1317,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_metrics_get_last_error_wtime_total_milliseconds{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -1312,7 +1332,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "Legacy driver operation: Number of getLastError commands that timed out trying to confirm write concern.",
       "fieldConfig": {
@@ -1321,8 +1341,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1392,7 +1410,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_mongod_metrics_get_last_error_wtime_num_total{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -1403,7 +1421,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "rate(mongodb_mongod_metrics_get_last_error_wtimeouts_total{job=\"$job\", instance=\"$instance\"}[5m])",
@@ -1419,7 +1437,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "This panel shows the number of assert events per second on average over the given time period. In most cases assertions are trivial, but you would want to check your log files if this counter spikes or is consistently high.",
       "fieldConfig": {
@@ -1428,8 +1446,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1501,7 +1517,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_asserts_total{job=\"$job\", instance=\"$instance\"}[1m])",
@@ -1516,7 +1532,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+        "uid": "${DS_LOCALPROM}"
       },
       "description": "Unix or Window memory page faults. Not necessarily from mongodb.",
       "fieldConfig": {
@@ -1525,8 +1541,6 @@
             "mode": "palette-classic"
           },
           "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -1594,7 +1608,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+            "uid": "${DS_LOCALPROM}"
           },
           "editorMode": "code",
           "expr": "irate(mongodb_extra_info_page_faults_total{job=\"$job\", instance=\"$instance\"}[3m])",
@@ -1608,16 +1622,16 @@
     }
   ],
   "refresh": "1m",
-  "schemaVersion": 38,
+  "schemaVersion": 36,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "Prometheus",
-          "value": "Prometheus"
+          "selected": true,
+          "text": "LocalProm",
+          "value": "LocalProm"
         },
         "hide": 0,
         "includeAll": false,
@@ -1632,14 +1646,10 @@
         "type": "datasource"
       },
       {
-        "current": {
-          "selected": false,
-          "text": "fd-standalone",
-          "value": "fd-standalone"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+          "uid": "${DS_LOCALPROM}"
         },
         "definition": "label_values(mongodb_cprobe_up,job)",
         "hide": 0,
@@ -1658,14 +1668,10 @@
         "type": "query"
       },
       {
-        "current": {
-          "selected": false,
-          "text": "10.99.1.110:27017",
-          "value": "10.99.1.110:27017"
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
-          "uid": "dad81cd6-e7eb-4a60-9b91-2a44a06279fc"
+          "uid": "${DS_LOCALPROM}"
         },
         "definition": "label_values(mongodb_cprobe_up{job=\"$job\"},instance)",
         "hide": 0,
@@ -1693,6 +1699,6 @@
   "timezone": "",
   "title": "MongoDB Instance Summary",
   "uid": "e8e04beb-fa38-4b17-a9ee-3f3e05780a29",
-  "version": 26,
+  "version": 5,
   "weekStart": ""
 }

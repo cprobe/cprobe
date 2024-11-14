@@ -24,7 +24,7 @@ func WriteTimeSeries(tss []prompbmarshal.TimeSeries) {
 				sb.WriteString(point.Labels[j].Value)
 				sb.WriteString(" ")
 			}
-			fmt.Printf(">> %s %d %f\n", sb.String(), point.Samples[0].Timestamp, point.Samples[0].Value)
+			fmt.Printf(">> %s %d %.9f\n", sb.String(), point.Samples[0].Timestamp, point.Samples[0].Value)
 		}
 		return
 	}
