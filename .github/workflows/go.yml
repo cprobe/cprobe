@@ -1,0 +1,34 @@
+name: Release
+permissions: write-all
+
+on:
+  push:
+    tags:
+      - 'v*'
+env:
+  GO_VERSION: 1.22
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go Environment
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v3
+        with:
+          version: '~> v1'
+          args: release --rm-dist
+          distribution: goreleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
