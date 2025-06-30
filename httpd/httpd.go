@@ -16,7 +16,6 @@ import (
 
 	"github.com/cprobe/cprobe/flags"
 	"github.com/cprobe/cprobe/lib/flagutil"
-	"github.com/cprobe/cprobe/lib/fs"
 	"github.com/cprobe/cprobe/probe"
 	"github.com/cprobe/cprobe/writer"
 	"gopkg.in/yaml.v2"
@@ -136,20 +135,21 @@ func Router() *HTTPRouter {
 		if cfg, ok := probe.PluginCfgs[name]; ok {
 			out, _ := yaml.Marshal(cfg)
 			fmt.Fprintln(c.Writer, string(out))
-			for _, config := range cfg {
-				for _, scrapeConfig := range config.ScrapeConfigs {
-					fmt.Fprintf(c.Writer, "--- job: %s ---\n", scrapeConfig.JobName)
-					for _, ruleFile := range scrapeConfig.ScrapeRuleFiles {
-						fmt.Fprintf(c.Writer, "- %s:\n", ruleFile)
-						ruleFilePath := fs.GetFilepath(scrapeConfig.ConfigRef.BaseDir, ruleFile)
-						data := probe.CacheGetBytes(ruleFilePath)
-						if data == nil {
-							data, _ = fs.ReadFileOrHTTP(ruleFilePath)
-						}
-						fmt.Fprintf(c.Writer, "%s\n", string(data))
-					}
-				}
-			}
+			// 关了。暴露敏感信息
+			//for _, config := range cfg {
+			//	for _, scrapeConfig := range config.ScrapeConfigs {
+			//		fmt.Fprintf(c.Writer, "--- job: %s ---\n", scrapeConfig.JobName)
+			//		for _, ruleFile := range scrapeConfig.ScrapeRuleFiles {
+			//			fmt.Fprintf(c.Writer, "- %s:\n", ruleFile)
+			//			ruleFilePath := fs.GetFilepath(scrapeConfig.ConfigRef.BaseDir, ruleFile)
+			//			data := probe.CacheGetBytes(ruleFilePath)
+			//			if data == nil {
+			//				data, _ = fs.ReadFileOrHTTP(ruleFilePath)
+			//			}
+			//			fmt.Fprintf(c.Writer, "%s\n", string(data))
+			//		}
+			//	}
+			//}
 		}
 	})
 	r.GET("/reload", func(c *gin.Context) {

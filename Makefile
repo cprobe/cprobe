@@ -1,5 +1,5 @@
 BUILD_VERSION=0.0.1
-BUILDFLAGS=CGO_ENABLED=0
+BUILDFLAGS=CGO_ENABLED=0  GOOS=linux GOARCH=amd64
 BUILD_TIME=$(shell date +"%Y-%m-%d-%H-%M-%S")
 LDFLAGS="-w -s -X 'github.com/cprobe/cprobe/lib/buildinfo.Version=$(BUILD_VERSION)-$(BUILD_TIME)'"
 

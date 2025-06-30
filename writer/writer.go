@@ -136,6 +136,7 @@ type Global struct {
 	ExtraLabels          *promutils.Labels           `yaml:"extra_labels"`
 	RelabelConfigs       []promrelabel.RelabelConfig `yaml:"metric_relabel_configs"`
 	ParsedRelabelConfigs *promrelabel.ParsedConfigs  `yaml:"-"`
+	SecretConfig         bool                        `yaml:"secret_config"`
 }
 
 type WriterYaml struct {
